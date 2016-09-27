@@ -10,6 +10,7 @@
 #define WINTOASTLIB_API __declspec(dllimport)
 #endif
 
+#include "includes.h"
 // This class is exported from the WinToastLib.dll
 class WINTOASTLIB_API WinToast {
 public:
