@@ -26,10 +26,10 @@ public:
 
 private:
 	HRESULT		loadAppUserModelId();
-	HRESULT		defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const;
-	HRESULT		defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize) const;
-	HRESULT     defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize) const;
-	HRESULT     createShortCut(_In_ PCWSTR exePath);
+	HRESULT		defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
+	HRESULT		defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
+	HRESULT     defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
+	HRESULT     createShellLinkInPath(_In_ PCWSTR exePath) const;
 
 private:
 	bool	_isCompatible;
