@@ -21,12 +21,19 @@ WinToast::WinToast() : _isCompatible(false)
 	return;
 }
 
-void WinToast::setAppName(const wstring& appName) {
+void WinToast::setAppName(_In_ const wstring& appName) {
 	_appName = appName;
 }
 
 wstring WinToast::appName() const {
 	return _appName;
+}
+
+wstring WinToast::appUserModelId() const {
+	return _aumi;
+}
+void WinToast::setAppUserModelId(_In_ const wstring& aumi) {
+	_aumi = aumi;
 }
 
 

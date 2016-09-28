@@ -21,8 +21,10 @@ public:
 	WinToast(void);
 	// TODO: add your methods here.
 	bool isCompatible();
-	void setAppName(const wstring& appName);
 	wstring appName() const;
+	wstring appUserModelId() const;
+	void setAppUserModelId(_In_ const wstring& appName);
+	void setAppName(_In_ const wstring& appName);
 
 private:
 	HRESULT		loadAppUserModelId();
