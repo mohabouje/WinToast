@@ -30,8 +30,17 @@ string WinToast::appName() const {
 }
 
 
+HRESULT WinToast::defaultAppUserModelIdDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const {
+	DWORD written = GetEnvironmentVariable(L"APPDATA", path, nSize);
+	HRESULT hr = written > 0 ? S_OK : E_INVALIDARG;
+	if (SUCCEEDED(hr)) {
+		errno_t result = wcscat_s(path, nSize, L"\\Microsoft\\Windows\\Start Menu\\Programs\\");
+		hr = (result == 0) ? S_OK : E_INVALIDARG;
+	}
+	return hr;
+}
 
-HRESULT WinToast::loadAppUserModelID() {
+HRESULT WinToast::loadAppUserModelId() {
 	wchar_t exePath[MAX_PATH];
 	DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, exePath, ARRAYSIZE(exePath));
 	HRESULT hr = written > 0 ? S_OK : E_FAIL;

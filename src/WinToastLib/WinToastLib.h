@@ -21,8 +21,8 @@ public:
 	string appName() const;
 
 private:
-	HRESULT loadAppUserModelID();
-
+	HRESULT		loadAppUserModelId();
+	HRESULT		defaultAppUserModelIdDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const;
 private:
 	bool	_isCompatible;
 	string	_appName;
