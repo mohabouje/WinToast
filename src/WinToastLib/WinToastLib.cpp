@@ -21,31 +21,46 @@ WinToast::WinToast() : _isCompatible(false)
 	return;
 }
 
-void WinToast::setAppName(const string& appName) {
+void WinToast::setAppName(const wstring& appName) {
 	_appName = appName;
 }
 
-string WinToast::appName() const {
+wstring WinToast::appName() const {
 	return _appName;
 }
 
 
-HRESULT WinToast::defaultAppUserModelIdDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const {
+HRESULT WinToast::createShortCut(_In_ PCWSTR exepPath)  {
+
+}
+
+
+HRESULT WinToast::defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const {
 	DWORD written = GetEnvironmentVariable(L"APPDATA", path, nSize);
 	HRESULT hr = written > 0 ? S_OK : E_INVALIDARG;
 	if (SUCCEEDED(hr)) {
-		errno_t result = wcscat_s(path, nSize, L"\\Microsoft\\Windows\\Start Menu\\Programs\\");
+		errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
+		hr = (result == 0) ? S_OK : E_INVALIDARG;
+	}
+	return hr;
+}
+
+HRESULT WinToast::defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize) const {
+	HRESULT hr = defaultShellLinksDirectory(path, nSize);
+	if (SUCCEEDED(hr)) {
+		const wstring appLink(_appName + DEFAULT_LINK_FORMAT);
+		errno_t result = wcscat_s(path, nSize, appLink.c_str());
 		hr = (result == 0) ? S_OK : E_INVALIDARG;
 	}
 	return hr;
 }
 
 HRESULT WinToast::loadAppUserModelId() {
-	wchar_t exePath[MAX_PATH];
-	DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, exePath, ARRAYSIZE(exePath));
+	wchar_t slPath[MAX_PATH];
+	DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, slPath, ARRAYSIZE(slPath));
 	HRESULT hr = written > 0 ? S_OK : E_FAIL;
 	if (SUCCEEDED(hr)) {
-		written = GetFileAttributes(exePath);
+		written = GetFileAttributes(slPath);
 		if (written >= 0xFFFFFFF)
 			return E_FAIL;
 		
@@ -54,7 +69,7 @@ HRESULT WinToast::loadAppUserModelId() {
 			ComPtr<IPersistFile>	persistFile;
 			ComPtr<IPropertyStore>	propertyStore;
 			if (SUCCEEDED(shellItem.As(&persistFile)) 
-				&& SUCCEEDED(persistFile->Load(exePath, STGM_READWRITE))
+				&& SUCCEEDED(persistFile->Load(slPath, STGM_READWRITE))
 				&& SUCCEEDED(shellItem.As(&propertyStore))
 				) 
 			{
@@ -64,7 +79,7 @@ HRESULT WinToast::loadAppUserModelId() {
 					if (SUCCEEDED(PropVariantToString(appIdPropVar, AUMI, MAX_PATH))
 						&& AUMI == _aumi) {
 						PropVariantClear(&appIdPropVar);
-						CoTaskMemFree(exePath);
+						CoTaskMemFree(slPath);
 						return S_OK;
 					}
 				}

@@ -9,6 +9,10 @@
 #else
 #define WINTOASTLIB_API __declspec(dllimport)
 #endif
+
+#define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
+#define DEFAULT_LINK_FORMAT			L".lnk"
+
 #include <string>
 using namespace std;
 
@@ -17,15 +21,18 @@ public:
 	WinToast(void);
 	// TODO: add your methods here.
 	bool isCompatible();
-	void setAppName(const string& appName);
-	string appName() const;
+	void setAppName(const wstring& appName);
+	wstring appName() const;
 
 private:
 	HRESULT		loadAppUserModelId();
-	HRESULT		defaultAppUserModelIdDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const;
+	HRESULT		defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const;
+	HRESULT		defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize) const;
+	HRESULT     createShortCut(_In_ PCWSTR exePath);
+
 private:
 	bool	_isCompatible;
-	string	_appName;
+	wstring	_appName;
 	wstring	_aumi;
 };
 
