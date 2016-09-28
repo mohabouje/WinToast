@@ -31,7 +31,12 @@ wstring WinToast::appName() const {
 
 
 HRESULT WinToast::createShortCut(_In_ PCWSTR exepPath)  {
+	return S_OK;
+}
 
+HRESULT WinToast::defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize) const {
+	DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, path, nSize);
+	return (written > 0) ? S_OK : E_FAIL;
 }
 
 
