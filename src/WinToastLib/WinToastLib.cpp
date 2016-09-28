@@ -21,6 +21,25 @@ WinToast::WinToast() : _isCompatible(false)
 	return;
 }
 
+bool WinToast::initialize() {
+	if (_aumi.empty()) {
+		wcout << L"Error: App User Model Id is empty!";
+		return false;
+	}
+	HRESULT hr = loadAppUserModelId();
+	if (FAILED(hr)) {
+		WCHAR shellPath[MAX_PATH];
+		hr = defaultShellLinkPath(shellPath);
+		if (SUCCEEDED(hr)) {
+			hr = createShellLinkInPath(shellPath);
+			if (SUCCEEDED(hr)) {
+				hr = initAppUserModelId();
+			}
+		}
+	}
+	return hr == S_OK;
+}
+
 void WinToast::setAppName(_In_ const wstring& appName) {
 	_appName = appName;
 }

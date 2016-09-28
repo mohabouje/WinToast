@@ -21,6 +21,7 @@ public:
 	WinToast(void);
 	// TODO: add your methods here.
 	bool isCompatible();
+	bool initialize();
 	wstring appName() const;
 	wstring appUserModelId() const;
 	void setAppUserModelId(_In_ const wstring& appName);
