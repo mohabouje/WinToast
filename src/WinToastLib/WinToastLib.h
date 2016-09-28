@@ -9,13 +9,24 @@
 #else
 #define WINTOASTLIB_API __declspec(dllimport)
 #endif
+#include <string>
+using namespace std;
 
-#include "includes.h"
-// This class is exported from the WinToastLib.dll
 class WINTOASTLIB_API WinToast {
 public:
 	WinToast(void);
 	// TODO: add your methods here.
+	bool isCompatible();
+	void setAppName(const string& appName);
+	string appName() const;
+
+private:
+	HRESULT loadAppUserModelID();
+
+private:
+	bool	_isCompatible;
+	string	_appName;
+	wstring	_aumi;
 };
 
 extern WINTOASTLIB_API int nWinToastLib;
