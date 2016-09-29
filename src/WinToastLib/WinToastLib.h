@@ -18,6 +18,18 @@ using namespace std;
 
 class WINTOASTLIB_API WinToast {
 public:
+
+	enum class WinToastTemplate {
+		ImageWithOneLine  =ToastTemplateType::ToastTemplateType_ToastImageAndText01,
+		ImageWithTwoLines = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
+		ImageWithThreeLines = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
+		ImageWithFourLines = ToastTemplateType::ToastTemplateType_ToastImageAndText04,
+		TextOneLine = ToastTemplateType::ToastTemplateType_ToastText01,
+		TextTwoLines = ToastTemplateType::ToastTemplateType_ToastText02,
+		TextThreeLines = ToastTemplateType::ToastTemplateType_ToastText02,
+		TextFourLines = ToastTemplateType::ToastTemplateType_ToastText02
+	};
+
 	WinToast(void);
 	// TODO: add your methods here.
 	bool isCompatible();
