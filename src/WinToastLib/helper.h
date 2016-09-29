@@ -26,42 +26,41 @@ inline HRESULT wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout
 }
 
 template <typename TFunction>
-bool tryLoadFunction(HINSTANCE dll, LPCSTR name, TFunction &func) {
+inline HRESULT tryLoadFunction(HINSTANCE dll, LPCSTR name, TFunction &func) {
 	if (!dll) return false;
 
 	func = (TFunction)GetProcAddress(dll, name);
-	return !!func;
+	return (!!func) ? S_OK : E_FAIL;
 }
 
 
-bool setupPropSysLib() {
-	HINSTANCE procId = LoadLibrary(L"PROPSYS.DLL");
-	return tryLoadFunction(procId, "PropVariantToString", propVariantToString);
+
+static const int RequiredStaticLibrariesCount = 4;
+static const std::wstring RequiredStaticLibraries[RequiredStaticLibrariesCount] = { L"PROPSYS.DLL", L"api-ms-win-core-winrt-string-l1-1-0.dll", L"COMBASE.DLL", L"SHELL32.DLL" };
+HRESULT isRequiredLibrariesAvailables() {
+	for (int i = 0; i < RequiredStaticLibrariesCount; i++) {
+		if (LoadLibrary(RequiredStaticLibraries[i].c_str()) == NULL)
+			return E_FAIL;
+	}
+	return S_OK;
 }
 
-bool setupWinRTStringLib() {
 
-	HINSTANCE otherProcId = LoadLibrary(L"api-ms-win-core-winrt-string-l1-1-0.dll");
-	if (!tryLoadFunction(otherProcId, "WindowsCreateStringReference", windowsCreateStringReference))
-		return false;
-	if (!tryLoadFunction(otherProcId, "WindowsDeleteString", windowsDeleteString))
-		return false;
-	return true;
+HRESULT setupPropSysLib() {
+	HINSTANCE procId = LoadLibrary(RequiredStaticLibraries[0].c_str());
+	if (SUCCEEDED(tryLoadFunction(procId, "PropVariantToString", propVariantToString))) {
+		procId = LoadLibrary(RequiredStaticLibraries[1].c_str());
+		if (SUCCEEDED(tryLoadFunction(procId, "WindowsCreateStringReference", windowsCreateStringReference))
+			&& SUCCEEDED(tryLoadFunction(procId, "WindowsDeleteString", windowsDeleteString))) {
+			procId = LoadLibrary(RequiredStaticLibraries[2].c_str());
+			if (SUCCEEDED(tryLoadFunction(procId, "SetCurrentProcessExplicitAppUserModelID", setCurrentProcessExplicitAppUserModelID))) {
+				procId = LoadLibrary(RequiredStaticLibraries[3].c_str());
+				if (SUCCEEDED(tryLoadFunction(procId, "RoGetActivationFactory", roGetActivationFactory)))
+					return false;
+			}
+		}
+	}
+	return E_FAIL;
 }
 
-bool setupCombaseLib() {
-	if (!setCurrentProcessExplicitAppUserModelID)
-		return false;
-	if (!propVariantToString)
-		return false;
-	HINSTANCE procId = LoadLibrary(L"COMBASE.DLL");
-	if (!tryLoadFunction(procId, "RoGetActivationFactory", roGetActivationFactory))
-		return false;
-	return true;
-}
-
-bool setupShell32Lib() {
-	HINSTANCE procId = LoadLibrary(L"SHELL32.DLL");
-	return tryLoadFunction(procId, "SetCurrentProcessExplicitAppUserModelID", setCurrentProcessExplicitAppUserModelID);
-}
 
