@@ -3,6 +3,12 @@
 
 #include "stdafx.h"
 #include "WinToastLib.h"
+#include "helper.h"
+
+std::wstring WinToast::ToastTag = L"toast";
+std::wstring WinToast::ImageTag = L"image";
+std::wstring WinToast::TextTag = L"text";
+std::wstring WinToast::SrcTag = L"src";
 
 
 // This is an example of an exported variable
@@ -149,7 +155,7 @@ HRESULT WinToast::loadAppUserModelId() {
 				PROPVARIANT appIdPropVar;
 				if (SUCCEEDED(propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar))) {
 					WCHAR AUMI[MAX_PATH];
-					if (SUCCEEDED(PropVariantToString(appIdPropVar, AUMI, MAX_PATH))
+					if (SUCCEEDED(propVariantToString(appIdPropVar, AUMI, MAX_PATH))
 						&& AUMI == _aumi) {
 						PropVariantClear(&appIdPropVar);
 						CoTaskMemFree(slPath);
@@ -162,3 +168,41 @@ HRESULT WinToast::loadAppUserModelId() {
 	}
 	return hr;
 }
+
+
+HSTRING	loadStringReference(_In_ std::wstring data) {
+
+	HSTRING_HEADER hstringHeader;
+	HSTRING string;
+	windowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
+	return string;
+}
+
+HRESULT WinToast::setImage(_In_ const WCHAR* path)  {
+	
+
+	wchar_t imagePath[MAX_PATH];
+	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path);
+	if (SUCCEEDED(hr)) {
+		ComPtr<IXmlNodeList> list;
+		hr = _xmlDocument->GetElementsByTagName(loadStringReference(ImageTag), &list);
+		if (SUCCEEDED(hr)) {
+			ComPtr<IXmlNode> node;
+			hr = list->Item(0, &node);
+			if (SUCCEEDED(hr)) {
+				ComPtr<IXmlNamedNodeMap> attributes;
+				hr = node->get_Attributes(&attributes);
+				if (SUCCEEDED(hr)) {
+					ComPtr<IXmlNode> editedNode;
+					hr = attributes->GetNamedItem(loadStringReference(SrcTag), &editedNode);
+					if (SUCCEEDED(hr)) {
+						// Edit the node properties
+					}
+				}
+			}
+		}
+	}
+	return hr;
+}
+
+

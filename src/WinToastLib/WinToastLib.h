@@ -47,10 +47,23 @@ private:
 	HRESULT		defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
 	HRESULT     createShellLinkInPath(_In_ PCWSTR exePath) const;
 
+	// Load different parameter
+	HRESULT		setImage(_In_ const WCHAR* path);
 private:
 	bool	_isCompatible;
 	wstring	_appName;
 	wstring	_aumi;
+
+	ComPtr<IXmlDocument>                            _xmlDocument;
+	ComPtr<IToastNotificationManagerStatics>        _notificationManager;
+	ComPtr<IToastNotifier>                          _notifier;
+	ComPtr<IToastNotificationFactory>               _notificationFactory;
+	ComPtr<IToastNotification>                      _notification;
+
+	static wstring ToastTag;
+	static wstring ImageTag;
+	static wstring TextTag;
+	static wstring SrcTag;
 };
 
 extern WINTOASTLIB_API int nWinToastLib;
