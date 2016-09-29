@@ -170,17 +170,9 @@ HRESULT WinToast::loadAppUserModelId() {
 }
 
 
-HSTRING	loadStringReference(_In_ std::wstring data) {
 
-	HSTRING_HEADER hstringHeader;
-	HSTRING string;
-	windowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
-	return string;
-}
 
 HRESULT WinToast::setImage(_In_ const WCHAR* path)  {
-	
-
 	wchar_t imagePath[MAX_PATH];
 	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path);
 	if (SUCCEEDED(hr)) {
@@ -196,7 +188,7 @@ HRESULT WinToast::setImage(_In_ const WCHAR* path)  {
 					ComPtr<IXmlNode> editedNode;
 					hr = attributes->GetNamedItem(loadStringReference(SrcTag), &editedNode);
 					if (SUCCEEDED(hr)) {
-						// Edit the node properties
+						setNodeStringValue(loadStringReference(imagePath), editedNode.Get(), _xmlDocument.Get());
 					}
 				}
 			}
