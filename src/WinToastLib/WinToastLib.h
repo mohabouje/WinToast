@@ -47,6 +47,13 @@ private:
 	HRESULT		defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
 	HRESULT     createShellLinkInPath(_In_ PCWSTR exePath) const;
 
+	IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }
+	IToastNotifier*							notifier() const { return _notifier.Get(); }
+	IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
+	IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
+	IToastNotification*						notification() const { return _notification.Get(); }
+
+
 	// Load different parameter
 	HRESULT		setImage(_In_ const WCHAR* path);
 private:

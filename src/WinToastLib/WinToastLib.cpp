@@ -188,7 +188,7 @@ HRESULT WinToast::setImage(_In_ const WCHAR* path)  {
 					ComPtr<IXmlNode> editedNode;
 					hr = attributes->GetNamedItem(loadStringReference(SrcTag), &editedNode);
 					if (SUCCEEDED(hr)) {
-						setNodeStringValue(loadStringReference(imagePath), editedNode.Get(), _xmlDocument.Get());
+						setNodeStringValue(loadStringReference(imagePath), editedNode.Get(), xmlDocument());
 					}
 				}
 			}
