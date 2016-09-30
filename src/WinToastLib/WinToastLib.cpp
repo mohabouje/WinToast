@@ -41,9 +41,21 @@ bool WinToast::initialize() {
 			hr = createShellLinkInPath(shellPath);
 			if (SUCCEEDED(hr)) {
 				hr = initAppUserModelId();
+				if (FAILED(hr)) {
+					return false;
+				}
 			}
 		}
+	} 
+
+	hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
+	if (SUCCEEDED(hr)) {
+		hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
+		if (SUCCEEDED(hr)) {
+			hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
+		}
 	}
+	
 	return hr == S_OK;
 }
 
