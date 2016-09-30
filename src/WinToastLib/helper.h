@@ -64,15 +64,23 @@ HRESULT setupPropSysLib() {
 }
 
 
-HSTRING	loadStringReference(_In_ std::wstring data) {
-
+inline HSTRING	loadStringReference(_In_ std::wstring data) {
 	HSTRING_HEADER hstringHeader;
 	HSTRING string;
 	windowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
 	return string;
 }
 
-HRESULT setNodeStringValue(const HSTRING &string, IXmlNode *node, IXmlDocument *xml) {
+inline HRESULT getNodeListByTag(const std::wstring tag, ComPtr<IXmlNodeList>& nodeList, IXmlDocument *xml) {
+	return xml->GetElementsByTagName(loadStringReference(tag), &nodeList);
+}
+
+inline HRESULT getNodeFromNodeList(ComPtr<IXmlNodeList>& nodeList, ComPtr<IXmlNode>& node, int pos) {
+	ComPtr<IXmlNode> textNode;
+	return nodeList->Item(pos, &node);
+}
+
+inline HRESULT setNodeStringValue(const HSTRING &string, IXmlNode *node, IXmlDocument *xml) {
 	ComPtr<IXmlText> textNode;
 	HRESULT hr = xml->CreateTextNode(string, &textNode);
 	if (SUCCEEDED(hr)) {

@@ -27,7 +27,8 @@ public:
 		TextOneLine = ToastTemplateType::ToastTemplateType_ToastText01,
 		TextTwoLines = ToastTemplateType::ToastTemplateType_ToastText02,
 		TextThreeLines = ToastTemplateType::ToastTemplateType_ToastText02,
-		TextFourLines = ToastTemplateType::ToastTemplateType_ToastText02
+		TextFourLines = ToastTemplateType::ToastTemplateType_ToastText02,
+		UnknownTemplate = -1
 	};
 
 	WinToast(void);
@@ -36,9 +37,10 @@ public:
 	bool initialize();
 	wstring appName() const;
 	wstring appUserModelId() const;
+	WinToastTemplate currentTemplate() const { return _template; }
 	void setAppUserModelId(_In_ const wstring& appName);
 	void setAppName(_In_ const wstring& appName);
-
+	void setTemplate(_In_ const WinToastTemplate& templ);
 private:
 	HRESULT		loadAppUserModelId();
 	HRESULT		initAppUserModelId();
@@ -55,12 +57,13 @@ private:
 
 
 	// Load different parameter
-	HRESULT		setImage(_In_ const WCHAR* path);
+	HRESULT		setImageField(_In_ const wstring& path);
+	HRESULT     setTextField(_In_ const wstring& text, int pos);
 private:
-	bool	_isCompatible;
-	wstring	_appName;
-	wstring	_aumi;
-
+	bool											_isCompatible;
+	wstring											_appName;
+	wstring											_aumi;
+	WinToastTemplate								_template;
 	ComPtr<IXmlDocument>                            _xmlDocument;
 	ComPtr<IToastNotificationManagerStatics>        _notificationManager;
 	ComPtr<IToastNotifier>                          _notifier;

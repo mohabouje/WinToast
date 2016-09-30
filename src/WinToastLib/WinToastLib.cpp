@@ -22,8 +22,9 @@ WINTOASTLIB_API int fnWinToastLib(void)
 
 // This is the constructor of a class that has been exported.
 // see WinToastLib.h for the class definition
-WinToast::WinToast() : _isCompatible(false)
+WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::UnknownTemplate)
 {
+	setTemplate(WinToastTemplate::ImageWithOneLine);
 	return;
 }
 
@@ -169,19 +170,39 @@ HRESULT WinToast::loadAppUserModelId() {
 	return hr;
 }
 
+void WinToast::setTemplate(_In_ const WinToastTemplate& templ) {
+	if (_template != templ) {
+		_template = templ;
+		notificationManager()->GetTemplateContent(ToastTemplateType(templ), &_xmlDocument);
+	}
+}
 
 
 
-HRESULT WinToast::setImage(_In_ const WCHAR* path)  {
-	wchar_t imagePath[MAX_PATH];
-	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path);
+HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {
+	ComPtr<IXmlNodeList> nodeList;
+	HRESULT hr = getNodeListByTag(TextTag, nodeList, xmlDocument());
 	if (SUCCEEDED(hr)) {
-		ComPtr<IXmlNodeList> list;
-		hr = _xmlDocument->GetElementsByTagName(loadStringReference(ImageTag), &list);
+		ComPtr<IXmlNode> node;
+		hr = getNodeFromNodeList(nodeList, node, pos);
+		if (SUCCEEDED(hr)) {
+			hr = setNodeStringValue(loadStringReference(text), node.Get(), xmlDocument());
+		}
+	}
+	return hr;
+}
+
+
+HRESULT WinToast::setImageField(_In_ const wstring& path)  {
+	wchar_t imagePath[MAX_PATH];
+	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path.c_str());
+	if (SUCCEEDED(hr)) {
+		ComPtr<IXmlNodeList> nodeList;
+		HRESULT hr = getNodeListByTag(ImageTag, nodeList, xmlDocument());
 		if (SUCCEEDED(hr)) {
 			ComPtr<IXmlNode> node;
-			hr = list->Item(0, &node);
-			if (SUCCEEDED(hr)) {
+			hr = getNodeFromNodeList(nodeList, node, 0);
+			if (SUCCEEDED(hr))  {
 				ComPtr<IXmlNamedNodeMap> attributes;
 				hr = node->get_Attributes(&attributes);
 				if (SUCCEEDED(hr)) {
@@ -196,5 +217,7 @@ HRESULT WinToast::setImage(_In_ const WCHAR* path)  {
 	}
 	return hr;
 }
+
+
 
 
