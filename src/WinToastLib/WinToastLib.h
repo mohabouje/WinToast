@@ -13,6 +13,7 @@
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
 
+#include "WinToastHandler.h"
 #include <string>
 using namespace std;
 
@@ -42,6 +43,8 @@ public:
 	void setAppName(_In_ const wstring& appName);
 	void setTemplate(_In_ const WinToastTemplate& templ);
 private:
+	void		attachCurrent();
+
 	HRESULT		loadAppUserModelId();
 	HRESULT		initAppUserModelId();
 	HRESULT     defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
@@ -59,6 +62,7 @@ private:
 	// Load different parameter
 	HRESULT		setImageField(_In_ const wstring& path);
 	HRESULT     setTextField(_In_ const wstring& text, int pos);
+	HRESULT		setEventHandlers(_In_ ComPtr<WinToastHandler>& eventHandler);
 private:
 	bool											_isCompatible;
 	wstring											_appName;

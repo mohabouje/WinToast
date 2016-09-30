@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "WinToastLib.h"
 #include "helper.h"
-
 std::wstring WinToast::ToastTag = L"toast";
 std::wstring WinToast::ImageTag = L"image";
 std::wstring WinToast::TextTag = L"text";
@@ -27,6 +26,8 @@ WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::Unknown
 	setTemplate(WinToastTemplate::ImageWithOneLine);
 	return;
 }
+
+
 
 bool WinToast::initialize() {
 	if (_aumi.empty()) {
@@ -231,5 +232,15 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 }
 
 
-
+HRESULT WinToast::setEventHandlers(_In_ ComPtr<WinToastHandler>& eventHandler) {
+	EventRegistrationToken activatedToken, dismissedToken, failedToken;
+	HRESULT hr = notification()->add_Activated(eventHandler.Get(), &activatedToken);
+	if (SUCCEEDED(hr)) {
+		hr = notification()->add_Dismissed(eventHandler.Get(), &dismissedToken);
+		if (SUCCEEDED(hr)) {
+			hr = notification()->add_Failed(eventHandler.Get(), &failedToken);
+		}
+	}
+	return hr;
+}
 
