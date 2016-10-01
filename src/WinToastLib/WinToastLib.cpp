@@ -22,45 +22,10 @@ WinToast* WinToast::instance() {
 	return _instance;
 }
 
-
-
 WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::UnknownTemplate)
 {
 	setTemplate(WinToastTemplate::ImageWithOneLine);
 	return;
-}
-
-
-
-bool WinToast::initialize() {
-	if (_aumi.empty() || _appName.empty()) {
-		wcout << L"Error: App User Model Id or Appname is empty!";
-		return false;
-	}
-	HRESULT hr = loadAppUserModelId();
-	if (FAILED(hr)) {
-		WCHAR shellPath[MAX_PATH];
-		hr = defaultShellLinkPath(_appName, shellPath);
-		if (SUCCEEDED(hr)) {
-			hr = createShellLinkInPath(shellPath);
-			if (SUCCEEDED(hr)) {
-				hr = initAppUserModelId();
-				if (FAILED(hr)) {
-					return false;
-				}
-			}
-		}
-	} 
-
-	hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
-	if (SUCCEEDED(hr)) {
-		hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
-		if (SUCCEEDED(hr)) {
-			hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
-		}
-	}
-	
-	return hr == S_OK;
 }
 
 void WinToast::setAppName(_In_ const wstring& appName) {
@@ -76,6 +41,53 @@ wstring WinToast::appUserModelId() const {
 }
 void WinToast::setAppUserModelId(_In_ const wstring& aumi) {
 	_aumi = aumi;
+}
+
+
+bool WinToast::initialize() {
+	if (_aumi.empty() || _appName.empty()) {
+		wcout << L"Error: App User Model Id or Appname is empty!";
+		return false;
+	}
+
+	HRESULT hr = isRequiredLibrariesAvailables();
+	if (SUCCEEDED(hr)) {
+		hr = setupRequiredLibraries();
+		if (SUCCEEDED(hr)) {
+			_isCompatible = true;
+		}
+	}
+		
+	if (!_isCompatible) {
+		wcout << L"Your OS is not compatible with this library! =(";
+		return _isCompatible;
+	}
+
+	hr = loadAppUserModelId();
+	if (FAILED(hr)) {
+		WCHAR shellPath[MAX_PATH];
+		hr = defaultShellLinkPath(_appName, shellPath);
+		if (SUCCEEDED(hr)) {
+			hr = createShellLinkInPath(shellPath);
+			if (SUCCEEDED(hr)) {
+				hr = initAppUserModelId();
+				if (FAILED(hr)) {
+					wcout << L"Could not create your App User Model Id =(";
+					return false;
+				}
+			}
+		}
+	} 
+
+	hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
+	if (SUCCEEDED(hr)) {
+		hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
+		if (SUCCEEDED(hr)) {
+			hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
+		}
+	}
+	
+	return hr == S_OK;
 }
 
 
