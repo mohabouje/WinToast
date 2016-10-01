@@ -8,8 +8,25 @@ WinToastTemplate::WinToastTemplate(int txtFieldCount, bool hasImage) :
 	_hasImage(hasImage),
 	_imagePath(L"")
 {
+	initComponentsFromConfiguration();
 }
 
+WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) : _type(type)
+{
+	initComponentsFromType();
+}
+
+
+void WinToastTemplate::initComponentsFromType() {
+	_hasImage = _type < ToastTemplateType_ToastText01;
+	_textFieldsCount = (_hasImage ? _type  : _type - ToastTemplateType_ToastText01) + 1;
+	_textFields.reserve(_textFieldsCount);
+}
+
+void WinToastTemplate::initComponentsFromConfiguration() {
+	_textFields.reserve(_textFieldsCount);
+	_type = static_cast<WinToastTemplateType> ((_textFieldsCount - 1) + (_hasImage ?  0 :  ToastTemplateType_ToastText01));
+}
 
 WinToastTemplate::~WinToastTemplate()
 {
@@ -17,10 +34,6 @@ WinToastTemplate::~WinToastTemplate()
 }
 
 
-void WinToastTemplate::setTextFields(const vector<wstring>& txtF) {
-	_textFields = txtF;
-	_textFieldsCount = txtF.size();
-}
 void WinToastTemplate::setTextField(const wstring& txt, int pos) {
 	_textFields[pos] = txt;
 }

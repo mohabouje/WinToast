@@ -13,39 +13,27 @@
 
 
 #include "WinToastHandler.h"
+#include "WinToastTemplate.h"
 #include <string>
 using namespace std;
 
 class WINTOASTLIB_API WinToast {
 public:
-
-	WINTOASTLIB_API enum class WinToastTemplate {
-		ImageWithOneLine  =ToastTemplateType::ToastTemplateType_ToastImageAndText01,
-		ImageWithTwoLines = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
-		ImageWithThreeLines = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
-		ImageWithFourLines = ToastTemplateType::ToastTemplateType_ToastImageAndText04,
-		TextOneLine = ToastTemplateType::ToastTemplateType_ToastText01,
-		TextTwoLines = ToastTemplateType::ToastTemplateType_ToastText02,
-		TextThreeLines = ToastTemplateType::ToastTemplateType_ToastText02,
-		TextFourLines = ToastTemplateType::ToastTemplateType_ToastText02,
-		UnknownTemplate = -1
-	};
-
 	static WinToast* instance();
 	bool isCompatible();
 	bool initialize();
 	wstring appName() const;
 	wstring appUserModelId() const;
-	WinToastTemplate currentTemplate() const { return _template; }
+	WinToastTemplate::WinToastTemplateType currentTemplate() const { return _template; }
 	void setAppUserModelId(_In_ const wstring& appName);
 	void setAppName(_In_ const wstring& appName);
-	void setTemplate(_In_ const WinToastTemplate& templ);
+	void setTemplate(_In_ const WinToastTemplate::WinToastTemplateType& templ);
 
 private:
 	bool											_isCompatible;
 	wstring											_appName;
 	wstring											_aumi;
-	WinToastTemplate								_template;
+	WinToastTemplate::WinToastTemplateType								_template;
 	ComPtr<IXmlDocument>                            _xmlDocument;
 	ComPtr<IToastNotificationManagerStatics>        _notificationManager;
 	ComPtr<IToastNotifier>                          _notifier;

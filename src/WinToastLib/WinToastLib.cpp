@@ -143,7 +143,7 @@ HRESULT WinToast::loadAppUserModelId() {
 	return hr;
 }
 
-void WinToast::setTemplate(_In_ const WinToastTemplate& templ) {
+void WinToast::setTemplate(_In_ const WinToastTemplate::WinToastTemplateType& templ) {
 	if (_template != templ) {
 		_template = templ;
 		notificationManager()->GetTemplateContent(ToastTemplateType(templ), &_xmlDocument);
