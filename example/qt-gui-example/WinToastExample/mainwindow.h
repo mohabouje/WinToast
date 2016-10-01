@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <C:/dev/C++/WinToast/src/WinToastLib/WinToastLib.h>
 namespace Ui {
 class MainWindow;
 }
@@ -14,6 +14,11 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+private slots:
+    void on_imagePathSelector_clicked();
+
+    void on_showToast_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -22,7 +22,7 @@ WinToast::WinToast() : _isInitialized(false), _template(WinToastTemplate::Unknow
 	return;
 }
 
-void WinToast::setAppName(_In_ const wstring& appName) {
+void WinToast::setAppName(_In_ const std::wstring& appName) {
 	_appName = appName;
 }
 
@@ -33,7 +33,7 @@ wstring WinToast::appName() const {
 wstring WinToast::appUserModelId() const {
 	return _aumi;
 }
-void WinToast::setAppUserModelId(_In_ const wstring& aumi) {
+void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
 	_aumi = aumi;
 }
 
@@ -48,8 +48,14 @@ bool WinToast::initialize() {
 		return false;
 	}
 
-	if (!isCompatible() || FAILED(setupRequiredLibraries())) {
+	if (!isCompatible()) {
 		wcout << L"Your OS is not compatible with this library! =(";
+		_isInitialized = false;
+		return _isInitialized;
+	}
+
+	if (FAILED(setupRequiredLibraries())) {
+		wcout << L"Error loading required libraries! =(";
 		_isInitialized = false;
 		return _isInitialized;
 	}
@@ -57,6 +63,7 @@ bool WinToast::initialize() {
 
 	HRESULT hr = loadAppUserModelId();
 	if (FAILED(hr)) {
+		wcout << "AUMI not found! Init a new one";
 		WCHAR shellPath[MAX_PATH];
 		hr = defaultShellLinkPath(_appName, shellPath);
 		if (SUCCEEDED(hr)) {
@@ -66,17 +73,38 @@ bool WinToast::initialize() {
 				if (FAILED(hr)) {
 					wcout << L"Could not create your App User Model Id =(";
 				}
+				else {
+					wcout << "Succes! You AUMI has been created! =)";
+				}
 			}
+			else {
+				wcout << "Errot while creating a new shell link";
+			}
+		}
+		else {
+			wcout << "Error when setting default shell link path";
 		}
 	}
 
-	hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
 	if (SUCCEEDED(hr)) {
-		hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
+		wcout << "App User Model ID loaded correctly. Current: " << _aumi.c_str() << " for the app " << _appName.c_str() << " =)!";
+		hr = roGetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), IID_INS_ARGS(&_notificationManager));
 		if (SUCCEEDED(hr)) {
-			hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
+			hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
+			if (SUCCEEDED(hr)) {
+				hr = roGetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), IID_INS_ARGS(&_notificationFactory));
+			}
+			else {
+				wcout << "Error loading IToastNotificationFactory =(";
+
+			}
+		}
+		else {
+			wcout << "Error loading IToastNotificationManager =(";
 		}
 	}
+
+	
 
 	_isInitialized = SUCCEEDED(hr);
 	return _isInitialized;

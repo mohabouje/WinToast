@@ -1,10 +1,16 @@
 #pragma once
+#ifdef WINTOASTLIB_EXPORTS
+#define WINTOASTLIB_API __declspec(dllexport)
+#else
+#define WINTOASTLIB_API __declspec(dllimport)
+#endif
+
 #include "WinToastHandler.h"
 #include <winstring.h>
 #include <vector>
 using namespace std;
 
-class WinToastTemplate
+class WINTOASTLIB_API WinToastTemplate
 {
 public:
 	enum WinToastTemplateType {

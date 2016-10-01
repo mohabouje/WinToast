@@ -34,11 +34,12 @@ void WinToastTemplate::setImagePath(const wstring& imgPath) {
 void WinToastTemplate::initComponentsFromType() {
 	_hasImage = _type < ToastTemplateType_ToastText01;
 	_textFieldsCount = (_hasImage ? _type : _type - ToastTemplateType_ToastText01) + 1;
-	_textFields.reserve(_textFieldsCount);
+	_textFields = vector<wstring>(_textFieldsCount, L"");
+    wcout << _textFieldsCount << _textFields.size();
 }
 
 void WinToastTemplate::initComponentsFromConfiguration() {
-	_textFields.reserve(_textFieldsCount);
+	_textFields = vector<wstring>(_textFieldsCount, L"");
 	_type = static_cast<WinToastTemplateType> ((_textFieldsCount - 1) + (_hasImage ? 0 : ToastTemplateType_ToastText01));
 }
 

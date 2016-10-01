@@ -18,3 +18,7 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../lib/Release/ -lWinToastLib
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../lib/Debug/ -lWinToastLib
+

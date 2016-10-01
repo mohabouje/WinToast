@@ -39,7 +39,7 @@ inline HRESULT tryLoadFunction(HINSTANCE dll, LPCSTR name, TFunction &func) {
 
 
 static const int RequiredStaticLibrariesCount = 4;
-static const std::wstring RequiredStaticLibraries[RequiredStaticLibrariesCount] = { L"PROPSYS.DLL", L"api-ms-win-core-winrt-string-l1-1-0.dll", L"COMBASE.DLL", L"SHELL32.DLL" };
+static const std::wstring RequiredStaticLibraries[RequiredStaticLibrariesCount] = { L"PROPSYS.DLL", L"api-ms-win-core-winrt-string-l1-1-0.dll", L"SHELL32.DLL", L"COMBASE.DLL" };
 extern WINTOASTLIB_API inline HRESULT isRequiredLibrariesAvailables() {
 	for (int i = 0; i < RequiredStaticLibrariesCount; i++) {
 		if (LoadLibrary(RequiredStaticLibraries[i].c_str()) == NULL)
@@ -97,9 +97,25 @@ extern WINTOASTLIB_API inline HRESULT defaultShellLinkPath(const std::wstring& a
 extern WINTOASTLIB_API inline HSTRING	loadStringReference(_In_ std::wstring data) {
 	HSTRING_HEADER hstringHeader;
 	HSTRING string;
-	windowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
+	HRESULT hr = windowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
+	if (FAILED(hr)) {
+		RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+	}
 	return string;
 }
+
+extern WINTOASTLIB_API inline HSTRING loadStringReference(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw()
+{
+	
+	HSTRING_HEADER hstringHeader;
+	HSTRING string; 
+	HRESULT hr = windowsCreateStringReference(stringRef, length, &hstringHeader, &string);
+	if (FAILED(hr)) {
+		RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+	}
+	return string;
+}
+
 
 extern WINTOASTLIB_API inline HRESULT getNodeListByTag(const std::wstring tag, ComPtr<IXmlNodeList>& nodeList, IXmlDocument *xml) {
 	return xml->GetElementsByTagName(loadStringReference(tag), &nodeList);

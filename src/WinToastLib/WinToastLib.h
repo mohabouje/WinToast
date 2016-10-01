@@ -1,9 +1,3 @@
-// The following ifdef block is the standard way of creating macros which make exporting 
-// from a DLL simpler. All files within this DLL are compiled with the WINTOASTLIB_EXPORTS
-// symbol defined on the command line. This symbol should not be defined on any project
-// that uses this DLL. This way any other project whose source files include this file see 
-// WINTOASTLIB_API functions as being imported from a DLL, whereas this DLL sees symbols
-// defined with this macro as being exported.
 #ifdef WINTOASTLIB_EXPORTS
 #define WINTOASTLIB_API __declspec(dllexport)
 #else
@@ -11,6 +5,7 @@
 #endif
 
 #include "WinToastTemplate.h"
+#include "stdafx.h"
 class WINTOASTLIB_API WinToast {
 public:
 	static WinToast* instance();
@@ -21,8 +16,8 @@ public:
 	bool showToast(WinToastTemplate& toast);
 	wstring appName() const;
 	wstring appUserModelId() const;
-	void setAppUserModelId(_In_ const wstring& appName);
-	void setAppName(_In_ const wstring& appName);
+    void setAppUserModelId(_In_ const std::wstring& appName);
+    void setAppName(_In_ const std::wstring& appName);
 private:
 	bool											_isInitialized;
 	wstring											_appName;
