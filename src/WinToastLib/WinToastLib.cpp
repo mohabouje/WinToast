@@ -3,12 +3,7 @@
 
 #include "stdafx.h"
 #include "WinToastLib.h"
-#include "helper.h"
-
-
-
-
-
+#include "util.h"
 
 std::wstring WinToast::ToastTag = L"toast";
 std::wstring WinToast::ImageTag = L"image";

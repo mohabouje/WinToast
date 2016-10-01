@@ -21,19 +21,16 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WinToastLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinToastHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="helper.h">
+    <ClInclude Include="WinToastTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WinToastTemplate.h">
+    <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
