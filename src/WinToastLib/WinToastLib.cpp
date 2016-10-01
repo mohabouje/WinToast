@@ -17,7 +17,7 @@ WinToast* WinToast::instance() {
 	return _instance;
 }
 
-WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::UnknownTemplate)
+WinToast::WinToast() : _isInitialized(false), _template(WinToastTemplate::UnknownTemplate)
 {
 	return;
 }
@@ -37,27 +37,25 @@ void WinToast::setAppUserModelId(_In_ const wstring& aumi) {
 	_aumi = aumi;
 }
 
+bool WinToast::isCompatible() {
+	return SUCCEEDED(isRequiredLibrariesAvailables());
+}
 
 bool WinToast::initialize() {
 	if (_aumi.empty() || _appName.empty()) {
 		wcout << L"Error: App User Model Id or Appname is empty!";
+		_isInitialized = false;
 		return false;
 	}
 
-	HRESULT hr = isRequiredLibrariesAvailables();
-	if (SUCCEEDED(hr)) {
-		hr = setupRequiredLibraries();
-		if (SUCCEEDED(hr)) {
-			_isCompatible = true;
-		}
+	if (!isCompatible() || FAILED(setupRequiredLibraries())) {
+		wcout << L"Your OS is not compatible with this library! =(";
+		_isInitialized = false;
+		return _isInitialized;
 	}
 		
-	if (!_isCompatible) {
-		wcout << L"Your OS is not compatible with this library! =(";
-		return _isCompatible;
-	}
 
-	hr = loadAppUserModelId();
+	HRESULT hr = loadAppUserModelId();
 	if (FAILED(hr)) {
 		WCHAR shellPath[MAX_PATH];
 		hr = defaultShellLinkPath(_appName, shellPath);
@@ -67,7 +65,6 @@ bool WinToast::initialize() {
 				hr = initAppUserModelId();
 				if (FAILED(hr)) {
 					wcout << L"Could not create your App User Model Id =(";
-					return false;
 				}
 			}
 		}
@@ -81,7 +78,8 @@ bool WinToast::initialize() {
 		}
 	}
 	
-	return hr == S_OK;
+	_isInitialized = SUCCEEDED(hr);
+	return _isInitialized;
 }
 
 
@@ -143,6 +141,11 @@ HRESULT WinToast::loadAppUserModelId() {
 }
 
 bool WinToast::showToast(_In_ const WinToastTemplate& toast)  {
+	if (!isInitialized()) {
+		wcout << "WinToastLib not initialized =(";
+		return _isInitialized;
+	}
+	
 	HRESULT hr = S_OK;
 	if (_template != toast.type()) {
 		_template = toast.type();
@@ -169,7 +172,6 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast)  {
 	}
 	return SUCCEEDED(hr);
 }
-
 
 
 HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {

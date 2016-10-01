@@ -17,15 +17,17 @@
 class WINTOASTLIB_API WinToast {
 public:
 	static WinToast* instance();
-	bool isCompatible();
+	static bool isCompatible();
+
 	bool initialize();
+	bool isInitialized() const { return _isInitialized; }
 	bool showToast(const WinToastTemplate& toast);
 	wstring appName() const;
 	wstring appUserModelId() const;
 	void setAppUserModelId(_In_ const wstring& appName);
 	void setAppName(_In_ const wstring& appName);
 private:
-	bool											_isCompatible;
+	bool											_isInitialized;
 	wstring											_appName;
 	wstring											_aumi;
 	WinToastTemplate::WinToastTemplateType			_template;
