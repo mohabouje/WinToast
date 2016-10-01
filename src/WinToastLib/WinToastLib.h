@@ -14,9 +14,6 @@
 
 #include "WinToastHandler.h"
 #include "WinToastTemplate.h"
-#include <string>
-using namespace std;
-
 class WINTOASTLIB_API WinToast {
 public:
 	static WinToast* instance();

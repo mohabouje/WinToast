@@ -1,6 +1,4 @@
 #pragma once
-
-#include "stdafx.h"
 class  WinToastHandler : public Microsoft::WRL::Implements<ToastActivatedEventHandler, ToastDismissedEventHandler, ToastFailedEventHandler>{
 public:
 	WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit);
