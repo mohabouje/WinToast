@@ -124,6 +124,18 @@ extern WINTOASTLIB_API inline HRESULT setNodeStringValue(const HSTRING &string, 
 	return hr;
 }
 
+extern WINTOASTLIB_API inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ WinToastHandler* eventHandler) {
+	EventRegistrationToken activatedToken, dismissedToken, failedToken;
+	HRESULT hr = notification->add_Activated(eventHandler, &activatedToken);
+	if (SUCCEEDED(hr)) {
+		hr = notification->add_Dismissed(eventHandler, &dismissedToken);
+		if (SUCCEEDED(hr)) {
+			hr = notification->add_Failed(eventHandler, &failedToken);
+		}
+	}
+	return hr;
+}
+
 extern WINTOASTLIB_API inline HRESULT createShellLinkInPath(_In_ PCWSTR path) {
 	WCHAR exePath[MAX_PATH];
 	HRESULT hr = defaultExecutablePath(exePath);

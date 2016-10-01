@@ -140,7 +140,7 @@ HRESULT WinToast::loadAppUserModelId() {
 	return hr;
 }
 
-bool WinToast::showToast(_In_ const WinToastTemplate& toast)  {
+bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 	if (!isInitialized()) {
 		wcout << "WinToastLib not initialized =(";
 		return _isInitialized;
@@ -161,8 +161,7 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast)  {
 			if (SUCCEEDED(hr)) {
 				hr = notificationFactory()->CreateToastNotification(xmlDocument(), &_notification);
 				if (SUCCEEDED(hr)) {
-					ComPtr<WinToastHandler> eventHandler;
-					hr = setEventHandlers(eventHandler);
+					hr = setEventHandlers(notification(), toast.handler());
 					if (SUCCEEDED(hr)) {
 						hr = notifier()->Show(notification());
 					}
@@ -214,15 +213,5 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 }
 
 
-HRESULT WinToast::setEventHandlers(_In_ ComPtr<WinToastHandler>& eventHandler) {
-	EventRegistrationToken activatedToken, dismissedToken, failedToken;
-	HRESULT hr = notification()->add_Activated(eventHandler.Get(), &activatedToken);
-	if (SUCCEEDED(hr)) {
-		hr = notification()->add_Dismissed(eventHandler.Get(), &dismissedToken);
-		if (SUCCEEDED(hr)) {
-			hr = notification()->add_Failed(eventHandler.Get(), &failedToken);
-		}
-	}
-	return hr;
-}
+
 

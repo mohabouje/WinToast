@@ -2,6 +2,7 @@
 class  WinToastHandler : public Microsoft::WRL::Implements<ToastActivatedEventHandler, ToastDismissedEventHandler, ToastFailedEventHandler>{
 public:
 	WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit);
+	WinToastHandler() {}
 	~WinToastHandler();
 	virtual IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IInspectable *inspectable);
 	virtual IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e);

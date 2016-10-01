@@ -10,9 +10,6 @@
 #define WINTOASTLIB_API __declspec(dllimport)
 #endif
 
-
-
-#include "WinToastHandler.h"
 #include "WinToastTemplate.h"
 class WINTOASTLIB_API WinToast {
 public:
@@ -21,7 +18,7 @@ public:
 
 	bool initialize();
 	bool isInitialized() const { return _isInitialized; }
-	bool showToast(const WinToastTemplate& toast);
+	bool showToast(WinToastTemplate& toast);
 	wstring appName() const;
 	wstring appUserModelId() const;
 	void setAppUserModelId(_In_ const wstring& appName);
@@ -53,7 +50,6 @@ private:
 	HRESULT		loadAppUserModelId();
 	HRESULT		setImageField(_In_ const wstring& path);
 	HRESULT     setTextField(_In_ const wstring& text, int pos);
-	HRESULT		setEventHandlers(_In_ ComPtr<WinToastHandler>& eventHandler);
 };
 
 

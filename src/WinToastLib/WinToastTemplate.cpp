@@ -41,3 +41,7 @@ void WinToastTemplate::initComponentsFromConfiguration() {
 	_textFields.reserve(_textFieldsCount);
 	_type = static_cast<WinToastTemplateType> ((_textFieldsCount - 1) + (_hasImage ? 0 : ToastTemplateType_ToastText01));
 }
+
+void WinToastTemplate::setHandler(const ComPtr<WinToastHandler>& handler) {
+	_handler = handler;
+}
