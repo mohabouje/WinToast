@@ -173,41 +173,60 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 	}
 
 	HRESULT hr = S_OK;
-	if (_template != toast.type()) {
-		_template = toast.type();
-		hr = notificationManager()->GetTemplateContent(ToastTemplateType(_template), &_xmlDocument);
-	}
+	_template = toast.type();
+	hr = _notificationManager->GetTemplateContent(ToastTemplateType(_template), &_xmlDocument);	
 
+	wcout << L"Loading template with value " << _template << " with succes: " << SUCCEEDED(hr) << endl;
 	if (SUCCEEDED(hr)) {
 		for (int i = 0; i < toast.textFieldsCount() && SUCCEEDED(hr); i++) {
 			hr = setTextField(toast.textField(i), i);
+			wcout << "Definning text value in position " << i << " with succes: " << SUCCEEDED(hr) << endl;
 		}
+		wcout << "Current value of HRESULT " << hr;
 		if (SUCCEEDED(hr)) {
-			hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
+			//hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
 			if (SUCCEEDED(hr)) {
-				hr = notificationFactory()->CreateToastNotification(xmlDocument(), &_notification);
+				wcout << "Calle notification factory to launche the toast";
+				hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
 				if (SUCCEEDED(hr)) {
 					hr = WinToastUtil::setEventHandlers(notification(), toast.handler());
 					if (SUCCEEDED(hr)) {
-						hr = notifier()->Show(notification());
+						hr = _notifier->Show(notification());
+						wcout << "Launch the current toast with state " << hr << endl;
+					}
+					else {
+						wcout << "Error when setting handlers" << endl;
 					}
 				}
+				else{
+					wcout << "Error while creating toast" << endl;
+				}
+			}
+			else {
+				wcout << "Error while setting image field" << endl;
 			}
 		}
+		else {
+			wcout << L"Error while setting text fields" << endl;
+		}
+	} 
+	else {
+		wcout << L"Could not load your defined template =(" << endl;
 	}
+
 	return SUCCEEDED(hr);
 }
 
 
 HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {
 	ComPtr<IXmlNodeList> nodeList;
-	HRESULT hr = WinToastUtil::getNodeListByTag(TextTag, nodeList, xmlDocument());
-	if (SUCCEEDED(hr)) {
+    HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(TextTag).Get(), &nodeList);
+    if (SUCCEEDED(hr)) {
 		ComPtr<IXmlNode> node;
-		hr = WinToastUtil::getNodeFromNodeList(nodeList, node, pos);
-		if (SUCCEEDED(hr)) {
+		hr = nodeList->Item(pos, &node);
+		/*if (SUCCEEDED(hr)) {
 			hr = WinToastUtil::setNodeStringValue(WinToastStringWrapper(text).Get(), node.Get(), xmlDocument());
-		}
+		}*/
 	}
 	return hr;
 }
@@ -218,10 +237,10 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path.c_str());
 	if (SUCCEEDED(hr)) {
 		ComPtr<IXmlNodeList> nodeList;
-		HRESULT hr = WinToastUtil::getNodeListByTag(ImageTag, nodeList, xmlDocument());
+		HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(ImageTag).Get(), &nodeList);
 		if (SUCCEEDED(hr)) {
 			ComPtr<IXmlNode> node;
-			hr = WinToastUtil::getNodeFromNodeList(nodeList, node, 0);
+			hr = nodeList->Item(0, &node);
 			if (SUCCEEDED(hr))  {
 				ComPtr<IXmlNamedNodeMap> attributes;
 				hr = node->get_Attributes(&attributes);

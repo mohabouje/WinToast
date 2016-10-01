@@ -4,9 +4,11 @@
 
 WinToastTemplate::WinToastTemplate(int txtFieldCount, bool hasImage) :
 _textFieldsCount(txtFieldCount),
-_hasImage(hasImage)
+_hasImage(hasImage),
+_handler(new WinToastHandler())
 {
 	initComponentsFromConfiguration();
+
 }
 
 WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :

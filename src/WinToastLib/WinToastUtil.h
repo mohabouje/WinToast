@@ -33,16 +33,6 @@ namespace WinToastUtil {
 	}
 
 
-
-	extern WINTOASTLIB_API inline HRESULT getNodeListByTag(const std::wstring tag, ComPtr<IXmlNodeList>& nodeList, IXmlDocument *xml) {
-		return xml->GetElementsByTagName(WinToastStringWrapper(tag).Get(), &nodeList);
-	}
-
-	extern WINTOASTLIB_API inline HRESULT getNodeFromNodeList(ComPtr<IXmlNodeList>& nodeList, ComPtr<IXmlNode>& node, int pos) {
-		ComPtr<IXmlNode> textNode;
-		return nodeList->Item(pos, &node);
-	}
-
 	extern WINTOASTLIB_API inline HRESULT setNodeStringValue(const HSTRING &string, IXmlNode *node, IXmlDocument *xml) {
 		ComPtr<IXmlText> textNode;
 		HRESULT hr = xml->CreateTextNode(string, &textNode);
