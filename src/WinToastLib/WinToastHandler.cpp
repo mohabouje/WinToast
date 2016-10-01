@@ -2,10 +2,10 @@
 #include "WinToastHandler.h"
 
 
-WinToastHandler::WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit) : 
-	_ref(1), 
-	_hToActivate(hToActivate), 
-	_hEdit(hEdit)
+WinToastHandler::WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit) :
+_ref(1),
+_hToActivate(hToActivate),
+_hEdit(hEdit)
 {
 }
 

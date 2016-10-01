@@ -53,7 +53,7 @@ bool WinToast::initialize() {
 		_isInitialized = false;
 		return _isInitialized;
 	}
-		
+
 
 	HRESULT hr = loadAppUserModelId();
 	if (FAILED(hr)) {
@@ -68,7 +68,7 @@ bool WinToast::initialize() {
 				}
 			}
 		}
-	} 
+	}
 
 	hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
 	if (SUCCEEDED(hr)) {
@@ -77,7 +77,7 @@ bool WinToast::initialize() {
 			hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
 		}
 	}
-	
+
 	_isInitialized = SUCCEEDED(hr);
 	return _isInitialized;
 }
@@ -113,15 +113,15 @@ HRESULT WinToast::loadAppUserModelId() {
 		written = GetFileAttributes(slPath);
 		if (written >= 0xFFFFFFF)
 			return E_FAIL;
-		
+
 		ComPtr<IShellItem> shellItem;
 		if (SUCCEEDED(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellItem)))) {
 			ComPtr<IPersistFile>	persistFile;
 			ComPtr<IPropertyStore>	propertyStore;
-			if (SUCCEEDED(shellItem.As(&persistFile)) 
+			if (SUCCEEDED(shellItem.As(&persistFile))
 				&& SUCCEEDED(persistFile->Load(slPath, STGM_READWRITE))
 				&& SUCCEEDED(shellItem.As(&propertyStore))
-				) 
+				)
 			{
 				PROPVARIANT appIdPropVar;
 				if (SUCCEEDED(propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar))) {
@@ -145,7 +145,7 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast)  {
 		wcout << "WinToastLib not initialized =(";
 		return _isInitialized;
 	}
-	
+
 	HRESULT hr = S_OK;
 	if (_template != toast.type()) {
 		_template = toast.type();

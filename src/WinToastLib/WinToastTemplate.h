@@ -23,12 +23,12 @@ public:
 
 	~WinToastTemplate();
 	int						textFieldsCount() const { return _textFieldsCount; }
-	bool					hasImage() const { return _hasImage;  }
+	bool					hasImage() const { return _hasImage; }
 	vector<wstring>			textFields() const { return _textFields; }
 	wstring					textField(int pos) const { return _textFields[pos]; }
-	wstring					imagePath() const { return _imagePath;  }
+	wstring					imagePath() const { return _imagePath; }
 	WinToastTemplateType	type() const { return _type; }
-  	
+
 	void					setTextField(const wstring& txt, int pos);
 	void					setImagePath(const wstring& imgPath);
 private:

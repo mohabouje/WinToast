@@ -3,14 +3,14 @@
 
 
 WinToastTemplate::WinToastTemplate(int txtFieldCount, bool hasImage) :
-	_textFieldsCount(txtFieldCount),
-	_hasImage(hasImage)
+_textFieldsCount(txtFieldCount),
+_hasImage(hasImage)
 {
 	initComponentsFromConfiguration();
 }
 
-WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) : 
-	_type(type)
+WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :
+_type(type)
 {
 	initComponentsFromType();
 }
