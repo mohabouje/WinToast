@@ -33,9 +33,9 @@ namespace WinToastUtil {
 	}
 
 
-	extern WINTOASTLIB_API inline HRESULT setNodeStringValue(const HSTRING &string, IXmlNode *node, IXmlDocument *xml) {
+	extern WINTOASTLIB_API inline HRESULT setNodeStringValue(const std::wstring& string, IXmlNode *node, IXmlDocument *xml) {
 		ComPtr<IXmlText> textNode;
-		HRESULT hr = xml->CreateTextNode(string, &textNode);
+		HRESULT hr = xml->CreateTextNode( WinToastStringWrapper(string).Get(), &textNode);
 		if (SUCCEEDED(hr)) {
 			ComPtr<IXmlNode> stringNode;
 			hr = textNode.As(&stringNode);
@@ -82,4 +82,6 @@ namespace WinToastUtil {
 		}
 		return hr;
 	}
+
+
 }

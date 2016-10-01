@@ -22,7 +22,6 @@ private:
 	bool											_isInitialized;
 	wstring											_appName;
 	wstring											_aumi;
-	WinToastTemplate::WinToastTemplateType			_template;
 	ComPtr<IXmlDocument>                            _xmlDocument;
 	ComPtr<IToastNotificationManagerStatics>        _notificationManager;
 	ComPtr<IToastNotifier>                          _notifier;

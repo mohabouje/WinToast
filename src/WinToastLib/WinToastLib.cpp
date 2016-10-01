@@ -13,7 +13,7 @@ WinToast* WinToast::instance() {
 	return _instance;
 }
 
-WinToast::WinToast() : _isInitialized(false), _template(WinToastTemplate::UnknownTemplate)
+WinToast::WinToast() : _isInitialized(false)
 {
     WinToastDllImporter::initialize();
 }
@@ -57,7 +57,6 @@ bool WinToast::initialize() {
 
 	HRESULT hr = loadAppUserModelId();
 	if (FAILED(hr)) {
-		wcout << "AUMI not found! Init a new one";
 		WCHAR shellPath[MAX_PATH];
 		hr = WinToastUtil::defaultShellLinkPath(_appName, shellPath);
 		if (SUCCEEDED(hr)) {
@@ -67,34 +66,17 @@ bool WinToast::initialize() {
 				if (FAILED(hr)) {
 					wcout << L"Could not create your App User Model Id =(";
 				}
-				else {
-					wcout << "Succes! You AUMI has been created! =)";
-				}
 			}
-			else {
-				wcout << "Errot while creating a new shell link";
-			}
-		}
-		else {
-			wcout << "Error when setting default shell link path";
 		}
 	}
 
 	if (SUCCEEDED(hr)) {
-		wcout << "App User Model ID loaded correctly. Current: " << _aumi.c_str() << " for the app " << _appName.c_str() << " =)!";
 		hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &_notificationManager);
 		if (SUCCEEDED(hr)) {
 			hr = notificationManager()->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
 			if (SUCCEEDED(hr)) {
 				hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &_notificationFactory);
 			}
-			else {
-				wcout << "Error loading IToastNotificationFactory =(";
-
-			}
-		}
-		else {
-			wcout << "Error loading IToastNotificationManager =(";
 		}
 	}
 
@@ -164,16 +146,10 @@ HRESULT WinToast::loadAppUserModelId() {
 
 bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 	if (!isInitialized()) {
-		wcout << "WinToastLib not initialized =(";
 		return _isInitialized;
 	}
 
-	HRESULT hr = S_OK;
-	if (_template != toast.type()) {
-		_template = toast.type();
-		hr = _notificationManager->GetTemplateContent(ToastTemplateType(_template), &_xmlDocument);
-	}
-
+	HRESULT hr = _notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &_xmlDocument);
 	if (SUCCEEDED(hr)) {
 		for (int i = 0; i < toast.textFieldsCount() && SUCCEEDED(hr); i++) {
 			hr = setTextField(toast.textField(i), i);
@@ -203,7 +179,7 @@ HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {
 		ComPtr<IXmlNode> node;
 		hr = nodeList->Item(pos, &node);
 		if (SUCCEEDED(hr)) {
-			hr = WinToastUtil::setNodeStringValue(WinToastStringWrapper(text.c_str()).Get(), node.Get(), xmlDocument());
+			hr = WinToastUtil::setNodeStringValue(text, node.Get(), xmlDocument());
 		}
 	}
 	return hr;
@@ -226,7 +202,7 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 					ComPtr<IXmlNode> editedNode;
 					hr = attributes->GetNamedItem(WinToastStringWrapper(L"src").Get(), &editedNode);
 					if (SUCCEEDED(hr)) {
-						WinToastUtil::setNodeStringValue(WinToastStringWrapper(imagePath).Get(), editedNode.Get(), xmlDocument());
+						WinToastUtil::setNodeStringValue(imagePath, editedNode.Get(), xmlDocument());
 					}
 				}
 			}
