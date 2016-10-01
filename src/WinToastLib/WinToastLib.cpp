@@ -3,8 +3,8 @@
 
 #include "stdafx.h"
 #include "WinToastLib.h"
-#include "util.h"
-
+#include "WinToastUtil.h"
+#include "WinToastDllImporter.h"
 std::wstring WinToast::ToastTag = L"toast";
 std::wstring WinToast::ImageTag = L"image";
 std::wstring WinToast::TextTag = L"text";
@@ -19,7 +19,7 @@ WinToast* WinToast::instance() {
 
 WinToast::WinToast() : _isInitialized(false), _template(WinToastTemplate::UnknownTemplate)
 {
-	return;
+    DllImporter::initialize();
 }
 
 void WinToast::setAppName(_In_ const std::wstring& appName) {
@@ -38,7 +38,11 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
 }
 
 bool WinToast::isCompatible() {
-	return SUCCEEDED(isRequiredLibrariesAvailables());
+        return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
+			|| (DllImporter::PropVariantToString == nullptr)
+			|| (DllImporter::RoGetActivationFactory == nullptr)
+			|| (DllImporter::WindowsCreateStringReference == nullptr)
+			|| (DllImporter::WindowsDeleteString == nullptr));
 }
 
 bool WinToast::initialize() {
@@ -54,20 +58,14 @@ bool WinToast::initialize() {
 		return _isInitialized;
 	}
 
-	if (FAILED(setupRequiredLibraries())) {
-		wcout << L"Error loading required libraries! =(";
-		_isInitialized = false;
-		return _isInitialized;
-	}
-
 
 	HRESULT hr = loadAppUserModelId();
 	if (FAILED(hr)) {
 		wcout << "AUMI not found! Init a new one";
 		WCHAR shellPath[MAX_PATH];
-		hr = defaultShellLinkPath(_appName, shellPath);
+		hr = WinToastUtil::defaultShellLinkPath(_appName, shellPath);
 		if (SUCCEEDED(hr)) {
-			hr = createShellLinkInPath(shellPath);
+			hr = WinToastUtil::createShellLinkInPath(shellPath);
 			if (SUCCEEDED(hr)) {
 				hr = initAppUserModelId();
 				if (FAILED(hr)) {
@@ -88,11 +86,11 @@ bool WinToast::initialize() {
 
 	if (SUCCEEDED(hr)) {
 		wcout << "App User Model ID loaded correctly. Current: " << _aumi.c_str() << " for the app " << _appName.c_str() << " =)!";
-		hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
+		hr = DllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
 		if (SUCCEEDED(hr)) {
-			hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
+			hr = notificationManager()->CreateToastNotifierWithId(WinToastUtil::loadStringReference(_aumi), &_notifier);
 			if (SUCCEEDED(hr)) {
-				hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
+				hr = DllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
 			}
 			else {
 				wcout << "Error loading IToastNotificationFactory =(";
@@ -113,7 +111,7 @@ bool WinToast::initialize() {
 
 HRESULT	WinToast::initAppUserModelId() {
 	WCHAR	slPath[MAX_PATH];
-	HRESULT hr = defaultShellLinkPath(_appName, slPath);
+	HRESULT hr = WinToastUtil::defaultShellLinkPath(_appName, slPath);
 	if (SUCCEEDED(hr)) {
 		ComPtr<IPropertyStore> propertyStore;
 		hr = SHGetPropertyStoreFromParsingName(slPath, nullptr, GPS_READWRITE, IID_PPV_ARGS(&propertyStore));
@@ -154,7 +152,7 @@ HRESULT WinToast::loadAppUserModelId() {
 				PROPVARIANT appIdPropVar;
 				if (SUCCEEDED(propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar))) {
 					WCHAR AUMI[MAX_PATH];
-					if (SUCCEEDED(propVariantToString(appIdPropVar, AUMI, MAX_PATH))
+					if (SUCCEEDED(DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH))
 						&& AUMI == _aumi) {
 						PropVariantClear(&appIdPropVar);
 						CoTaskMemFree(slPath);
@@ -189,7 +187,7 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 			if (SUCCEEDED(hr)) {
 				hr = notificationFactory()->CreateToastNotification(xmlDocument(), &_notification);
 				if (SUCCEEDED(hr)) {
-					hr = setEventHandlers(notification(), toast.handler());
+					hr = WinToastUtil::setEventHandlers(notification(), toast.handler());
 					if (SUCCEEDED(hr)) {
 						hr = notifier()->Show(notification());
 					}
@@ -203,12 +201,12 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 
 HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {
 	ComPtr<IXmlNodeList> nodeList;
-	HRESULT hr = getNodeListByTag(TextTag, nodeList, xmlDocument());
+	HRESULT hr = WinToastUtil::getNodeListByTag(TextTag, nodeList, xmlDocument());
 	if (SUCCEEDED(hr)) {
 		ComPtr<IXmlNode> node;
-		hr = getNodeFromNodeList(nodeList, node, pos);
+		hr = WinToastUtil::getNodeFromNodeList(nodeList, node, pos);
 		if (SUCCEEDED(hr)) {
-			hr = setNodeStringValue(loadStringReference(text), node.Get(), xmlDocument());
+			hr = WinToastUtil::setNodeStringValue(WinToastUtil::loadStringReference(text), node.Get(), xmlDocument());
 		}
 	}
 	return hr;
@@ -220,18 +218,18 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path.c_str());
 	if (SUCCEEDED(hr)) {
 		ComPtr<IXmlNodeList> nodeList;
-		HRESULT hr = getNodeListByTag(ImageTag, nodeList, xmlDocument());
+		HRESULT hr = WinToastUtil::getNodeListByTag(ImageTag, nodeList, xmlDocument());
 		if (SUCCEEDED(hr)) {
 			ComPtr<IXmlNode> node;
-			hr = getNodeFromNodeList(nodeList, node, 0);
+			hr = WinToastUtil::getNodeFromNodeList(nodeList, node, 0);
 			if (SUCCEEDED(hr))  {
 				ComPtr<IXmlNamedNodeMap> attributes;
 				hr = node->get_Attributes(&attributes);
 				if (SUCCEEDED(hr)) {
 					ComPtr<IXmlNode> editedNode;
-					hr = attributes->GetNamedItem(loadStringReference(SrcTag), &editedNode);
+					hr = attributes->GetNamedItem(WinToastUtil::loadStringReference(SrcTag), &editedNode);
 					if (SUCCEEDED(hr)) {
-						setNodeStringValue(loadStringReference(imagePath), editedNode.Get(), xmlDocument());
+						WinToastUtil::setNodeStringValue(WinToastUtil::loadStringReference(imagePath), editedNode.Get(), xmlDocument());
 					}
 				}
 			}

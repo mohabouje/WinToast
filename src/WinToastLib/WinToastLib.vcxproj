@@ -82,13 +82,15 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="WinToastDllImporter.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="util.h" />
+    <ClInclude Include="WinToastUtil.h" />
     <ClInclude Include="WinToastHandler.h" />
     <ClInclude Include="WinToastLib.h" />
     <ClInclude Include="WinToastTemplate.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="WinToastDllImporter.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

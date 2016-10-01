@@ -30,7 +30,10 @@
     <ClInclude Include="WinToastTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="util.h">
+    <ClInclude Include="WinToastDllImporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinToastUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinToastTemplate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinToastDllImporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
