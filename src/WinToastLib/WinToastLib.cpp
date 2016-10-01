@@ -88,11 +88,11 @@ bool WinToast::initialize() {
 
 	if (SUCCEEDED(hr)) {
 		wcout << "App User Model ID loaded correctly. Current: " << _aumi.c_str() << " for the app " << _appName.c_str() << " =)!";
-		hr = roGetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), IID_INS_ARGS(&_notificationManager));
+		hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
 		if (SUCCEEDED(hr)) {
 			hr = notificationManager()->CreateToastNotifierWithId(loadStringReference(_aumi), &_notifier);
 			if (SUCCEEDED(hr)) {
-				hr = roGetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), IID_INS_ARGS(&_notificationFactory));
+				hr = wrap_GetActivationFactory(loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
 			}
 			else {
 				wcout << "Error loading IToastNotificationFactory =(";
