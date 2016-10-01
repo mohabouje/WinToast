@@ -10,8 +10,7 @@
 #define WINTOASTLIB_API __declspec(dllimport)
 #endif
 
-#define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
-#define DEFAULT_LINK_FORMAT			L".lnk"
+
 
 #include "WinToastHandler.h"
 #include <string>
@@ -20,7 +19,7 @@ using namespace std;
 class WINTOASTLIB_API WinToast {
 public:
 
-	enum class WinToastTemplate {
+	WINTOASTLIB_API enum class WinToastTemplate {
 		ImageWithOneLine  =ToastTemplateType::ToastTemplateType_ToastImageAndText01,
 		ImageWithTwoLines = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
 		ImageWithThreeLines = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
@@ -32,8 +31,7 @@ public:
 		UnknownTemplate = -1
 	};
 
-	WinToast(void);
-	// TODO: add your methods here.
+	static WinToast* instance();
 	bool isCompatible();
 	bool initialize();
 	wstring appName() const;
@@ -42,27 +40,7 @@ public:
 	void setAppUserModelId(_In_ const wstring& appName);
 	void setAppName(_In_ const wstring& appName);
 	void setTemplate(_In_ const WinToastTemplate& templ);
-private:
-	void		attachCurrent();
 
-	HRESULT		loadAppUserModelId();
-	HRESULT		initAppUserModelId();
-	HRESULT     defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
-	HRESULT		defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
-	HRESULT		defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) const;
-	HRESULT     createShellLinkInPath(_In_ PCWSTR exePath) const;
-
-	IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }
-	IToastNotifier*							notifier() const { return _notifier.Get(); }
-	IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
-	IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
-	IToastNotification*						notification() const { return _notification.Get(); }
-
-
-	// Load different parameter
-	HRESULT		setImageField(_In_ const wstring& path);
-	HRESULT     setTextField(_In_ const wstring& text, int pos);
-	HRESULT		setEventHandlers(_In_ ComPtr<WinToastHandler>& eventHandler);
 private:
 	bool											_isCompatible;
 	wstring											_appName;
@@ -73,13 +51,24 @@ private:
 	ComPtr<IToastNotifier>                          _notifier;
 	ComPtr<IToastNotificationFactory>               _notificationFactory;
 	ComPtr<IToastNotification>                      _notification;
+	static WinToast*								_instance;
+	static wstring									ToastTag;
+	static wstring									ImageTag;
+	static wstring									TextTag;
+	static wstring									SrcTag;
 
-	static wstring ToastTag;
-	static wstring ImageTag;
-	static wstring TextTag;
-	static wstring SrcTag;
+	WinToast(void);
+	IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }
+	IToastNotifier*							notifier() const { return _notifier.Get(); }
+	IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
+	IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
+	IToastNotification*						notification() const { return _notification.Get(); }
+
+	HRESULT		initAppUserModelId();
+	HRESULT		loadAppUserModelId();
+	HRESULT		setImageField(_In_ const wstring& path);
+	HRESULT     setTextField(_In_ const wstring& text, int pos);
+	HRESULT		setEventHandlers(_In_ ComPtr<WinToastHandler>& eventHandler);
 };
 
-extern WINTOASTLIB_API int nWinToastLib;
 
-WINTOASTLIB_API int fnWinToastLib(void);

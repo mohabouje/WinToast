@@ -4,23 +4,26 @@
 #include "stdafx.h"
 #include "WinToastLib.h"
 #include "helper.h"
+
+
+
+
+
+
 std::wstring WinToast::ToastTag = L"toast";
 std::wstring WinToast::ImageTag = L"image";
 std::wstring WinToast::TextTag = L"text";
 std::wstring WinToast::SrcTag = L"src";
-
-
-// This is an example of an exported variable
-WINTOASTLIB_API int nWinToastLib=0;
-
-// This is an example of an exported function.
-WINTOASTLIB_API int fnWinToastLib(void)
-{
-	return 42;
+WinToast* WinToast::_instance = nullptr;
+WinToast* WinToast::instance() {
+	if (_instance == nullptr) {
+		_instance = new WinToast();
+	}
+	return _instance;
 }
 
-// This is the constructor of a class that has been exported.
-// see WinToastLib.h for the class definition
+
+
 WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::UnknownTemplate)
 {
 	setTemplate(WinToastTemplate::ImageWithOneLine);
@@ -30,14 +33,14 @@ WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::Unknown
 
 
 bool WinToast::initialize() {
-	if (_aumi.empty()) {
-		wcout << L"Error: App User Model Id is empty!";
+	if (_aumi.empty() || _appName.empty()) {
+		wcout << L"Error: App User Model Id or Appname is empty!";
 		return false;
 	}
 	HRESULT hr = loadAppUserModelId();
 	if (FAILED(hr)) {
 		WCHAR shellPath[MAX_PATH];
-		hr = defaultShellLinkPath(shellPath);
+		hr = defaultShellLinkPath(_appName, shellPath);
 		if (SUCCEEDED(hr)) {
 			hr = createShellLinkInPath(shellPath);
 			if (SUCCEEDED(hr)) {
@@ -78,7 +81,7 @@ void WinToast::setAppUserModelId(_In_ const wstring& aumi) {
 
 HRESULT	WinToast::initAppUserModelId() {
 	WCHAR	slPath[MAX_PATH];
-	HRESULT hr = defaultShellLinkPath(slPath);
+	HRESULT hr = defaultShellLinkPath(_appName, slPath);
 	if (SUCCEEDED(hr)) {
 		ComPtr<IPropertyStore> propertyStore;
 		hr = SHGetPropertyStoreFromParsingName(slPath, nullptr, GPS_READWRITE, IID_PPV_ARGS(&propertyStore));
@@ -97,56 +100,6 @@ HRESULT	WinToast::initAppUserModelId() {
 	return hr;
 }
 
-
-HRESULT WinToast::createShellLinkInPath(_In_ PCWSTR path) const {
-	WCHAR exePath[MAX_PATH];
-	HRESULT hr = defaultExecutablePath(exePath);
-	if (SUCCEEDED(hr)) {
-		ComPtr<IShellLink> shellLink;
-		hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
-		if (SUCCEEDED(hr)) {
-			hr = shellLink->SetPath(exePath);
-			if (SUCCEEDED(hr)) {
-				hr = shellLink->SetArguments(L"");
-				if (SUCCEEDED(hr)) {
-					ComPtr<IPersistFile> persistFile;
-					hr = shellLink.As(&persistFile);
-					if (SUCCEEDED(hr)) {
-						hr = persistFile->Save(path, TRUE);
-						CoTaskMemFree(exePath);
-					}
-				}
-			}
-		}
-	}
-	return hr;
-}
-
-HRESULT WinToast::defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize) const {
-	DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, path, nSize);
-	return (written > 0) ? S_OK : E_FAIL;
-}
-
-
-HRESULT WinToast::defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize) const {
-	DWORD written = GetEnvironmentVariable(L"APPDATA", path, nSize);
-	HRESULT hr = written > 0 ? S_OK : E_INVALIDARG;
-	if (SUCCEEDED(hr)) {
-		errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
-		hr = (result == 0) ? S_OK : E_INVALIDARG;
-	}
-	return hr;
-}
-
-HRESULT WinToast::defaultShellLinkPath(_In_ WCHAR* path, _In_ DWORD nSize) const {
-	HRESULT hr = defaultShellLinksDirectory(path, nSize);
-	if (SUCCEEDED(hr)) {
-		const wstring appLink(_appName + DEFAULT_LINK_FORMAT);
-		errno_t result = wcscat_s(path, nSize, appLink.c_str());
-		hr = (result == 0) ? S_OK : E_INVALIDARG;
-	}
-	return hr;
-}
 
 HRESULT WinToast::loadAppUserModelId() {
 	wchar_t slPath[MAX_PATH];
