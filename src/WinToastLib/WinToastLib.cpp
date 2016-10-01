@@ -19,7 +19,7 @@ WinToast* WinToast::instance() {
 
 WinToast::WinToast() : _isInitialized(false), _template(WinToastTemplate::UnknownTemplate)
 {
-    DllImporter::initialize();
+    WinToastDllImporter::initialize();
 }
 
 void WinToast::setAppName(_In_ const std::wstring& appName) {
@@ -38,11 +38,11 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
 }
 
 bool WinToast::isCompatible() {
-        return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
-			|| (DllImporter::PropVariantToString == nullptr)
-			|| (DllImporter::RoGetActivationFactory == nullptr)
-			|| (DllImporter::WindowsCreateStringReference == nullptr)
-			|| (DllImporter::WindowsDeleteString == nullptr));
+        return !((WinToastDllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
+			|| (WinToastDllImporter::PropVariantToString == nullptr)
+			|| (WinToastDllImporter::RoGetActivationFactory == nullptr)
+			|| (WinToastDllImporter::WindowsCreateStringReference == nullptr)
+			|| (WinToastDllImporter::WindowsDeleteString == nullptr));
 }
 
 bool WinToast::initialize() {
@@ -86,11 +86,11 @@ bool WinToast::initialize() {
 
 	if (SUCCEEDED(hr)) {
 		wcout << "App User Model ID loaded correctly. Current: " << _aumi.c_str() << " for the app " << _appName.c_str() << " =)!";
-		hr = DllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
+		hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
 		if (SUCCEEDED(hr)) {
 			hr = notificationManager()->CreateToastNotifierWithId(WinToastUtil::loadStringReference(_aumi), &_notifier);
 			if (SUCCEEDED(hr)) {
-				hr = DllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
+				hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
 			}
 			else {
 				wcout << "Error loading IToastNotificationFactory =(";
@@ -152,7 +152,7 @@ HRESULT WinToast::loadAppUserModelId() {
 				PROPVARIANT appIdPropVar;
 				if (SUCCEEDED(propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar))) {
 					WCHAR AUMI[MAX_PATH];
-					if (SUCCEEDED(DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH))
+					if (SUCCEEDED(WinToastDllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH))
 						&& AUMI == _aumi) {
 						PropVariantClear(&appIdPropVar);
 						CoTaskMemFree(slPath);

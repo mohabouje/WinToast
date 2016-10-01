@@ -5,7 +5,7 @@
 #include <string>
 #include <winstring.h>
 
-namespace DllImporter {
+namespace WinToastDllImporter {
 
 	HRESULT initialize();
 

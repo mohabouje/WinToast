@@ -35,7 +35,7 @@ namespace WinToastUtil {
 	extern WINTOASTLIB_API inline HSTRING	loadStringReference(_In_ std::wstring data) {
 		HSTRING_HEADER hstringHeader;
 		HSTRING string;
-		HRESULT hr = DllImporter::WindowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
+		HRESULT hr = WinToastDllImporter::WindowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
 		if (FAILED(hr)) {
 			RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
 		}
@@ -47,7 +47,7 @@ namespace WinToastUtil {
 	
 		HSTRING_HEADER hstringHeader;
 		HSTRING string; 
-		HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &hstringHeader, &string);
+		HRESULT hr = WinToastDllImporter::WindowsCreateStringReference(stringRef, length, &hstringHeader, &string);
 		if (FAILED(hr)) {
 			RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
 		}

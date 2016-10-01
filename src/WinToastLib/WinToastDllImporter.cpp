@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "WinToastDllImporter.h"
 
-namespace DllImporter {
+namespace WinToastDllImporter {
 
 	// Function load a function from library
 	template <typename Function>
