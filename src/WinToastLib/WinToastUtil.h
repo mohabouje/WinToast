@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WinToastDllImporter.h"
+#include "WinToastStringWrapper.h"
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
 
@@ -32,31 +33,9 @@ namespace WinToastUtil {
 	}
 
 
-	extern WINTOASTLIB_API inline HSTRING	loadStringReference(_In_ std::wstring data) {
-		HSTRING_HEADER hstringHeader;
-		HSTRING string;
-		HRESULT hr = WinToastDllImporter::WindowsCreateStringReference(data.c_str(), static_cast<UINT32>(data.length()), &hstringHeader, &string);
-		if (FAILED(hr)) {
-			RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
-		}
-		return string;
-	}
-
-	extern WINTOASTLIB_API inline HSTRING loadStringReference(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw()
-	{
-	
-		HSTRING_HEADER hstringHeader;
-		HSTRING string; 
-		HRESULT hr = WinToastDllImporter::WindowsCreateStringReference(stringRef, length, &hstringHeader, &string);
-		if (FAILED(hr)) {
-			RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
-		}
-		return string;
-	}
-
 
 	extern WINTOASTLIB_API inline HRESULT getNodeListByTag(const std::wstring tag, ComPtr<IXmlNodeList>& nodeList, IXmlDocument *xml) {
-		return xml->GetElementsByTagName(loadStringReference(tag), &nodeList);
+		return xml->GetElementsByTagName(WinToastStringWrapper(tag).Get(), &nodeList);
 	}
 
 	extern WINTOASTLIB_API inline HRESULT getNodeFromNodeList(ComPtr<IXmlNodeList>& nodeList, ComPtr<IXmlNode>& node, int pos) {

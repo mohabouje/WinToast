@@ -86,11 +86,11 @@ bool WinToast::initialize() {
 
 	if (SUCCEEDED(hr)) {
 		wcout << "App User Model ID loaded correctly. Current: " << _aumi.c_str() << " for the app " << _appName.c_str() << " =)!";
-		hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager), &_notificationManager);
+		hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &_notificationManager);
 		if (SUCCEEDED(hr)) {
-			hr = notificationManager()->CreateToastNotifierWithId(WinToastUtil::loadStringReference(_aumi), &_notifier);
+			hr = notificationManager()->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
 			if (SUCCEEDED(hr)) {
-				hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastUtil::loadStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification), &_notificationFactory);
+				hr = WinToastDllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &_notificationFactory);
 			}
 			else {
 				wcout << "Error loading IToastNotificationFactory =(";
@@ -206,7 +206,7 @@ HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {
 		ComPtr<IXmlNode> node;
 		hr = WinToastUtil::getNodeFromNodeList(nodeList, node, pos);
 		if (SUCCEEDED(hr)) {
-			hr = WinToastUtil::setNodeStringValue(WinToastUtil::loadStringReference(text), node.Get(), xmlDocument());
+			hr = WinToastUtil::setNodeStringValue(WinToastStringWrapper(text).Get(), node.Get(), xmlDocument());
 		}
 	}
 	return hr;
@@ -227,9 +227,9 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 				hr = node->get_Attributes(&attributes);
 				if (SUCCEEDED(hr)) {
 					ComPtr<IXmlNode> editedNode;
-					hr = attributes->GetNamedItem(WinToastUtil::loadStringReference(SrcTag), &editedNode);
+					hr = attributes->GetNamedItem(WinToastStringWrapper(SrcTag).Get(), &editedNode);
 					if (SUCCEEDED(hr)) {
-						WinToastUtil::setNodeStringValue(WinToastUtil::loadStringReference(imagePath), editedNode.Get(), xmlDocument());
+						WinToastUtil::setNodeStringValue(WinToastStringWrapper(imagePath).Get(), editedNode.Get(), xmlDocument());
 					}
 				}
 			}

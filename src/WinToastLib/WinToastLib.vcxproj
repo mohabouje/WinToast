@@ -84,6 +84,7 @@
   <ItemGroup>
     <ClInclude Include="WinToastDllImporter.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="WinToastStringWrapper.h" />
     <ClInclude Include="WinToastUtil.h" />
     <ClInclude Include="WinToastHandler.h" />
     <ClInclude Include="WinToastLib.h" />
@@ -105,6 +106,7 @@
     </ClCompile>
     <ClCompile Include="WinToastHandler.cpp" />
     <ClCompile Include="WinToastLib.cpp" />
+    <ClCompile Include="WinToastStringWrapper.cpp" />
     <ClCompile Include="WinToastTemplate.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
