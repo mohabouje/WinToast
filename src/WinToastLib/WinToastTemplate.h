@@ -25,6 +25,7 @@ public:
 		UnknownTemplate = -1
 	};
 
+	WinToastTemplate();
 	WinToastTemplate(int txtFieldCount, bool hasImage);
 	WinToastTemplate(const WinToastTemplateType& type);
 

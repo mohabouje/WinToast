@@ -1,6 +1,13 @@
 #include "stdafx.h"
 #include "WinToastTemplate.h"
 
+WinToastTemplate::WinToastTemplate() :
+_textFieldsCount(2),
+_hasImage(true) 
+{
+	initComponentsFromConfiguration();
+}
+
 
 WinToastTemplate::WinToastTemplate(int txtFieldCount, bool hasImage) :
 _textFieldsCount(txtFieldCount),
