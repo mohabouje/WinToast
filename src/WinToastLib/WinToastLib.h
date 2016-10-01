@@ -29,10 +29,6 @@ private:
 	ComPtr<IToastNotificationFactory>               _notificationFactory;
 	ComPtr<IToastNotification>                      _notification;
 	static WinToast*								_instance;
-	static wstring									ToastTag;
-	static wstring									ImageTag;
-	static wstring									TextTag;
-	static wstring									SrcTag;
 
 	WinToast(void);
 	IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }

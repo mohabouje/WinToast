@@ -41,7 +41,7 @@ namespace WinToastUtil {
 			hr = textNode.As(&stringNode);
 			if (SUCCEEDED(hr)) {
 				ComPtr<IXmlNode> appendedChild;
-				hr = node->AppendChild(stringNode.Get(), &appendedChild);
+                hr = node->AppendChild(stringNode.Get(), &appendedChild);
 			}
 		}
 		return hr;

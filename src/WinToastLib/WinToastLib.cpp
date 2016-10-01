@@ -5,10 +5,6 @@
 #include "WinToastLib.h"
 #include "WinToastUtil.h"
 #include "WinToastDllImporter.h"
-std::wstring WinToast::ToastTag = L"toast";
-std::wstring WinToast::ImageTag = L"image";
-std::wstring WinToast::TextTag = L"text";
-std::wstring WinToast::SrcTag = L"src";
 WinToast* WinToast::_instance = nullptr;
 WinToast* WinToast::instance() {
 	if (_instance == nullptr) {
@@ -173,46 +169,28 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 	}
 
 	HRESULT hr = S_OK;
-	_template = toast.type();
-	hr = _notificationManager->GetTemplateContent(ToastTemplateType(_template), &_xmlDocument);	
+	if (_template != toast.type()) {
+		_template = toast.type();
+		hr = _notificationManager->GetTemplateContent(ToastTemplateType(_template), &_xmlDocument);
+	}
 
-	wcout << L"Loading template with value " << _template << " with succes: " << SUCCEEDED(hr) << endl;
 	if (SUCCEEDED(hr)) {
 		for (int i = 0; i < toast.textFieldsCount() && SUCCEEDED(hr); i++) {
 			hr = setTextField(toast.textField(i), i);
-			wcout << "Definning text value in position " << i << " with succes: " << SUCCEEDED(hr) << endl;
 		}
-		wcout << "Current value of HRESULT " << hr;
 		if (SUCCEEDED(hr)) {
-			//hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
+			hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
 			if (SUCCEEDED(hr)) {
-				wcout << "Calle notification factory to launche the toast";
 				hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
 				if (SUCCEEDED(hr)) {
 					hr = WinToastUtil::setEventHandlers(notification(), toast.handler());
 					if (SUCCEEDED(hr)) {
 						hr = _notifier->Show(notification());
-						wcout << "Launch the current toast with state " << hr << endl;
-					}
-					else {
-						wcout << "Error when setting handlers" << endl;
 					}
 				}
-				else{
-					wcout << "Error while creating toast" << endl;
-				}
 			}
-			else {
-				wcout << "Error while setting image field" << endl;
-			}
-		}
-		else {
-			wcout << L"Error while setting text fields" << endl;
 		}
 	} 
-	else {
-		wcout << L"Could not load your defined template =(" << endl;
-	}
 
 	return SUCCEEDED(hr);
 }
@@ -220,24 +198,24 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 
 HRESULT WinToast::setTextField(_In_ const wstring& text, int pos) {
 	ComPtr<IXmlNodeList> nodeList;
-    HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(TextTag).Get(), &nodeList);
+    HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
 		ComPtr<IXmlNode> node;
 		hr = nodeList->Item(pos, &node);
-		/*if (SUCCEEDED(hr)) {
-			hr = WinToastUtil::setNodeStringValue(WinToastStringWrapper(text).Get(), node.Get(), xmlDocument());
-		}*/
+		if (SUCCEEDED(hr)) {
+			hr = WinToastUtil::setNodeStringValue(WinToastStringWrapper(text.c_str()).Get(), node.Get(), xmlDocument());
+		}
 	}
 	return hr;
 }
 
 
 HRESULT WinToast::setImageField(_In_ const wstring& path)  {
-	wchar_t imagePath[MAX_PATH];
+	wchar_t imagePath[MAX_PATH] = L"file:///";
 	HRESULT hr = StringCchCat(imagePath, MAX_PATH, path.c_str());
 	if (SUCCEEDED(hr)) {
 		ComPtr<IXmlNodeList> nodeList;
-		HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(ImageTag).Get(), &nodeList);
+		HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"image").Get(), &nodeList);
 		if (SUCCEEDED(hr)) {
 			ComPtr<IXmlNode> node;
 			hr = nodeList->Item(0, &node);
@@ -246,7 +224,7 @@ HRESULT WinToast::setImageField(_In_ const wstring& path)  {
 				hr = node->get_Attributes(&attributes);
 				if (SUCCEEDED(hr)) {
 					ComPtr<IXmlNode> editedNode;
-					hr = attributes->GetNamedItem(WinToastStringWrapper(SrcTag).Get(), &editedNode);
+					hr = attributes->GetNamedItem(WinToastStringWrapper(L"src").Get(), &editedNode);
 					if (SUCCEEDED(hr)) {
 						WinToastUtil::setNodeStringValue(WinToastStringWrapper(imagePath).Get(), editedNode.Get(), xmlDocument());
 					}

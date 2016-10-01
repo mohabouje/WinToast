@@ -3,6 +3,15 @@
 #include <QDebug>
 #include <qfiledialog.h>
 #include <qmessagebox.h>
+
+wchar_t*  converToWChar_t(const QString& text){
+    wchar_t* c_Text = new wchar_t[text.length() + 1];
+    text.toWCharArray(c_Text);
+    c_Text[text.length()] = 0; //Add this line should work as you expected
+    return c_Text;
+}
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -32,9 +41,9 @@ void MainWindow::on_imagePathSelector_clicked()
 void MainWindow::on_showToast_clicked()
 {
     WinToastTemplate templ = WinToastTemplate(2, !ui->imagePath->text().isEmpty());
-    templ.setImagePath(ui->imagePath->text().toStdWString());
-    templ.setTextField(ui->firstLine->text().toStdWString(), 0);
-    templ.setTextField(ui->secondLine->text().toStdWString(), 1);
+    templ.setImagePath(converToWChar_t(ui->imagePath->text()));
+    templ.setTextField(converToWChar_t(ui->firstLine->text()), 0);
+    templ.setTextField(converToWChar_t(ui->secondLine->text()), 1);
     if (!WinToast::instance()->showToast(templ)) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
     }
