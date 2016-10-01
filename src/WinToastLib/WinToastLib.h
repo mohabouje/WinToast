@@ -19,18 +19,16 @@ public:
 	static WinToast* instance();
 	bool isCompatible();
 	bool initialize();
+	bool showToast(const WinToastTemplate& toast);
 	wstring appName() const;
 	wstring appUserModelId() const;
-	WinToastTemplate::WinToastTemplateType currentTemplate() const { return _template; }
 	void setAppUserModelId(_In_ const wstring& appName);
 	void setAppName(_In_ const wstring& appName);
-	void setTemplate(_In_ const WinToastTemplate::WinToastTemplateType& templ);
-
 private:
 	bool											_isCompatible;
 	wstring											_appName;
 	wstring											_aumi;
-	WinToastTemplate::WinToastTemplateType								_template;
+	WinToastTemplate::WinToastTemplateType			_template;
 	ComPtr<IXmlDocument>                            _xmlDocument;
 	ComPtr<IToastNotificationManagerStatics>        _notificationManager;
 	ComPtr<IToastNotifier>                          _notifier;

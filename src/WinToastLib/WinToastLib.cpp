@@ -19,7 +19,6 @@ WinToast* WinToast::instance() {
 
 WinToast::WinToast() : _isCompatible(false), _template(WinToastTemplate::UnknownTemplate)
 {
-	setTemplate(WinToastTemplate::ImageWithOneLine);
 	return;
 }
 
@@ -143,11 +142,32 @@ HRESULT WinToast::loadAppUserModelId() {
 	return hr;
 }
 
-void WinToast::setTemplate(_In_ const WinToastTemplate::WinToastTemplateType& templ) {
-	if (_template != templ) {
-		_template = templ;
-		notificationManager()->GetTemplateContent(ToastTemplateType(templ), &_xmlDocument);
+bool WinToast::showToast(_In_ const WinToastTemplate& toast)  {
+	HRESULT hr = S_OK;
+	if (_template != toast.type()) {
+		_template = toast.type();
+		hr = notificationManager()->GetTemplateContent(ToastTemplateType(_template), &_xmlDocument);
 	}
+
+	if (SUCCEEDED(hr)) {
+		for (int i = 0; i < toast.textFieldsCount() && SUCCEEDED(hr); i++) {
+			hr = setTextField(toast.textField(i), i);
+		}
+		if (SUCCEEDED(hr)) {
+			hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
+			if (SUCCEEDED(hr)) {
+				hr = notificationFactory()->CreateToastNotification(xmlDocument(), &_notification);
+				if (SUCCEEDED(hr)) {
+					ComPtr<WinToastHandler> eventHandler;
+					hr = setEventHandlers(eventHandler);
+					if (SUCCEEDED(hr)) {
+						hr = notifier()->Show(notification());
+					}
+				}
+			}
+		}
+	}
+	return SUCCEEDED(hr);
 }
 
 
