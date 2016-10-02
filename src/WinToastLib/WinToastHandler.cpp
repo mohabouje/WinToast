@@ -58,7 +58,7 @@ IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToa
 
 IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IInspectable * instpectable) {
 	LRESULT succeeded = SendMessage(_hEdit, WM_SETTEXT, reinterpret_cast<WPARAM>(nullptr), reinterpret_cast<LPARAM>(L"The toast encountered an error."));
-	return succeeded ? S_OK : E_FAIL;
+	return S_OK;
 }
 
 IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e)  {

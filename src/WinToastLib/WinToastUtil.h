@@ -18,6 +18,7 @@ namespace WinToastUtil {
 		if (SUCCEEDED(hr)) {
 			errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
 			hr = (result == 0) ? S_OK : E_INVALIDARG;
+			wcout << "Default shell link path: " << path;
 		}
 		return hr;
 	}
@@ -28,6 +29,7 @@ namespace WinToastUtil {
 			const wstring appLink(appname + DEFAULT_LINK_FORMAT);
 			errno_t result = wcscat_s(path, nSize, appLink.c_str());
 			hr = (result == 0) ? S_OK : E_INVALIDARG;
+			wcout << "Default shell link file path: " << path;
 		}
 		return hr;
 	}

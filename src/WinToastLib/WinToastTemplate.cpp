@@ -44,7 +44,6 @@ void WinToastTemplate::initComponentsFromType() {
 	_hasImage = _type < ToastTemplateType_ToastText01;
 	_textFieldsCount = (_hasImage ? _type : _type - ToastTemplateType_ToastText01) + 1;
 	_textFields = vector<wstring>(_textFieldsCount, L"");
-    wcout << _textFieldsCount << _textFields.size();
 }
 
 void WinToastTemplate::initComponentsFromConfiguration() {

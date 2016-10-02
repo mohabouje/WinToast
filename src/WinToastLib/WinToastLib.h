@@ -36,6 +36,7 @@ private:
 	IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
 	IToastNotification*						notification() const { return _notification.Get(); }
 
+	HRESULT     validateShellLink(const std::wstring &path);
 	HRESULT		initAppUserModelId();
 	HRESULT		loadAppUserModelId();
 	HRESULT		setImageField(_In_ const wstring& path);

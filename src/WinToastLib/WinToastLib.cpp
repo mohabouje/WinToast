@@ -86,6 +86,49 @@ bool WinToast::initialize() {
 	return _isInitialized;
 }
 
+HRESULT	WinToast::validateShellLink(const std::wstring &path) {
+	
+	const wchar_t* _path = path.c_str();
+	// Check if the file exist
+	DWORD attr = GetFileAttributes(_path);
+	if (attr >= 0xFFFFFFF) {
+		wcout << "Error, file not found: " << path.c_str();
+		return E_FAIL;
+	}
+
+	// Let's load the file as shell link to validate.
+	// - Create a shell link
+	// - Create a persistant file
+	// - Load the path as data for the persistant file
+	// - Read the property AUMI and validate with the current
+	ComPtr<IShellLink> shellLink;
+	HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
+	if (SUCCEEDED(hr)) {
+		ComPtr<IPersistFile> persistFile;
+		hr = shellLink.As(&persistFile);
+		if (SUCCEEDED(hr)) {
+			hr = persistFile->Load(_path, STGM_READWRITE);
+			if (SUCCEEDED(hr)) {
+				ComPtr<IPropertyStore> propertyStore;
+				hr = shellLink.As(&propertyStore);
+				if (SUCCEEDED(hr)) {
+					PROPVARIANT appIdPropVar;
+					hr = propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar);
+					if (SUCCEEDED(hr)) {
+						WCHAR AUMI[MAX_PATH];
+						hr = WinToastDllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
+						if (SUCCEEDED(hr)) {
+							hr = (_aumi == AUMI) ? S_OK : E_FAIL;
+						}
+					}
+				}
+			}
+		}
+	}
+	return hr;
+}
+
+
 
 HRESULT	WinToast::initAppUserModelId() {
 	WCHAR	slPath[MAX_PATH];
