@@ -83,7 +83,7 @@ HRESULT	WinToast::validateShellLink() {
 	// Check if the file exist
 	DWORD attr = GetFileAttributes(_path);
 	if (attr >= 0xFFFFFFF) {
-		wcout << "Error, file not found: " << _path;
+		wcout << "Error, shell link not found. Try to create a new one in: " << _path << endl;
 		return E_FAIL;
 	}
 

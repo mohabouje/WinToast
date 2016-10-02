@@ -9,6 +9,7 @@ namespace WinToastUtil {
 
 	extern WINTOASTLIB_API inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
 		DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, path, nSize);
+		wcout << "Default executable path: " << path << endl;
 		return (written > 0) ? S_OK : E_FAIL;
 	}
 

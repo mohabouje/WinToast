@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stdafx.h"
 #include "WinToastLibExporter.h"
 #include <winstring.h>
 #include <vector>
