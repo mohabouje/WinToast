@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "WinToastLibExporter.h"
 #include "WinToastDllImporter.h"
 #include "WinToastStringWrapper.h"
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"

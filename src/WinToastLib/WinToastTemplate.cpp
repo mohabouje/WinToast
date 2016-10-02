@@ -1,14 +1,6 @@
 #include "stdafx.h"
 #include "WinToastTemplate.h"
-
-WinToastTemplate::WinToastTemplate() :
-_type(ImageWithTwoLines)
-{
-	initComponentsFromType();
-}
-
-
-
+#include "WinToastHandlerExample.h"
 
 WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :
 _type(type)
@@ -40,6 +32,6 @@ void WinToastTemplate::initComponentsFromType() {
 
 
 WinToastHandler* WinToastTemplate::handler() const {
-	ComPtr<WinToastHandler> handler(new WinToastHandler);
+	ComPtr<WinToastHandlerExample> handler(new WinToastHandlerExample);
 	return handler.Get();
 }

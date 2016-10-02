@@ -19,6 +19,7 @@ typedef  ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifica
 typedef  ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification*, ABI::Windows::UI::Notifications::ToastDismissedEventArgs *>		ToastDismissedEventHandler;
 typedef  ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::UI::Notifications::ToastNotification*, ABI::Windows::UI::Notifications::ToastFailedEventArgs *>			ToastFailedEventHandler;
 
+typedef  Microsoft::WRL::Implements<ToastActivatedEventHandler, ToastDismissedEventHandler, ToastFailedEventHandler>														WinToastHandler;
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;

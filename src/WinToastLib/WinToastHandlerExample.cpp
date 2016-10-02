@@ -1,19 +1,19 @@
 #include "stdafx.h"
-#include "WinToastHandler.h"
+#include "WinToastHandlerExample.h"
 
 
-WinToastHandler::WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit) :
+WinToastHandlerExample::WinToastHandlerExample(_In_ HWND hToActivate, _In_ HWND hEdit) :
 _ref(1),
 _hToActivate(hToActivate),
 _hEdit(hEdit)
 {
 }
 
-WinToastHandler::~WinToastHandler()
+WinToastHandlerExample::~WinToastHandlerExample()
 {
 }
 
-IFACEMETHODIMP WinToastHandler::QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv) {
+IFACEMETHODIMP WinToastHandlerExample::QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv) {
 	if (IsEqualIID(riid, IID_IUnknown))
 		*ppv = static_cast<IUnknown*>(static_cast<ToastActivatedEventHandler*>(this));
 	else if (IsEqualIID(riid, __uuidof(ToastActivatedEventHandler)))
@@ -32,12 +32,12 @@ IFACEMETHODIMP WinToastHandler::QueryInterface(_In_ REFIID riid, _COM_Outptr_ vo
 	return E_NOINTERFACE;
 }
 
-IFACEMETHODIMP_(ULONG) WinToastHandler::AddRef()
+IFACEMETHODIMP_(ULONG) WinToastHandlerExample::AddRef()
 {
 	return InterlockedIncrement(&_ref);
 }
 
-IFACEMETHODIMP_(ULONG) WinToastHandler::Release()
+IFACEMETHODIMP_(ULONG) WinToastHandlerExample::Release()
 {
 	ULONG l = InterlockedDecrement(&_ref);
 	if (l == 0) {
@@ -46,7 +46,7 @@ IFACEMETHODIMP_(ULONG) WinToastHandler::Release()
 	return l;
 }
 
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToastFailedEventArgs *e) {
+IFACEMETHODIMP WinToastHandlerExample::Invoke(_In_ IToastNotification *toast, _In_ IToastFailedEventArgs *e) {
 	BOOL succeeded = SetForegroundWindow(_hToActivate);
 	if (succeeded)
 	{
@@ -56,12 +56,12 @@ IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToa
 	return succeeded ? S_OK : E_FAIL;
 }
 
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IInspectable * instpectable) {
+IFACEMETHODIMP WinToastHandlerExample::Invoke(_In_ IToastNotification *toast, _In_ IInspectable * instpectable) {
 	LRESULT succeeded = SendMessage(_hEdit, WM_SETTEXT, reinterpret_cast<WPARAM>(nullptr), reinterpret_cast<LPARAM>(L"The toast encountered an error."));
 	return S_OK;
 }
 
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e)  {
+IFACEMETHODIMP WinToastHandlerExample::Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e)  {
 	ToastDismissalReason tdr;
 	HRESULT hr = e->get_Reason(&tdr);
 	if (SUCCEEDED(hr))

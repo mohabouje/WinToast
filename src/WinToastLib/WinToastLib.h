@@ -1,9 +1,4 @@
-#ifdef WINTOASTLIB_EXPORTS
-#define WINTOASTLIB_API __declspec(dllexport)
-#else
-#define WINTOASTLIB_API __declspec(dllimport)
-#endif
-
+#include "WinToastLibExporter.h"
 #include "WinToastTemplate.h"
 #include "stdafx.h"
 class WINTOASTLIB_API WinToast {

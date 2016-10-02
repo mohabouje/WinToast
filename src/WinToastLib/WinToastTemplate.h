@@ -1,14 +1,11 @@
 #pragma once
-#ifdef WINTOASTLIB_EXPORTS
-#define WINTOASTLIB_API __declspec(dllexport)
-#else
-#define WINTOASTLIB_API __declspec(dllimport)
-#endif
 
-#include "WinToastHandler.h"
+#include "WinToastLibExporter.h"
 #include <winstring.h>
 #include <vector>
 using namespace std;
+
+
 
 class WINTOASTLIB_API WinToastTemplate
 {
@@ -25,8 +22,7 @@ public:
 		UnknownTemplate = -1
 	};
 
-	WinToastTemplate();
-	WinToastTemplate(const WinToastTemplateType& type);
+	WinToastTemplate(const WinToastTemplateType& type = ImageWithTwoLines);
 	~WinToastTemplate();
 	virtual WinToastHandler* handler() const;
 

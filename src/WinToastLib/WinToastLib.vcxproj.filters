@@ -24,9 +24,6 @@
     <ClInclude Include="WinToastLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WinToastHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WinToastTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -37,6 +34,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinToastStringWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinToastLibExporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinToastHandlerExample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,9 +53,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WinToastHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WinToastTemplate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinToastStringWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinToastHandlerExample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

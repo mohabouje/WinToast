@@ -1,7 +1,8 @@
 #pragma once
+#include "WinToastLibExporter.h"
 #include "WinToastDllImporter.h"
 #include <intsafe.h>
-class WinToastStringWrapper {
+class WINTOASTLIB_API WinToastStringWrapper {
 public:
 	WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
 		HRESULT hr = WinToastDllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
