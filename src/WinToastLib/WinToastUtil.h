@@ -61,29 +61,4 @@ namespace WinToastUtil {
 		return hr;
 	}
 
-	extern WINTOASTLIB_API inline HRESULT createShellLinkInPath(_In_ PCWSTR path) {
-		WCHAR exePath[MAX_PATH];
-		HRESULT hr = defaultExecutablePath(exePath);
-		if (SUCCEEDED(hr)) {
-			ComPtr<IShellLink> shellLink;
-			hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
-			if (SUCCEEDED(hr)) {
-				hr = shellLink->SetPath(exePath);
-				if (SUCCEEDED(hr)) {
-					hr = shellLink->SetArguments(L"");
-					if (SUCCEEDED(hr)) {
-						ComPtr<IPersistFile> persistFile;
-						hr = shellLink.As(&persistFile);
-						if (SUCCEEDED(hr)) {
-							hr = persistFile->Save(path, TRUE);
-							CoTaskMemFree(exePath);
-						}
-					}
-				}
-			}
-		}
-		return hr;
-	}
-
-
 }

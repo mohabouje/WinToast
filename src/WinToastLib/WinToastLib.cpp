@@ -54,20 +54,10 @@ bool WinToast::initialize() {
 		return _isInitialized;
 	}
 
-
-	HRESULT hr = loadAppUserModelId();
+	// Validate the last Shell Link - Shoul have the same AUMI.
+	HRESULT hr = validateShellLink();
 	if (FAILED(hr)) {
-		WCHAR shellPath[MAX_PATH];
-		hr = WinToastUtil::defaultShellLinkPath(_appName, shellPath);
-		if (SUCCEEDED(hr)) {
-			hr = WinToastUtil::createShellLinkInPath(shellPath);
-			if (SUCCEEDED(hr)) {
-				hr = initAppUserModelId();
-				if (FAILED(hr)) {
-					wcout << L"Could not create your App User Model Id =(";
-				}
-			}
-		}
+		hr = createShellLink();
 	}
 
 	if (SUCCEEDED(hr)) {
@@ -86,13 +76,14 @@ bool WinToast::initialize() {
 	return _isInitialized;
 }
 
-HRESULT	WinToast::validateShellLink(const std::wstring &path) {
+HRESULT	WinToast::validateShellLink() {
 	
-	const wchar_t* _path = path.c_str();
+	WCHAR	_path[MAX_PATH];
+	WinToastUtil::defaultShellLinkPath(_appName, _path);
 	// Check if the file exist
 	DWORD attr = GetFileAttributes(_path);
 	if (attr >= 0xFFFFFFF) {
-		wcout << "Error, file not found: " << path.c_str();
+		wcout << "Error, file not found: " << _path;
 		return E_FAIL;
 	}
 
@@ -101,6 +92,7 @@ HRESULT	WinToast::validateShellLink(const std::wstring &path) {
 	// - Create a persistant file
 	// - Load the path as data for the persistant file
 	// - Read the property AUMI and validate with the current
+	// - Review if AUMI is equal.
 	ComPtr<IShellLink> shellLink;
 	HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
 	if (SUCCEEDED(hr)) {
@@ -121,6 +113,7 @@ HRESULT	WinToast::validateShellLink(const std::wstring &path) {
 							hr = (_aumi == AUMI) ? S_OK : E_FAIL;
 						}
 					}
+					PropVariantClear(&appIdPropVar);
 				}
 			}
 		}
@@ -130,62 +123,50 @@ HRESULT	WinToast::validateShellLink(const std::wstring &path) {
 
 
 
-HRESULT	WinToast::initAppUserModelId() {
+HRESULT	WinToast::createShellLink() {
+	WCHAR   exePath[MAX_PATH];
 	WCHAR	slPath[MAX_PATH];
-	HRESULT hr = WinToastUtil::defaultShellLinkPath(_appName, slPath);
+	WinToastUtil::defaultShellLinkPath(_appName, slPath);
+	WinToastUtil::defaultExecutablePath(exePath);
+	ComPtr<IShellLink> shellLink;
+	HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
 	if (SUCCEEDED(hr)) {
-		ComPtr<IPropertyStore> propertyStore;
-		hr = SHGetPropertyStoreFromParsingName(slPath, nullptr, GPS_READWRITE, IID_PPV_ARGS(&propertyStore));
+		hr = shellLink->SetPath(exePath);
 		if (SUCCEEDED(hr)) {
-			PROPVARIANT appIdPropVar;
-			hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
+			hr = shellLink->SetArguments(L"");
 			if (SUCCEEDED(hr)) {
-				hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+				hr = shellLink->SetWorkingDirectory(exePath);
 				if (SUCCEEDED(hr)) {
-					hr = propertyStore->Commit();
-				}
-				PropVariantClear(&appIdPropVar);
-			}
-		}
-	}
-	return hr;
-}
-
-
-HRESULT WinToast::loadAppUserModelId() {
-	wchar_t slPath[MAX_PATH];
-	DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, slPath, ARRAYSIZE(slPath));
-	HRESULT hr = written > 0 ? S_OK : E_FAIL;
-	if (SUCCEEDED(hr)) {
-		written = GetFileAttributes(slPath);
-		if (written >= 0xFFFFFFF)
-			return E_FAIL;
-
-		ComPtr<IShellItem> shellItem;
-		if (SUCCEEDED(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellItem)))) {
-			ComPtr<IPersistFile>	persistFile;
-			ComPtr<IPropertyStore>	propertyStore;
-			if (SUCCEEDED(shellItem.As(&persistFile))
-				&& SUCCEEDED(persistFile->Load(slPath, STGM_READWRITE))
-				&& SUCCEEDED(shellItem.As(&propertyStore))
-				)
-			{
-				PROPVARIANT appIdPropVar;
-				if (SUCCEEDED(propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar))) {
-					WCHAR AUMI[MAX_PATH];
-					if (SUCCEEDED(WinToastDllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH))
-						&& AUMI == _aumi) {
+					ComPtr<IPropertyStore> propertyStore;
+					hr = shellLink.As(&propertyStore);
+					if (SUCCEEDED(hr)) {
+						PROPVARIANT appIdPropVar;
+						hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
+						if (SUCCEEDED(hr)) {
+							hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+							if (SUCCEEDED(hr)) {
+								hr = propertyStore->Commit();
+								if (SUCCEEDED(hr)) {
+									ComPtr<IPersistFile> persistFile;
+									hr = shellLink.As(&persistFile);
+									if (SUCCEEDED(hr)) {
+										hr = persistFile->Save(slPath, TRUE);
+									}
+								}
+							}
+						}
 						PropVariantClear(&appIdPropVar);
-						CoTaskMemFree(slPath);
-						hr = S_OK;
 					}
 				}
-
 			}
 		}
 	}
+	CoTaskMemFree(exePath);
+	CoTaskMemFree(slPath);
 	return hr;
 }
+
+
 
 bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 	if (!isInitialized()) {
