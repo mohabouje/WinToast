@@ -40,7 +40,7 @@ void MainWindow::on_imagePathSelector_clicked()
 
 void MainWindow::on_showToast_clicked()
 {
-    templ = WinToastTemplate(2, !ui->imagePath->text().isEmpty());
+    WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
     templ.setImagePath(ui->imagePath->text().toStdWString());
     templ.setTextField(ui->firstLine->text().toStdWString(), 0);
     templ.setTextField(ui->secondLine->text().toStdWString(), 1);

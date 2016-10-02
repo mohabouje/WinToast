@@ -170,6 +170,7 @@ HRESULT	WinToast::createShellLink() {
 
 bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 	if (!isInitialized()) {
+		wcout << "Error when launching the toast. WinToast is not initialized =(" << endl;
 		return _isInitialized;
 	}
 
@@ -180,12 +181,14 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
 		}
 		if (SUCCEEDED(hr)) {
 			hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
-			if (SUCCEEDED(hr)) {
+			if (SUCCEEDED(hr)) { 
 				hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
 				if (SUCCEEDED(hr)) {
 					hr = WinToastUtil::setEventHandlers(notification(), toast.handler());
 					if (SUCCEEDED(hr)) {
 						hr = _notifier->Show(notification());
+						if (SUCCEEDED(hr)) {
+						}
 					}
 				}
 			}

@@ -2,21 +2,13 @@
 #include "WinToastTemplate.h"
 
 WinToastTemplate::WinToastTemplate() :
-_textFieldsCount(2),
-_hasImage(true) 
+_type(ImageWithTwoLines)
 {
-	initComponentsFromConfiguration();
+	initComponentsFromType();
 }
 
 
-WinToastTemplate::WinToastTemplate(int txtFieldCount, bool hasImage) :
-_textFieldsCount(txtFieldCount),
-_hasImage(hasImage),
-_handler(new WinToastHandler())
-{
-	initComponentsFromConfiguration();
 
-}
 
 WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :
 _type(type)
@@ -46,11 +38,8 @@ void WinToastTemplate::initComponentsFromType() {
 	_textFields = vector<wstring>(_textFieldsCount, L"");
 }
 
-void WinToastTemplate::initComponentsFromConfiguration() {
-	_textFields = vector<wstring>(_textFieldsCount, L"");
-	_type = static_cast<WinToastTemplateType> ((_textFieldsCount - 1) + (_hasImage ? 0 : ToastTemplateType_ToastText01));
-}
 
-void WinToastTemplate::setHandler(const ComPtr<WinToastHandler>& handler) {
-	_handler = handler;
+WinToastHandler* WinToastTemplate::handler() const {
+	ComPtr<WinToastHandler> handler(new WinToastHandler);
+	return handler.Get();
 }

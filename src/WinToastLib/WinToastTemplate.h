@@ -26,19 +26,16 @@ public:
 	};
 
 	WinToastTemplate();
-	WinToastTemplate(int txtFieldCount, bool hasImage);
 	WinToastTemplate(const WinToastTemplateType& type);
-
 	~WinToastTemplate();
+	virtual WinToastHandler* handler() const;
+
 	int						textFieldsCount() const { return _textFieldsCount; }
 	bool					hasImage() const { return _hasImage; }
 	vector<wstring>			textFields() const { return _textFields; }
 	wstring					textField(int pos) const { return _textFields[pos]; }
 	wstring					imagePath() const { return _imagePath; }
 	WinToastTemplateType	type() const { return _type; }
-	WinToastHandler*		handler() const { return _handler.Get(); }
-	
-	void	                setHandler(const ComPtr<WinToastHandler>& handler);
 	void					setTextField(const wstring& txt, int pos);
 	void					setImagePath(const wstring& imgPath);
 private:
@@ -47,9 +44,6 @@ private:
 	vector<wstring>			_textFields;
 	wstring					_imagePath;
 	WinToastTemplateType    _type;
-	ComPtr<WinToastHandler>	_handler;
-
 	void initComponentsFromType();
-	void initComponentsFromConfiguration();
 };
 

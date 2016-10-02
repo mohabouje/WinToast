@@ -22,7 +22,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    WinToastTemplate templ;
 };
 
 #endif // MAINWINDOW_H
