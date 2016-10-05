@@ -345,18 +345,18 @@ IFACEMETHODIMP_(ULONG) WinToastHandler::Release()
     return l;
 }
 
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToastFailedEventArgs *e) {
+IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IToastFailedEventArgs* /*e*/) {
     BOOL succeeded = SetForegroundWindow(_hToActivate);
     toastFailed();
     return succeeded ? S_OK : E_FAIL;
 }
 
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IInspectable *instpectable) {
+IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IInspectable* /*instpectable*/) {
     toastActivated();
     return S_OK;
 }
 
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e)  {
+IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IToastDismissedEventArgs *e)  {
     ToastDismissalReason tdr;
     HRESULT hr = e->get_Reason(&tdr);
     if (SUCCEEDED(hr))
