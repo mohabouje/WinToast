@@ -13,9 +13,11 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    ../../../include/wintoastlib.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    ../../../include/wintoastlib.h
 
 FORMS    += mainwindow.ui
 
