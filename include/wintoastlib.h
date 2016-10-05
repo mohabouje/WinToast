@@ -31,7 +31,6 @@ typedef Implements<ToastActivatedEventHandler, ToastDismissedEventHandler, Toast
 
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
-#pragma comment(lib,"shlwapi")
 
 namespace WinToastLib {
     class WinToastStringWrapper {

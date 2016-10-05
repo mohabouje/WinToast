@@ -1,4 +1,7 @@
 #include "wintoastlib.h"
+#pragma comment(lib,"shlwapi")
+#pragma comment(lib,"user32")
+
 using namespace WinToastLib;
 
 // Function load a function from library
@@ -445,9 +448,9 @@ IFACEMETHODIMP_(ULONG) WinToastHandler::Release()
 }
 
 IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IToastFailedEventArgs* /*e*/) {
-    //BOOL succeeded = SetForegroundWindow(_hToActivate);
+    BOOL succeeded = SetForegroundWindow(_hToActivate);
     toastFailed();
-    return S_OK;
+    return succeeded ? S_OK : E_FAIL;
 }
 
 IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IInspectable* /*instpectable*/) {
