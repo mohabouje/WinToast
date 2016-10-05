@@ -21,8 +21,10 @@ WinToast integrates all standar templates availables in the [ToastTemplateType e
 
 ### Usage
 
-You have to compile the library with MVSC 2013/2015 and link all the dependencies. Initialize the library with your application info:
+Import the header file wintoastlib.h to your project from the include folder. Initialize the library with your application info:
         
+       using namespace WinToastLib;
+       ....
        WinToast::instance()->setAppName(L"WinToastExample");
 	    WinToast::instance()->setAppUserModelId(L"WinToastExample_AUMI");
 	    if (!WinToast::instance()->initialize()) {
@@ -30,17 +32,13 @@ You have to compile the library with MVSC 2013/2015 and link all the dependencie
 	    }
 If you want to handle the Toast Notification Events, create your custom `WinToastHandler`:
 
-     class WinToastHandlerExample : public WinToastHandler{
+     class WinToastHandlerExample : public WinToastHandler {
          public:
-        	WinToastHandlerExample(_In_ HWND hToActivate, _In_ HWND hEdit);
-        	WinToastHandlerExample() {}
-        	~WinToastHandlerExample();
-        	IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IInspectable *inspectable);
-        	IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e);
-            IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastFailedEventArgs *e);
-    	    IFACEMETHODIMP_(ULONG) AddRef();
-    	    IFACEMETHODIMP_(ULONG) Release();
-    	    IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv);
+        	WinToastHandlerExample(); 
+		// Public interfaces
+		virtual void toastActivated() const;
+		virtual void toastDismissed(WinToastDismissalReason state) const;
+		virtual void toastFailed() const;
             protected:
             	....
          };
@@ -51,14 +49,12 @@ And use it in your custom `WinToastTemplate`:
 		   public:
 		    MyTemplate(const WinToastTemplateType& type = ImageWithTwoLines);
 		    ~MyTemplate();
-		    virtual WinToastHandler* handler() const { return _myCustomHandler.Get();};
-		   private:
-			   ComPtr<WinToastHandlerExample> _myCustomHandler;
+		    virtual WinToastHandler* handler() const { return WinToastHandlerExample; };
 	  }
 
 Now, every time you want to launch a new toast, just create a new template and use:
 
-    WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
+    MyTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
     templ.setImagePath(L"path/example.png");
     templ.setTextField(L"Firs line", 0);
     templ.setTextField(L"Second line", 1);
