@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <C:/dev/C++/WinToast/src/WinToastLib/WinToastLib.h>
+
 namespace Ui {
 class MainWindow;
 }
