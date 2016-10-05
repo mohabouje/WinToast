@@ -38,6 +38,7 @@ void MainWindow::on_showToast_clicked()
     templ.setImagePath(ui->imagePath->text().toStdWString());
     templ.setTextField(ui->firstLine->text().toStdWString(), 0);
     templ.setTextField(ui->secondLine->text().toStdWString(), 1);
+    //templ.setTextField(ui->secondLine->text().toStdWString(), 2);
     if (!WinToast::instance()->showToast(templ)) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
     }

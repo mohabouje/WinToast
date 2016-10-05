@@ -3,17 +3,18 @@
 #pragma comment(lib,"user32")
 
 using namespace WinToastLib;
-
-// Function load a function from library
-template <typename Function>
-HRESULT loadFunctionFromLibrary(HINSTANCE library, LPCSTR name, Function &func) {
-    if (!library) return false;
-
-    func = reinterpret_cast<Function>(GetProcAddress(library, name));
-    return (func != nullptr) ? S_OK : E_FAIL;
-}
-
 namespace DllImporter {
+
+    // Function load a function from library
+    template <typename Function>
+    HRESULT loadFunctionFromLibrary(HINSTANCE library, LPCSTR name, Function &func) {
+        if (!library)
+            return false;
+
+        func = reinterpret_cast<Function>(GetProcAddress(library, name));
+        return (func != nullptr) ? S_OK : E_FAIL;
+    }
+
     typedef HRESULT(FAR STDAPICALLTYPE *f_SetCurrentProcessExplicitAppUserModelID)(__in PCWSTR AppID);
     typedef HRESULT(FAR STDAPICALLTYPE *f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
     typedef HRESULT(FAR STDAPICALLTYPE *f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid, _COM_Outptr_ void ** factory);
@@ -371,9 +372,10 @@ void WinToastTemplate::setImagePath(const std::wstring& imgPath) {
     _imagePath = imgPath;
 }
 
+int WinToastTemplate::TextFieldsCount[WinToastTemplateTypeCount] = { 1, 2, 2, 3, 1, 2, 2, 3};
 void WinToastTemplate::initComponentsFromType() {
     _hasImage = _type < ToastTemplateType_ToastText01;
-    _textFieldsCount = (_hasImage ? _type : _type - ToastTemplateType_ToastText01) + 1;
+    _textFieldsCount = TextFieldsCount[_type];
     _textFields = std::vector<std::wstring>(_textFieldsCount, L"");
 }
 

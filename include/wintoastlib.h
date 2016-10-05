@@ -86,7 +86,7 @@ namespace WinToastLib {
             TextTwoLines = ToastTemplateType::ToastTemplateType_ToastText02,
             TextThreeLines = ToastTemplateType::ToastTemplateType_ToastText03,
             TextFourLines = ToastTemplateType::ToastTemplateType_ToastText04,
-            UnknownTemplate = -1
+            WinToastTemplateTypeCount
         };
 
         WinToastTemplate(const WinToastTemplateType& type = ImageWithTwoLines);
@@ -102,6 +102,7 @@ namespace WinToastLib {
         void                                setTextField(const std::wstring& txt, int pos);
         void                                setImagePath(const std::wstring& imgPath);
     private:
+        static int                          TextFieldsCount[WinToastTemplateTypeCount];
         int                                 _textFieldsCount;
         bool                                _hasImage;
         std::vector<std::wstring>			_textFields;
