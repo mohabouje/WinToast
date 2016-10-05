@@ -357,7 +357,8 @@ WinToastTemplate::~WinToastTemplate()
 
 WinToastHandler *WinToastTemplate::handler() const
 {
-    return new WinToastHandler;
+    static ComPtr<WinToastHandler> m_handler(new WinToastHandler);
+    return m_handler.Get();
 }
 
 
@@ -382,6 +383,11 @@ WinToastHandler::WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit) :
     _hToActivate(hToActivate),
     _hEdit(hEdit)
 {
+}
+
+WinToastHandler::WinToastHandler()
+{
+
 }
 
 WinToastHandler::~WinToastHandler()

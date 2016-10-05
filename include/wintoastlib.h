@@ -55,18 +55,18 @@ namespace WinToastLib {
         };
 
         WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit);
-        WinToastHandler() {}
+        WinToastHandler();
         ~WinToastHandler();
         virtual void toastActivated() const;
         virtual void toastDismissed(WinToastDismissalReason state) const;
         virtual void toastFailed() const;
-
+    public:
+        IFACEMETHODIMP_(ULONG) AddRef();
+        IFACEMETHODIMP_(ULONG) Release();
     private:
         IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IInspectable *inspectable);
         IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e);
         IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastFailedEventArgs *e);
-        IFACEMETHODIMP_(ULONG) AddRef();
-        IFACEMETHODIMP_(ULONG) Release();
         IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv);
     protected:
         ULONG _ref;
