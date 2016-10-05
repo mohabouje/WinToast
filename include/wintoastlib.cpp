@@ -1,5 +1,6 @@
 #include "wintoastlib.h"
 using namespace WinToastLib;
+
 // Function load a function from library
 template <typename Function>
 HRESULT loadFunctionFromLibrary(HINSTANCE library, LPCSTR name, Function &func) {

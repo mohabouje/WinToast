@@ -17,11 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    WinToast::instance()->setAppName(L"WinToastExample");
+    /*WinToast::instance()->setAppName(L"WinToastExample");
     WinToast::instance()->setAppUserModelId(L"WinToastExample_AUMI");
     if (!WinToast::instance()->initialize()) {
         qDebug() << "Error, your system in not compatible!";
-    }
+    }*/
 }
 
 MainWindow::~MainWindow()
@@ -40,11 +40,11 @@ void MainWindow::on_imagePathSelector_clicked()
 
 void MainWindow::on_showToast_clicked()
 {
-    WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
+    /*WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
     templ.setImagePath(ui->imagePath->text().toStdWString());
     templ.setTextField(ui->firstLine->text().toStdWString(), 0);
     templ.setTextField(ui->secondLine->text().toStdWString(), 1);
     if (!WinToast::instance()->showToast(templ)) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
-    }
+    }*/
 }
