@@ -21,40 +21,47 @@ WinToast integrates all standar templates availables in the [ToastTemplateType e
 
 ### Usage
 
-Import the header file wintoastlib.h to your project from the include folder. Initialize the library with your application info:
+Import the header file wintoastlib.h to your project. Initialize the library with your application info:
         
+    ```c++
     using namespace WinToastLib;
     ....
     WinToast::instance()->setAppName(L"WinToastExample");
-    WinToast::instance()->setAppUserModelId(L"WinToastExample_AUMI");
+    WinToast::instance()->setAppUserModelId(
+                WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006"));
     if (!WinToast::instance()->initialize()) {
-     	std::cout << "Error, probably your system in not compatible!";
+        qDebug() << "Error, your system in not compatible!";
     }
+    ```
     
 If you want to handle every Toast Notification Event, just create your custom `WinToastHandler`:
 
-     class WinToastHandlerExample : public WinToastHandler {
-         public:
-        	WinToastHandlerExample(); 
+	```c++
+	class WinToastHandlerExample : public WinToastHandler {
+	 public:
+		WinToastHandlerExample(); 
 		// Public interfaces
 		void toastActivated() const;
 		void toastDismissed(WinToastDismissalReason state) const;
 		void toastFailed() const;
-            protected:
-            	....
-         };
+	    protected:
+		....
+	 };
+	 ```
          
 Now, every time you want to launch a new toast, just create a new template and configure it:
 
-    WinToastHandlerExample* handler = new WinToastHandlerExample;
-    WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
-    templ.setImagePath(ui->imagePath->text().toStdWString());
-    templ.setTextField(ui->firstLine->text().toStdWString(), 0);
-    templ.setTextField(ui->secondLine->text().toStdWString(), 1);
-    
-    if (!WinToast::instance()->showToast(templ, handler)) {
-        QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
-    }
+        ```c++
+	WinToastHandlerExample* handler = new WinToastHandlerExample;
+	WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
+	templ.setImagePath(ui->imagePath->text().toStdWString());
+	templ.setTextField(ui->firstLine->text().toStdWString(), 0);
+	templ.setTextField(ui->secondLine->text().toStdWString(), 1);
+
+	if (!WinToast::instance()->showToast(templ, handler)) {
+	QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
+	}
+	```
     
 **That's all my folks =)**
 
