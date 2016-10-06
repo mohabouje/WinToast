@@ -114,7 +114,11 @@ namespace WinToastLib {
     public:
         static WinToast* instance();
         static bool isCompatible();
-
+        static std::wstring configureAUMI(const std::wstring& company,
+                                                    const std::wstring& name,
+                                                    const std::wstring& surname,
+                                                    const std::wstring& versionInfo
+                                                    );
         bool                initialize();
         bool                isInitialized() const { return _isInitialized; }
         bool                showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler);

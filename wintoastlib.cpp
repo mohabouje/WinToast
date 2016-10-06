@@ -139,6 +139,7 @@ std::wstring WinToast::appUserModelId() const {
 }
 void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
     _aumi = aumi;
+    std::wcout << L"Default App User Model Id: " << _aumi.c_str() << std::endl;
 }
 
 bool WinToast::isCompatible() {
@@ -146,7 +147,23 @@ bool WinToast::isCompatible() {
             || (DllImporter::PropVariantToString == nullptr)
             || (DllImporter::RoGetActivationFactory == nullptr)
             || (DllImporter::WindowsCreateStringReference == nullptr)
-            || (DllImporter::WindowsDeleteString == nullptr));
+                 || (DllImporter::WindowsDeleteString == nullptr));
+}
+
+std::wstring WinToast::configureAUMI(const std::wstring &company,
+                                               const std::wstring &name,
+                                               const std::wstring &surname,
+                                               const std::wstring &versionInfo)
+{
+    std::wstring aumi = company;
+    aumi += L"." + name;
+    aumi += L"." + surname;
+    aumi += L"." + versionInfo;
+
+    if (aumi.length() > SCHAR_MAX) {
+        std::wcout << "Error: max size allowed for AUMI: 128 characters." << std::endl;
+    }
+    return aumi;
 }
 
 bool WinToast::initialize() {

@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     WinToast::instance()->setAppName(L"WinToastExample");
-    WinToast::instance()->setAppUserModelId(L"WinToastExample_AUMI");
+    WinToast::instance()->setAppUserModelId(
+                WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006"));
     if (!WinToast::instance()->initialize()) {
         qDebug() << "Error, your system in not compatible!";
     }
