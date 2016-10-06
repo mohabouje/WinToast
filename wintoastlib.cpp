@@ -169,17 +169,20 @@ std::wstring WinToast::configureAUMI(const std::wstring &company,
 bool WinToast::initialize() {
     if (_aumi.empty() || _appName.empty()) {
         std::wcout << L"Error: App User Model Id or Appname is empty!" << std::endl;
-        _isInitialized = false;
-        return false;
+        return _isInitialized = false;
     }
 
     if (!isCompatible()) {
         std::wcout << L"Your OS is not compatible with this library! =(" << std::endl;
-        _isInitialized = false;
-        return _isInitialized;
+        return _isInitialized = false;
     }
 
-    // Validate the last Shell Link - Shoul have the same AUMI.
+    if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
+        std::wcout << L"Error while attaching the AUMI to the current proccess =(" << std::endl;
+        return _isInitialized = false;
+    }
+
+
     HRESULT hr = validateShellLink();
     if (FAILED(hr)) {
         hr = createShellLink();
@@ -195,8 +198,7 @@ bool WinToast::initialize() {
         }
     }
 
-    _isInitialized = SUCCEEDED(hr);
-    return _isInitialized;
+    return _isInitialized = SUCCEEDED(hr);
 }
 
 HRESULT	WinToast::validateShellLink() {
@@ -234,9 +236,21 @@ HRESULT	WinToast::validateShellLink() {
                         hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
                         if (SUCCEEDED(hr)) {
                             hr = (_aumi == AUMI) ? S_OK : E_FAIL;
+                        } else { // AUMI Changed for the same app, let's update the current value! =)
+                            PropVariantClear(&appIdPropVar);
+                            hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
+                            if (SUCCEEDED(hr)) {
+                                hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                                if (SUCCEEDED(hr)) {
+                                    hr = propertyStore->Commit();
+                                    if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
+                                        hr = persistFile->Save(_path, TRUE);
+                                    }
+                                }
+                            }
                         }
+                        PropVariantClear(&appIdPropVar);
                     }
-                    PropVariantClear(&appIdPropVar);
                 }
             }
         }
