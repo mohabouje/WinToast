@@ -5,6 +5,7 @@
 #include <WinUser.h>
 #include <Shobjidl.h>
 #include <wrl/implements.h>
+#include <wrl/event.h>
 #include <windows.ui.notifications.h>
 #include <strsafe.h>
 #include <Psapi.h>
@@ -16,18 +17,11 @@
 #include <winstring.h>
 #include <string.h>
 #include <vector>
-
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::UI::Notifications;
 using namespace Windows::Foundation;
-
-
-typedef  ITypedEventHandler<ToastNotification*, ::IInspectable *>                                       ToastActivatedEventHandler;
-typedef  ITypedEventHandler<ToastNotification*, ToastDismissedEventArgs *>                              ToastDismissedEventHandler;
-typedef  ITypedEventHandler<ToastNotification*, ToastFailedEventArgs *>                                 ToastFailedEventHandler;
-typedef Implements<ToastActivatedEventHandler, ToastDismissedEventHandler, ToastFailedEventHandler>     WinToastTemplateHandler;
 
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
@@ -46,7 +40,7 @@ namespace WinToastLib {
     };
 
 
-    class WinToastHandler : public WinToastTemplateHandler {
+    class WinToastHandler {
     public:
         enum WinToastDismissalReason {
             UserCanceled = ToastDismissalReason::ToastDismissalReason_UserCanceled,
@@ -54,24 +48,11 @@ namespace WinToastLib {
             TimedOut = ToastDismissalReason::ToastDismissalReason_TimedOut
         };
 
-        WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit);
         WinToastHandler();
         ~WinToastHandler();
         virtual void toastActivated() const;
         virtual void toastDismissed(WinToastDismissalReason state) const;
         virtual void toastFailed() const;
-    public:
-        IFACEMETHODIMP_(ULONG) AddRef();
-        IFACEMETHODIMP_(ULONG) Release();
-    private:
-        IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IInspectable *inspectable);
-        IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastDismissedEventArgs *e);
-        IFACEMETHODIMP Invoke(_In_ IToastNotification *toast, _In_ IToastFailedEventArgs *e);
-        IFACEMETHODIMP QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv);
-    protected:
-        ULONG _ref;
-        HWND _hToActivate;
-        HWND _hEdit;
     };
 
     class WinToastTemplate

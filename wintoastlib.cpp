@@ -100,13 +100,37 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ WinToastTemplateHandler* eventHandler) {
+    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ WinToastHandler* eventHandler) {
         EventRegistrationToken activatedToken, dismissedToken, failedToken;
-        HRESULT hr = notification->add_Activated(eventHandler, &activatedToken);
+        HRESULT hr = notification->add_Activated(
+                    Callback < Implements < RuntimeClassFlags<ClassicCom>,
+                    ITypedEventHandler<ToastNotification*, IInspectable* >> >(
+                    [eventHandler](IToastNotification*, IInspectable*)
+                {
+                    eventHandler->toastActivated();
+                    return S_OK;
+                }).Get(), &activatedToken);
+
         if (SUCCEEDED(hr)) {
-            hr = notification->add_Dismissed(eventHandler, &dismissedToken);
+            hr = notification->add_Dismissed(Callback < Implements < RuntimeClassFlags<ClassicCom>,
+                     ITypedEventHandler<ToastNotification*, ToastDismissedEventArgs* >> >(
+                     [eventHandler](IToastNotification*, IToastDismissedEventArgs* e)
+                 {
+                     ToastDismissalReason reason;
+                     if (SUCCEEDED(e->get_Reason(&reason)))
+                     {
+                         eventHandler->toastDismissed(static_cast<WinToastHandler::WinToastDismissalReason>(reason));
+                     }
+                     return S_OK;
+                 }).Get(), &dismissedToken);
             if (SUCCEEDED(hr)) {
-                hr = notification->add_Failed(eventHandler, &failedToken);
+                hr = notification->add_Failed(Callback < Implements < RuntimeClassFlags<ClassicCom>,
+                    ITypedEventHandler<ToastNotification*, ToastFailedEventArgs* >> >(
+                    [eventHandler](IToastNotification*, IToastFailedEventArgs*)
+                {
+                    eventHandler->toastFailed();
+                    return S_OK;
+                }).Get(), &failedToken);
             }
         }
         return hr;
@@ -324,8 +348,6 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandle
                     hr = Util::setEventHandlers(notification(), handler);
                     if (SUCCEEDED(hr)) {
                         hr = _notifier->Show(notification());
-                        if (SUCCEEDED(hr)) {
-                        }
                     }
                 }
             }
@@ -404,12 +426,6 @@ void WinToastTemplate::initComponentsFromType() {
 }
 
 
-WinToastHandler::WinToastHandler(_In_ HWND hToActivate, _In_ HWND hEdit) :
-    _ref(1),
-    _hToActivate(hToActivate),
-    _hEdit(hEdit)
-{
-}
 
 WinToastHandler::WinToastHandler()
 {
@@ -418,25 +434,6 @@ WinToastHandler::WinToastHandler()
 
 WinToastHandler::~WinToastHandler()
 {
-}
-
-IFACEMETHODIMP WinToastHandler::QueryInterface(_In_ REFIID riid, _COM_Outptr_ void **ppv) {
-    if (IsEqualIID(riid, IID_IUnknown))
-        *ppv = static_cast<IUnknown*>(static_cast<ToastActivatedEventHandler*>(this));
-    else if (IsEqualIID(riid, __uuidof(ToastActivatedEventHandler)))
-        *ppv = static_cast<ToastActivatedEventHandler*>(this);
-    else if (IsEqualIID(riid, __uuidof(ToastActivatedEventHandler)))
-        *ppv = static_cast<ToastDismissedEventHandler*>(this);
-    else if (IsEqualIID(riid, __uuidof(ToastFailedEventHandler)))
-        *ppv = static_cast<ToastFailedEventHandler*>(this);
-    else *ppv = nullptr;
-
-    if (*ppv) {
-        reinterpret_cast<IUnknown*>(*ppv)->AddRef();
-        return S_OK;
-    }
-
-    return E_NOINTERFACE;
 }
 
 void WinToastHandler::toastActivated() const {
@@ -465,41 +462,6 @@ void WinToastHandler::toastDismissed(WinToastHandler::WinToastDismissalReason st
     }
 }
 
-IFACEMETHODIMP_(ULONG) WinToastHandler::AddRef()
-{
-    return InterlockedIncrement(&_ref);
-}
-
-IFACEMETHODIMP_(ULONG) WinToastHandler::Release()
-{
-    ULONG l = InterlockedDecrement(&_ref);
-    if (l == 0) {
-        delete this;
-    }
-    return l;
-}
-
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IToastFailedEventArgs* /*e*/) {
-    BOOL succeeded = SetForegroundWindow(_hToActivate);
-    toastFailed();
-    return succeeded ? S_OK : E_FAIL;
-}
-
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IInspectable* /*instpectable*/) {
-    toastActivated();
-    return S_OK;
-}
-
-IFACEMETHODIMP WinToastHandler::Invoke(_In_ IToastNotification* /*toast*/, _In_ IToastDismissedEventArgs *e)  {
-    ToastDismissalReason tdr;
-    HRESULT hr = e->get_Reason(&tdr);
-    if (SUCCEEDED(hr))
-    {
-       toastDismissed(static_cast<WinToastDismissalReason>(tdr));
-    }
-    return hr;
-}
-
 
 WinToastStringWrapper::WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
     HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
@@ -512,7 +474,6 @@ WinToastStringWrapper::WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef
 WinToastStringWrapper::WinToastStringWrapper(const std::wstring &stringRef)
 {
     HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
-
     if (FAILED(hr)) {
         RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
     }
