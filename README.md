@@ -31,7 +31,7 @@ Import the header file wintoastlib.h to your project from the include folder. In
      	std::cout << "Error, probably your system in not compatible!";
     }
     
-If you want to handle the Toast Notification Events, create your custom `WinToastHandler`:
+If you want to handle every Toast Notification Event, just create your custom `WinToastHandler`:
 
      class WinToastHandlerExample : public WinToastHandler {
          public:
@@ -44,7 +44,7 @@ If you want to handle the Toast Notification Events, create your custom `WinToas
             	....
          };
          
-Now, every time you want to launch a new toast, just create a new template and use:
+Now, every time you want to launch a new toast, just create a new template and configure it:
 
     WinToastHandlerExample* handler = new WinToastHandlerExample;
     WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
