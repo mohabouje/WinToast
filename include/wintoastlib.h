@@ -46,7 +46,7 @@ namespace WinToastLib {
     };
 
 
-    class WinToastHandler : public WinToastTemplateHandler{
+    class WinToastHandler : public WinToastTemplateHandler {
     public:
         enum WinToastDismissalReason {
             UserCanceled = ToastDismissalReason::ToastDismissalReason_UserCanceled,
@@ -91,7 +91,6 @@ namespace WinToastLib {
 
         WinToastTemplate(const WinToastTemplateType& type = ImageWithTwoLines);
         ~WinToastTemplate();
-        virtual WinToastHandler* handler() const;
 
         int                                 textFieldsCount() const { return _textFieldsCount; }
         bool                                hasImage() const { return _hasImage; }
@@ -118,7 +117,7 @@ namespace WinToastLib {
 
         bool                initialize();
         bool                isInitialized() const { return _isInitialized; }
-        bool                showToast(WinToastTemplate& toast);
+        bool                showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler);
         std::wstring        appName() const;
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);

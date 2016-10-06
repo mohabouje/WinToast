@@ -34,12 +34,12 @@ void MainWindow::on_imagePathSelector_clicked()
 
 void MainWindow::on_showToast_clicked()
 {
+    WinToastHandler* handler = new WinToastHandler;
     WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
     templ.setImagePath(ui->imagePath->text().toStdWString());
     templ.setTextField(ui->firstLine->text().toStdWString(), 0);
     templ.setTextField(ui->secondLine->text().toStdWString(), 1);
-    //templ.setTextField(ui->secondLine->text().toStdWString(), 2);
-    if (!WinToast::instance()->showToast(templ)) {
+    if (!WinToast::instance()->showToast(templ, handler)) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
     }
 }

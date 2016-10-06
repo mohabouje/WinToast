@@ -274,7 +274,7 @@ HRESULT	WinToast::createShellLink() {
 
 
 
-bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
+bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler)  {
     if (!isInitialized()) {
         std::wcout << "Error when launching the toast. WinToast is not initialized =(" << std::endl;
         return _isInitialized;
@@ -290,7 +290,7 @@ bool WinToast::showToast(_In_ WinToastTemplate& toast)  {
             if (SUCCEEDED(hr)) {
                 hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
                 if (SUCCEEDED(hr)) {
-                    hr = Util::setEventHandlers(notification(), toast.handler());
+                    hr = Util::setEventHandlers(notification(), handler);
                     if (SUCCEEDED(hr)) {
                         hr = _notifier->Show(notification());
                         if (SUCCEEDED(hr)) {
@@ -355,13 +355,6 @@ WinToastTemplate::~WinToastTemplate()
 {
     _textFields.clear();
 }
-
-WinToastHandler *WinToastTemplate::handler() const
-{
-    static ComPtr<WinToastHandler> m_handler(new WinToastHandler);
-    return m_handler.Get();
-}
-
 
 void WinToastTemplate::setTextField(const std::wstring& txt, int pos) {
     _textFields[pos] = txt;
