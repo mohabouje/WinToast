@@ -23,7 +23,6 @@ WinToast integrates all standar templates availables in the [ToastTemplateType e
 
 Import the header file wintoastlib.h to your project. Initialize the library with your application info:
         
-    ```c++
     using namespace WinToastLib;
     ....
     WinToast::instance()->setAppName(L"WinToastExample");
@@ -32,11 +31,9 @@ Import the header file wintoastlib.h to your project. Initialize the library wit
     if (!WinToast::instance()->initialize()) {
         qDebug() << "Error, your system in not compatible!";
     }
-    ```
     
-If you want to handle every Toast Notification Event, just create your custom `WinToastHandler`:
+You could customize your own handler, just create a subclass from `WinToastHandler`:
 
-	```c++
 	class WinToastHandlerExample : public WinToastHandler {
 	 public:
 		WinToastHandlerExample(); 
@@ -44,24 +41,19 @@ If you want to handle every Toast Notification Event, just create your custom `W
 		void toastActivated() const;
 		void toastDismissed(WinToastDismissalReason state) const;
 		void toastFailed() const;
-	    protected:
-		....
 	 };
-	 ```
          
 Now, every time you want to launch a new toast, just create a new template and configure it:
 
-        ```c++
 	WinToastHandlerExample* handler = new WinToastHandlerExample;
 	WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
-	templ.setImagePath(ui->imagePath->text().toStdWString());
-	templ.setTextField(ui->firstLine->text().toStdWString(), 0);
-	templ.setTextField(ui->secondLine->text().toStdWString(), 1);
+	templ.setImagePath(L"C:\example.png");
+	templ.setTextField(L"title",0);
+	templ.setTextField(L"subtitle", 1);
 
 	if (!WinToast::instance()->showToast(templ, handler)) {
-	QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
+	    std::wcout << L"Error: Could not launch your toast notification!";
 	}
-	```
     
 **That's all my folks =)**
 
