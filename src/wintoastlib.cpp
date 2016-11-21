@@ -174,10 +174,10 @@ bool WinToast::isCompatible() {
                  || (DllImporter::WindowsDeleteString == nullptr));
 }
 
-std::wstring WinToast::configureAUMI(const std::wstring &company,
-                                               const std::wstring &name,
-                                               const std::wstring &surname,
-                                               const std::wstring &versionInfo)
+std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
+                                               _In_ const std::wstring &name,
+                                               _In_ const std::wstring &surname,
+                                               _In_ const std::wstring &versionInfo)
 {
     std::wstring aumi = company;
     aumi += L"." + name;
@@ -359,7 +359,7 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandle
 }
 
 
-HRESULT WinToast::setTextField(_In_ const std::wstring& text, int pos) {
+HRESULT WinToast::setTextField(_In_ const std::wstring& text, _In_ int pos) {
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
@@ -410,10 +410,10 @@ WinToastTemplate::~WinToastTemplate()
     _textFields.clear();
 }
 
-void WinToastTemplate::setTextField(const std::wstring& txt, const WinToastTemplate::TextField& pos) {
+void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ const WinToastTemplate::TextField& pos) {
     _textFields[pos] = txt;
 }
-void WinToastTemplate::setImagePath(const std::wstring& imgPath) {
+void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
     if (!_hasImage)
         return;
     _imagePath = imgPath;
@@ -425,16 +425,6 @@ void WinToastTemplate::initComponentsFromType() {
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
 }
 
-
-
-WinToastHandler::WinToastHandler()
-{
-
-}
-
-WinToastHandler::~WinToastHandler()
-{
-}
 
 void WinToastHandler::toastActivated() const {
     std::wcout << L"The user clicked in this toast" << std::endl;

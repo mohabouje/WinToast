@@ -48,8 +48,6 @@ namespace WinToastLib {
             TimedOut = ToastDismissalReason::ToastDismissalReason_TimedOut
         };
 
-        WinToastHandler();
-        ~WinToastHandler();
         virtual void toastActivated() const;
         virtual void toastDismissed(WinToastDismissalReason state) const;
         virtual void toastFailed() const;
@@ -77,17 +75,17 @@ namespace WinToastLib {
             WinToastTemplateTypeCount
         };
 
-        WinToastTemplate(const WinToastTemplateType& type = ImageWithTwoLines);
+        WinToastTemplate(_In_ const WinToastTemplateType& type = ImageWithTwoLines);
         ~WinToastTemplate();
 
         int                                 textFieldsCount() const { return _textFields.size(); }
         bool                                hasImage() const { return _hasImage; }
         std::vector<std::wstring>			textFields() const { return _textFields; }
-        std::wstring                        textField(const TextField& pos) const { return _textFields[pos]; }
+        std::wstring                        textField(_In_ const TextField& pos) const { return _textFields[pos]; }
         std::wstring                        imagePath() const { return _imagePath; }
         WinToastTemplateType                type() const { return _type; }
-        void                                setTextField(const std::wstring& txt, const TextField& pos);
-        void                                setImagePath(const std::wstring& imgPath);
+        void                                setTextField(_In_ const std::wstring& txt, _In_ const TextField& pos);
+        void                                setImagePath(_In_ const std::wstring& imgPath);
     private:
         static int                          TextFieldsCount[WinToastTemplateTypeCount];
         bool                                _hasImage;
@@ -101,10 +99,10 @@ namespace WinToastLib {
     public:
         static WinToast* instance();
         static bool isCompatible();
-        static std::wstring configureAUMI(const std::wstring& company,
-                                                    const std::wstring& name,
-                                                    const std::wstring& surname,
-                                                    const std::wstring& versionInfo
+        static std::wstring configureAUMI(_In_ const std::wstring& company,
+                                                    _In_ const std::wstring& name,
+                                                    _In_ const std::wstring& surname,
+                                                    _In_ const std::wstring& versionInfo
                                                     );
         bool                initialize();
         bool                isInitialized() const { return _isInitialized; }
@@ -134,7 +132,7 @@ namespace WinToastLib {
         HRESULT     validateShellLink();
         HRESULT		createShellLink();
         HRESULT		setImageField(_In_ const std::wstring& path);
-        HRESULT     setTextField(_In_ const std::wstring& text, int pos);
+        HRESULT     setTextField(_In_ const std::wstring& text, _In_ int pos);
     };
 
 
