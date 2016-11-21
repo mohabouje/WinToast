@@ -337,8 +337,9 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandle
 
     HRESULT hr = _notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &_xmlDocument);
     if (SUCCEEDED(hr)) {
-        for (int i = 0; i < toast.textFieldsCount() && SUCCEEDED(hr); i++) {
-            hr = setTextField(toast.textField(i), i);
+        const int fieldsCount = toast.textFieldsCount();
+        for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
+            hr = setTextField(toast.textField(WinToastTemplate::TextField(i)), i);
         }
         if (SUCCEEDED(hr)) {
             hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
@@ -409,7 +410,7 @@ WinToastTemplate::~WinToastTemplate()
     _textFields.clear();
 }
 
-void WinToastTemplate::setTextField(const std::wstring& txt, int pos) {
+void WinToastTemplate::setTextField(const std::wstring& txt, const WinToastTemplate::TextField& pos) {
     _textFields[pos] = txt;
 }
 void WinToastTemplate::setImagePath(const std::wstring& imgPath) {
@@ -421,8 +422,7 @@ void WinToastTemplate::setImagePath(const std::wstring& imgPath) {
 int WinToastTemplate::TextFieldsCount[WinToastTemplateTypeCount] = { 1, 2, 2, 3, 1, 2, 2, 3};
 void WinToastTemplate::initComponentsFromType() {
     _hasImage = _type < ToastTemplateType_ToastText01;
-    _textFieldsCount = TextFieldsCount[_type];
-    _textFields = std::vector<std::wstring>(_textFieldsCount, L"");
+    _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
 }
 
 

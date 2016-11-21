@@ -58,6 +58,13 @@ namespace WinToastLib {
     class WinToastTemplate
     {
     public:
+        enum TextField {
+            FirstLine = 0,
+            SecondLine,
+            ThirdLine,
+            LineCount
+        };
+
         enum WinToastTemplateType {
             ImageWithOneLine = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
             ImageWithTwoLines = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
@@ -73,17 +80,16 @@ namespace WinToastLib {
         WinToastTemplate(const WinToastTemplateType& type = ImageWithTwoLines);
         ~WinToastTemplate();
 
-        int                                 textFieldsCount() const { return _textFieldsCount; }
+        int                                 textFieldsCount() const { return _textFields.size(); }
         bool                                hasImage() const { return _hasImage; }
         std::vector<std::wstring>			textFields() const { return _textFields; }
-        std::wstring                        textField(int pos) const { return _textFields[pos]; }
+        std::wstring                        textField(const TextField& pos) const { return _textFields[pos]; }
         std::wstring                        imagePath() const { return _imagePath; }
         WinToastTemplateType                type() const { return _type; }
-        void                                setTextField(const std::wstring& txt, int pos);
+        void                                setTextField(const std::wstring& txt, const TextField& pos);
         void                                setImagePath(const std::wstring& imgPath);
     private:
         static int                          TextFieldsCount[WinToastTemplateTypeCount];
-        int                                 _textFieldsCount;
         bool                                _hasImage;
         std::vector<std::wstring>			_textFields;
         std::wstring                        _imagePath;
