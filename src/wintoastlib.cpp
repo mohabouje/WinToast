@@ -315,8 +315,8 @@ HRESULT	WinToast::createShellLink() {
                                     }
                                 }
                             }
+                            PropVariantClear(&appIdPropVar);
                         }
-                        PropVariantClear(&appIdPropVar);
                     }
                 }
             }
