@@ -21,11 +21,11 @@ namespace DllImporter {
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsCreateStringReference)(_In_reads_opt_(length + 1) PCWSTR sourceString, UINT32 length, _Out_ HSTRING_HEADER * hstringHeader, _Outptr_result_maybenull_ _Result_nullonfailure_ HSTRING * string);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsDeleteString)(_In_opt_ HSTRING string);
 
-    f_SetCurrentProcessExplicitAppUserModelID    SetCurrentProcessExplicitAppUserModelID;
-    f_PropVariantToString                        PropVariantToString;
-    f_RoGetActivationFactory                     RoGetActivationFactory;
-    f_WindowsCreateStringReference               WindowsCreateStringReference;
-    f_WindowsDeleteString                        WindowsDeleteString;
+    static f_SetCurrentProcessExplicitAppUserModelID    SetCurrentProcessExplicitAppUserModelID;
+    static f_PropVariantToString                        PropVariantToString;
+    static f_RoGetActivationFactory                     RoGetActivationFactory;
+    static f_WindowsCreateStringReference               WindowsCreateStringReference;
+    static f_WindowsDeleteString                        WindowsDeleteString;
 
 
     template<class T>
@@ -315,8 +315,8 @@ HRESULT	WinToast::createShellLink() {
                                     }
                                 }
                             }
+                            PropVariantClear(&appIdPropVar);
                         }
-                        PropVariantClear(&appIdPropVar);
                     }
                 }
             }
@@ -421,7 +421,7 @@ void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
 
 int WinToastTemplate::TextFieldsCount[WinToastTemplateTypeCount] = { 1, 2, 2, 3, 1, 2, 2, 3};
 void WinToastTemplate::initComponentsFromType() {
-    _hasImage = _type < ToastTemplateType_ToastText01;
+    _hasImage = _type < TextOneLine;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
 }
 
@@ -473,6 +473,6 @@ WinToastStringWrapper::~WinToastStringWrapper() {
     DllImporter::WindowsDeleteString(_hstring);
 }
 
-HSTRING WinToastStringWrapper::Get() const {
+HSTRING WinToastStringWrapper::Get() const throw() {
     return _hstring;
 }
