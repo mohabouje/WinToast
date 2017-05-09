@@ -1,7 +1,15 @@
 #include "wintoastlib.h"
 #include <memory>
+#include <assert.h>
+
 #pragma comment(lib,"shlwapi")
 #pragma comment(lib,"user32")
+
+#ifdef NDEBUG
+    #define DEBUG_MSG(str) do { } while ( false )
+ #else
+    #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
+#endif
 
 using namespace WinToastLib;
 namespace DllImporter {
@@ -59,7 +67,7 @@ namespace DllImporter {
 namespace Util {
     inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
         DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, path, nSize);
-        std::wcout << "Default executable path: " << path << std::endl;
+        DEBUG_MSG("Default executable path: " << path);
         return (written > 0) ? S_OK : E_FAIL;
     }
 
@@ -70,7 +78,7 @@ namespace Util {
         if (SUCCEEDED(hr)) {
             errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
             hr = (result == 0) ? S_OK : E_INVALIDARG;
-            std::wcout << "Default shell link path: " << path << std::endl;
+            DEBUG_MSG("Default shell link path: " << path);
         }
         return hr;
     }
@@ -81,7 +89,7 @@ namespace Util {
             const std::wstring appLink(appname + DEFAULT_LINK_FORMAT);
             errno_t result = wcscat_s(path, nSize, appLink.c_str());
             hr = (result == 0) ? S_OK : E_INVALIDARG;
-            std::wcout << "Default shell link file path: " << path << std::endl;
+            DEBUG_MSG("Default shell link file path: " << path);
         }
         return hr;
     }
@@ -164,7 +172,7 @@ std::wstring WinToast::appUserModelId() const {
 }
 void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
     _aumi = aumi;
-    std::wcout << L"Default App User Model Id: " << _aumi.c_str() << std::endl;
+    DEBUG_MSG(L"Default App User Model Id: " << _aumi.c_str());
 }
 
 bool WinToast::isCompatible() {
@@ -186,24 +194,24 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
     aumi += L"." + versionInfo;
 
     if (aumi.length() > SCHAR_MAX) {
-        std::wcout << "Error: max size allowed for AUMI: 128 characters." << std::endl;
+        DEBUG_MSG("Error: max size allowed for AUMI: 128 characters.");
     }
     return aumi;
 }
 
 bool WinToast::initialize() {
     if (_aumi.empty() || _appName.empty()) {
-        std::wcout << L"Error: App User Model Id or Appname is empty!" << std::endl;
+        DEBUG_MSG(L"Error: App User Model Id or Appname is empty!");
         return _isInitialized = false;
     }
 
     if (!isCompatible()) {
-        std::wcout << L"Your OS is not compatible with this library! =(" << std::endl;
+        DEBUG_MSG(L"Your OS is not compatible with this library! =(");
         return _isInitialized = false;
     }
 
     if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
-        std::wcout << L"Error while attaching the AUMI to the current proccess =(" << std::endl;
+        DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
         return _isInitialized = false;
     }
 
@@ -233,7 +241,7 @@ HRESULT	WinToast::validateShellLink() {
     // Check if the file exist
     DWORD attr = GetFileAttributes(_path);
     if (attr >= 0xFFFFFFF) {
-        std::wcout << "Error, shell link not found. Try to create a new one in: " << _path << std::endl;
+        DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << _path);
         return E_FAIL;
     }
 
@@ -332,7 +340,7 @@ HRESULT	WinToast::createShellLink() {
 
 bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  WinToastHandler* handler)  {
     if (!isInitialized()) {
-        std::wcout << "Error when launching the toast. WinToast is not initialized =(" << std::endl;
+        DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
         return _isInitialized;
     }
 
