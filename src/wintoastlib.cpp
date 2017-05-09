@@ -1,4 +1,5 @@
 #include "wintoastlib.h"
+#include <memory>
 #pragma comment(lib,"shlwapi")
 #pragma comment(lib,"user32")
 
@@ -100,7 +101,7 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ WinToastHandler* eventHandler) {
+    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<WinToastHandler> eventHandler) {
         EventRegistrationToken activatedToken, dismissedToken, failedToken;
         HRESULT hr = notification->add_Activated(
                     Callback < Implements < RuntimeClassFlags<ClassicCom>,
@@ -329,7 +330,7 @@ HRESULT	WinToast::createShellLink() {
 
 
 
-bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler)  {
+bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  WinToastHandler* handler)  {
     if (!isInitialized()) {
         std::wcout << "Error when launching the toast. WinToast is not initialized =(" << std::endl;
         return _isInitialized;
@@ -346,7 +347,7 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandle
             if (SUCCEEDED(hr)) {
                 hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
                 if (SUCCEEDED(hr)) {
-                    hr = Util::setEventHandlers(notification(), handler);
+                    hr = Util::setEventHandlers(notification(), std::shared_ptr<WinToastHandler>(handler));
                     if (SUCCEEDED(hr)) {
                         hr = _notifier->Show(notification());
                     }
