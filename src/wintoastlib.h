@@ -1,15 +1,15 @@
 #ifndef WINTOASTLIB_H
 #define WINTOASTLIB_H
-#include <windows.h>
-#include <SDKDDKVer.h>
+#include <Windows.h>
+#include <sdkddkver.h>
 #include <WinUser.h>
-#include <Shobjidl.h>
+#include <ShObjIdl.h>
 #include <wrl/implements.h>
 #include <wrl/event.h>
 #include <windows.ui.notifications.h>
 #include <strsafe.h>
 #include <Psapi.h>
-#include <shlobj.h>
+#include <ShlObj.h>
 #include <roapi.h>
 #include <propvarutil.h>
 #include <functiondiscoverykeys.h>
@@ -47,6 +47,8 @@ namespace WinToastLib {
             ApplicationHidden = ToastDismissalReason::ToastDismissalReason_ApplicationHidden,
             TimedOut = ToastDismissalReason::ToastDismissalReason_TimedOut
         };
+
+        virtual ~WinToastHandler() {}
 
         virtual void toastActivated() const;
         virtual void toastDismissed(WinToastDismissalReason state) const;
