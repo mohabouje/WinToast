@@ -46,7 +46,7 @@ You could customize your own handler, just create a subclass from `WinToastHandl
 Now, every time you want to launch a new toast, just create a new template and configure it:
 
 	WinToastHandlerExample* handler = new WinToastHandlerExample;
-	WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageWithTwoLines);
+	WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText03);
 	templ.setImagePath(L"C:\example.png");
 	templ.setTextField(L"title",0);
 	templ.setTextField(L"subtitle", 1);
