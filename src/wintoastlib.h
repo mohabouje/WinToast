@@ -66,7 +66,7 @@ namespace WinToastLib {
         };
 
         enum WinToastTemplateType {
-            ImageAntText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
+            ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
             ImageAndText02 = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
             ImageAndText03 = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
             ImageAndText04 = ToastTemplateType::ToastTemplateType_ToastImageAndText04,
