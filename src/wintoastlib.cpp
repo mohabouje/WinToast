@@ -421,7 +421,7 @@ void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
 
 int WinToastTemplate::TextFieldsCount[WinToastTemplateTypeCount] = { 1, 2, 2, 3, 1, 2, 2, 3};
 void WinToastTemplate::initComponentsFromType() {
-    _hasImage = _type < TextOneLine;
+    _hasImage = _type < Text01;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
 }
 

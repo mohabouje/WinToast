@@ -66,18 +66,18 @@ namespace WinToastLib {
         };
 
         enum WinToastTemplateType {
-            ImageWithOneLine = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
-            ImageWithTwoLines = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
-            ImageWithThreeLines = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
-            ImageWithFourLines = ToastTemplateType::ToastTemplateType_ToastImageAndText04,
-            TextOneLine = ToastTemplateType::ToastTemplateType_ToastText01,
-            TextTwoLines = ToastTemplateType::ToastTemplateType_ToastText02,
-            TextThreeLines = ToastTemplateType::ToastTemplateType_ToastText03,
-            TextFourLines = ToastTemplateType::ToastTemplateType_ToastText04,
+            ImageAntText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
+            ImageAndText02 = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
+            ImageAndText03 = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
+            ImageAndText04 = ToastTemplateType::ToastTemplateType_ToastImageAndText04,
+            Text01 = ToastTemplateType::ToastTemplateType_ToastText01,
+            Text02 = ToastTemplateType::ToastTemplateType_ToastText02,
+            Text03 = ToastTemplateType::ToastTemplateType_ToastText03,
+            Text04 = ToastTemplateType::ToastTemplateType_ToastText04,
             WinToastTemplateTypeCount
         };
 
-        WinToastTemplate(_In_ const WinToastTemplateType& type = ImageWithTwoLines);
+        WinToastTemplate(_In_ const WinToastTemplateType& type = ImageAndText02);
         ~WinToastTemplate();
 
         int                                 textFieldsCount() const { return _textFields.size(); }
