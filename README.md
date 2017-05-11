@@ -21,18 +21,21 @@ WinToast integrates all standar templates availables in the [ToastTemplateType e
 
 ### Usage
 
-Import the header file wintoastlib.h to your project. Initialize the library with your application info:
+Import the header file wintoastlib.h to your project. For an easy usage, just use the available instance:
         
     using namespace WinToastLib;
     ....
     WinToast::instance()->setAppName(L"WinToastExample");
     WinToast::instance()->setAppUserModelId(
                 WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006"));
+		
+Check if the WinToas is initialized with succes & is compatible with your current OS:		
+		
     if (!WinToast::instance()->initialize()) {
         qDebug() << "Error, your system in not compatible!";
     }
     
-You could customize your own handler, just create a subclass from `WinToastHandler`:
+Now, implement your own handler subclassing the interface `IWinToastHandler`:
 
 	class WinToastHandlerExample : public WinToastHandler {
 	 public:
@@ -43,7 +46,7 @@ You could customize your own handler, just create a subclass from `WinToastHandl
 		void toastFailed() const;
 	 };
          
-Now, every time you want to launch a new toast, just create a new template and configure it:
+Now, to notify any event just create a new template and launch it:
 
 	WinToastHandlerExample* handler = new WinToastHandlerExample;
 	WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText03);
