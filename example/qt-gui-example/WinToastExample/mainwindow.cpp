@@ -33,6 +33,33 @@ void MainWindow::on_imagePathSelector_clicked()
 
 }
 
+class CustomHandler : public IWinToastHandler {
+public:
+    void toastActivated() const {
+        std::wcout << L"The user clicked in this toast" << std::endl;
+    }
+
+    void toastFailed() const {
+        std::wcout << L"Error showing current toast" << std::endl;
+    }
+    void toastDismissed(WinToastDismissalReason state) const {
+        switch (state) {
+        case UserCanceled:
+            std::wcout << L"The user dismissed this toast" << std::endl;
+            break;
+        case ApplicationHidden:
+            std::wcout <<  L"The application hid the toast using ToastNotifier.hide()" << std::endl;
+            break;
+        case TimedOut:
+            std::wcout << L"The toast has timed out" << std::endl;
+            break;
+        default:
+            std::wcout << L"Toast not activated" << std::endl;
+            break;
+        }
+    }
+};
+
 void MainWindow::on_showToast_clicked()
 {
     WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText04);
@@ -41,7 +68,9 @@ void MainWindow::on_showToast_clicked()
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::ThirdLine);
 
-   /* if (!WinToast::instance()->showToast(templ, new IWinToastHandler)) {
+
+
+    if (!WinToast::instance()->showToast(templ, new CustomHandler())) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
-    }*/
+    }
 }
