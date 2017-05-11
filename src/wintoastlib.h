@@ -25,7 +25,6 @@ using namespace Windows::Foundation;
 
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
-
 namespace WinToastLib {
     class WinToastHandler {
     public:
@@ -34,19 +33,15 @@ namespace WinToastLib {
             ApplicationHidden = ToastDismissalReason::ToastDismissalReason_ApplicationHidden,
             TimedOut = ToastDismissalReason::ToastDismissalReason_TimedOut
         };
-
         virtual ~WinToastHandler() {}
-
         virtual void toastActivated() const;
         virtual void toastDismissed(WinToastDismissalReason state) const;
         virtual void toastFailed() const;
     };
 
-    class WinToastTemplate
-    {
+    class WinToastTemplate {
     public:
         enum TextField { FirstLine = 0, SecondLine, ThirdLine };
-
         enum WinToastTemplateType {
             ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
             ImageAndText02 = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
@@ -61,7 +56,6 @@ namespace WinToastLib {
 
         WinToastTemplate(_In_ const WinToastTemplateType& type = ImageAndText02);
         ~WinToastTemplate();
-
         int                                 textFieldsCount() const { return _textFields.size(); }
         bool                                hasImage() const { return _hasImage; }
         std::vector<std::wstring>			textFields() const { return _textFields; }
@@ -82,6 +76,7 @@ namespace WinToastLib {
     class WinToast {
     public:
         WinToast(void);
+        virtual ~WinToast();
         static WinToast* instance();
         static bool isCompatible();
         static std::wstring configureAUMI(_In_ const std::wstring& company,
@@ -89,9 +84,9 @@ namespace WinToastLib {
                                                     _In_ const std::wstring& surname,
                                                     _In_ const std::wstring& versionInfo
                                                     );
-        bool                initialize();
-        bool                isInitialized() const { return _isInitialized; }
-        bool                showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler);
+        virtual bool        initialize();
+        virtual bool        isInitialized() const { return _isInitialized; }
+        virtual bool        showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler);
         std::wstring        appName() const;
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);
@@ -119,9 +114,5 @@ namespace WinToastLib {
         HRESULT		setImageField(_In_ const std::wstring& path);
         HRESULT     setTextField(_In_ const std::wstring& text, _In_ int pos);
     };
-
-
-
 }
-
 #endif // WINTOASTLIB_H

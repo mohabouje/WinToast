@@ -184,6 +184,9 @@ WinToast::WinToast() : _isInitialized(false)
     DllImporter::initialize();
 }
 
+WinToast::~WinToast() {
+}
+
 void WinToast::setAppName(_In_ const std::wstring& appName) {
     _appName = appName;
 }
