@@ -10,6 +10,10 @@
  #else
     #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
 #endif
+
+// Quickstart: Handling toast activations from Win32 apps in Windows 10
+// https://blogs.msdn.microsoft.com/tiles_and_toasts/2015/10/16/quickstart-handling-toast-activations-from-win32-apps-in-windows-10/
+
 using namespace WinToastLib;
 namespace DllImporter {
 
@@ -369,7 +373,7 @@ HRESULT	WinToast::createShellLink() {
 bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
     if (!isInitialized()) {
         DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
-        return _isInitialized;
+        return false;
     }
 
     HRESULT hr = _notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &_xmlDocument);
@@ -381,11 +385,12 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHand
         if (SUCCEEDED(hr)) {
             hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
             if (SUCCEEDED(hr)) {
-                hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
+                ComPtr<IToastNotification> notification;
+                hr = _notificationFactory->CreateToastNotification(xmlDocument(), &notification);
                 if (SUCCEEDED(hr)) {
-                    hr = Util::setEventHandlers(notification(), std::shared_ptr<IWinToastHandler>(handler));
+                    hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler));
                     if (SUCCEEDED(hr)) {
-                        hr = _notifier->Show(notification());
+                        hr = _notifier->Show(notification.Get());
                     }
                 }
             }

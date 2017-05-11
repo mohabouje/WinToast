@@ -96,7 +96,6 @@ namespace WinToastLib {
         inline IToastNotifier*							notifier() const { return _notifier.Get(); }
         inline IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
         inline IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
-        inline IToastNotification*						notification() const { return _notification.Get(); }
     private:
         bool											_isInitialized;
         std::wstring                                    _appName;
@@ -105,7 +104,6 @@ namespace WinToastLib {
         ComPtr<IToastNotificationManagerStatics>        _notificationManager;
         ComPtr<IToastNotifier>                          _notifier;
         ComPtr<IToastNotificationFactory>               _notificationFactory;
-        ComPtr<IToastNotification>                      _notification;
         static WinToast*								_instance;
 
         HRESULT     validateShellLink();
