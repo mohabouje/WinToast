@@ -10,7 +10,6 @@
  #else
     #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
 #endif
-
 using namespace WinToastLib;
 namespace DllImporter {
 
@@ -64,6 +63,30 @@ namespace DllImporter {
     }
 }
 
+class WinToastStringWrapper {
+public:
+    WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
+        HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
+        if (!SUCCEEDED(hr)) {
+            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+        }
+    }
+    WinToastStringWrapper(_In_ const std::wstring &stringRef) throw() {
+        HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
+        if (FAILED(hr)) {
+            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+        }
+    }
+    ~WinToastStringWrapper() {
+        DllImporter::WindowsDeleteString(_hstring);
+    }
+    inline HSTRING Get() const throw() { return _hstring; }
+private:
+    HSTRING _hstring;
+    HSTRING_HEADER _header;
+
+};
+
 namespace Util {
     inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
         DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, path, nSize);
@@ -109,7 +132,7 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<WinToastHandler> eventHandler) {
+    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler) {
         EventRegistrationToken activatedToken, dismissedToken, failedToken;
         HRESULT hr = notification->add_Activated(
                     Callback < Implements < RuntimeClassFlags<ClassicCom>,
@@ -128,7 +151,7 @@ namespace Util {
                      ToastDismissalReason reason;
                      if (SUCCEEDED(e->get_Reason(&reason)))
                      {
-                         eventHandler->toastDismissed(static_cast<WinToastHandler::WinToastDismissalReason>(reason));
+                         eventHandler->toastDismissed(static_cast<IWinToastHandler::WinToastDismissalReason>(reason));
                      }
                      return S_OK;
                  }).Get(), &dismissedToken);
@@ -146,6 +169,8 @@ namespace Util {
     }
 }
 
+
+
 WinToast* WinToast::_instance = nullptr;
 WinToast* WinToast::instance() {
     if (_instance == nullptr) {
@@ -157,6 +182,9 @@ WinToast* WinToast::instance() {
 WinToast::WinToast() : _isInitialized(false)
 {
     DllImporter::initialize();
+}
+
+WinToast::~WinToast() {
 }
 
 void WinToast::setAppName(_In_ const std::wstring& appName) {
@@ -338,7 +366,7 @@ HRESULT	WinToast::createShellLink() {
 
 
 
-bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  WinToastHandler* handler)  {
+bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
     if (!isInitialized()) {
         DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
         return _isInitialized;
@@ -355,7 +383,7 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  WinToastHandl
             if (SUCCEEDED(hr)) {
                 hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
                 if (SUCCEEDED(hr)) {
-                    hr = Util::setEventHandlers(notification(), std::shared_ptr<WinToastHandler>(handler));
+                    hr = Util::setEventHandlers(notification(), std::shared_ptr<IWinToastHandler>(handler));
                     if (SUCCEEDED(hr)) {
                         hr = _notifier->Show(notification());
                     }
@@ -413,7 +441,6 @@ WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :
     initComponentsFromType();
 }
 
-
 WinToastTemplate::~WinToastTemplate()
 {
     _textFields.clear();
@@ -432,56 +459,4 @@ int WinToastTemplate::TextFieldsCount[WinToastTemplateTypeCount] = { 1, 2, 2, 3,
 void WinToastTemplate::initComponentsFromType() {
     _hasImage = _type < Text01;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
-}
-
-
-void WinToastHandler::toastActivated() const {
-    std::wcout << L"The user clicked in this toast" << std::endl;
-
-}
-
-void WinToastHandler::toastFailed() const {
-    std::wcout << L"Error showing current toast" << std::endl;
-}
-
-void WinToastHandler::toastDismissed(WinToastHandler::WinToastDismissalReason state) const {
-    switch (state) {
-    case UserCanceled:
-        std::wcout << L"The user dismissed this toast" << std::endl;
-        break;
-    case ApplicationHidden:
-        std::wcout <<  L"The application hid the toast using ToastNotifier.hide()" << std::endl;
-        break;
-    case TimedOut:
-        std::wcout << L"The toast has timed out" << std::endl;
-        break;
-    default:
-        std::wcout << L"Toast not activated" << std::endl;
-        break;
-    }
-}
-
-
-WinToastStringWrapper::WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
-    HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
-    if (!SUCCEEDED(hr)) {
-        RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
-    }
-}
-
-
-WinToastStringWrapper::WinToastStringWrapper(const std::wstring &stringRef)
-{
-    HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
-    if (FAILED(hr)) {
-        RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
-    }
-}
-
-WinToastStringWrapper::~WinToastStringWrapper() {
-    DllImporter::WindowsDeleteString(_hstring);
-}
-
-HSTRING WinToastStringWrapper::Get() const throw() {
-    return _hstring;
 }
