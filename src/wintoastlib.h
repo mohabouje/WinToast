@@ -92,13 +92,7 @@ namespace WinToastLib {
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);
         void                setAppName(_In_ const std::wstring& appName);
-
     protected:
-        inline IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }
-        inline IToastNotifier*							notifier() const { return _notifier.Get(); }
-        inline IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
-        inline IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
-    private:
         bool											_isInitialized;
         std::wstring                                    _appName;
         std::wstring                                    _aumi;

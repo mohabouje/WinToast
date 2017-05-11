@@ -256,7 +256,7 @@ bool WinToast::initialize() {
     if (SUCCEEDED(hr)) {
         hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &_notificationManager);
         if (SUCCEEDED(hr)) {
-            hr = notificationManager()->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
+            hr = _notificationManager->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
             if (SUCCEEDED(hr)) {
                 hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &_notificationFactory);
             }
@@ -386,7 +386,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
             hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
             if (SUCCEEDED(hr)) {
                 ComPtr<IToastNotification> notification;
-                hr = _notificationFactory->CreateToastNotification(xmlDocument(), &notification);
+                hr = _notificationFactory->CreateToastNotification(_xmlDocument.Get(), &notification);
                 if (SUCCEEDED(hr)) {
                     hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler));
                     if (SUCCEEDED(hr)) {
@@ -413,7 +413,7 @@ bool WinToast::hideToast(INT64 id) {
     }
     const bool find = _buffer.find(id) != _buffer.end();
     ComPtr<IToastNotification> notification = _buffer[id];
-    notifier()->Hide(notification.Get());
+    _notifier->Hide(notification.Get());
     return find;
 }
 
@@ -425,7 +425,7 @@ HRESULT WinToast::setTextField(_In_ const std::wstring& text, _In_ int pos) {
         ComPtr<IXmlNode> node;
         hr = nodeList->Item(pos, &node);
         if (SUCCEEDED(hr)) {
-            hr = Util::setNodeStringValue(text, node.Get(), xmlDocument());
+            hr = Util::setNodeStringValue(text, node.Get(), _xmlDocument.Get());
         }
     }
     return hr;
@@ -448,7 +448,7 @@ HRESULT WinToast::setImageField(_In_ const std::wstring& path)  {
                     ComPtr<IXmlNode> editedNode;
                     hr = attributes->GetNamedItem(WinToastStringWrapper(L"src").Get(), &editedNode);
                     if (SUCCEEDED(hr)) {
-                        Util::setNodeStringValue(imagePath, editedNode.Get(), xmlDocument());
+                        Util::setNodeStringValue(imagePath, editedNode.Get(), _xmlDocument.Get());
                     }
                 }
             }
