@@ -17,6 +17,7 @@
 #include <winstring.h>
 #include <string.h>
 #include <vector>
+#include <map>
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::Foundation;
@@ -85,7 +86,8 @@ namespace WinToastLib {
                                                     );
         virtual bool        initialize();
         virtual bool        isInitialized() const { return _isInitialized; }
-        virtual bool        showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
+        virtual INT64       showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
+        virtual bool        hideToast(_In_ INT64 id);
         std::wstring        appName() const;
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);
@@ -100,6 +102,7 @@ namespace WinToastLib {
         bool											_isInitialized;
         std::wstring                                    _appName;
         std::wstring                                    _aumi;
+        std::map<INT64, ComPtr<IToastNotification>>     _buffer;
         ComPtr<IXmlDocument>                            _xmlDocument;
         ComPtr<IToastNotificationManagerStatics>        _notificationManager;
         ComPtr<IToastNotifier>                          _notifier;

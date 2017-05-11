@@ -369,11 +369,11 @@ HRESULT	WinToast::createShellLink() {
 }
 
 
-
-bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
+INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
+    INT64 id = -1;
     if (!isInitialized()) {
         DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
-        return false;
+        return id;
     }
 
     HRESULT hr = _notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &_xmlDocument);
@@ -390,14 +390,31 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHand
                 if (SUCCEEDED(hr)) {
                     hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler));
                     if (SUCCEEDED(hr)) {
-                        hr = _notifier->Show(notification.Get());
+                        GUID guid;
+                        hr = CoCreateGuid(&guid);
+                        if (SUCCEEDED(hr)) {
+                            id = guid.Data1;
+                            _buffer[id] = notification;
+                            hr = _notifier->Show(notification.Get());
+                        }
                     }
                 }
             }
         }
     }
 
-    return SUCCEEDED(hr);
+    return id;
+}
+
+bool WinToast::hideToast(INT64 id) {
+    if (!isInitialized()) {
+        DEBUG_MSG("Error when hiding the toast. WinToast is not initialized.");
+        return false;
+    }
+    const bool find = _buffer.find(id) != _buffer.end();
+    ComPtr<IToastNotification> notification = _buffer[id];
+    notifier()->Hide(notification.Get());
+    return find;
 }
 
 
