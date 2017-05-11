@@ -411,16 +411,14 @@ bool WinToast::hideToast(INT64 id) {
         return false;
     }
     const bool find = _buffer.find(id) != _buffer.end();
-    ComPtr<IToastNotification> notification = _buffer[id];
-    _notifier->Hide(notification.Get());
+    _notifier->Hide(_buffer[id].Get());
     return find;
 }
 
 void WinToast::clear() {
     auto end = _buffer.end();
     for (auto it = _buffer.begin(); it != end; ++it) {
-        ComPtr<IToastNotification> notification = it->second;
-        _notifier->Hide(notification.Get());
+        _notifier->Hide(it->second.Get());
     }
     _buffer.clear();
 }
