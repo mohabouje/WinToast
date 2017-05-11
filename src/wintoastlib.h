@@ -27,9 +27,6 @@ using namespace Windows::Foundation;
 #define DEFAULT_LINK_FORMAT			L".lnk"
 
 namespace WinToastLib {
-
-
-
     class WinToastHandler {
     public:
         enum WinToastDismissalReason {
@@ -48,12 +45,7 @@ namespace WinToastLib {
     class WinToastTemplate
     {
     public:
-        enum TextField {
-            FirstLine = 0,
-            SecondLine,
-            ThirdLine,
-            LineCount
-        };
+        enum TextField { FirstLine = 0, SecondLine, ThirdLine };
 
         enum WinToastTemplateType {
             ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
