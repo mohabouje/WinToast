@@ -27,17 +27,7 @@ using namespace Windows::Foundation;
 #define DEFAULT_LINK_FORMAT			L".lnk"
 
 namespace WinToastLib {
-    class WinToastStringWrapper {
-    public:
-        WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw();
-        WinToastStringWrapper(_In_ const std::wstring &stringRef) throw();
-        ~WinToastStringWrapper();
-        HSTRING Get() const throw();
-    private:
-        HSTRING _hstring;
-        HSTRING_HEADER _header;
 
-    };
 
 
     class WinToastHandler {

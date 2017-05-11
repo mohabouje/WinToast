@@ -10,7 +10,6 @@
  #else
     #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
 #endif
-
 using namespace WinToastLib;
 namespace DllImporter {
 
@@ -63,6 +62,30 @@ namespace DllImporter {
         return hr;
     }
 }
+
+class WinToastStringWrapper {
+public:
+    WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
+        HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
+        if (!SUCCEEDED(hr)) {
+            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+        }
+    }
+    WinToastStringWrapper(_In_ const std::wstring &stringRef) throw() {
+        HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
+        if (FAILED(hr)) {
+            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+        }
+    }
+    ~WinToastStringWrapper() {
+        DllImporter::WindowsDeleteString(_hstring);
+    }
+    inline HSTRING Get() const throw() { return _hstring; }
+private:
+    HSTRING _hstring;
+    HSTRING_HEADER _header;
+
+};
 
 namespace Util {
     inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
@@ -145,6 +168,8 @@ namespace Util {
         return hr;
     }
 }
+
+
 
 WinToast* WinToast::_instance = nullptr;
 WinToast* WinToast::instance() {
@@ -462,26 +487,6 @@ void WinToastHandler::toastDismissed(WinToastHandler::WinToastDismissalReason st
 }
 
 
-WinToastStringWrapper::WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
-    HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
-    if (!SUCCEEDED(hr)) {
-        RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
-    }
-}
 
 
-WinToastStringWrapper::WinToastStringWrapper(const std::wstring &stringRef)
-{
-    HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
-    if (FAILED(hr)) {
-        RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
-    }
-}
 
-WinToastStringWrapper::~WinToastStringWrapper() {
-    DllImporter::WindowsDeleteString(_hstring);
-}
-
-HSTRING WinToastStringWrapper::Get() const throw() {
-    return _hstring;
-}
