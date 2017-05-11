@@ -132,7 +132,7 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<WinToastHandler> eventHandler) {
+    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler) {
         EventRegistrationToken activatedToken, dismissedToken, failedToken;
         HRESULT hr = notification->add_Activated(
                     Callback < Implements < RuntimeClassFlags<ClassicCom>,
@@ -151,7 +151,7 @@ namespace Util {
                      ToastDismissalReason reason;
                      if (SUCCEEDED(e->get_Reason(&reason)))
                      {
-                         eventHandler->toastDismissed(static_cast<WinToastHandler::WinToastDismissalReason>(reason));
+                         eventHandler->toastDismissed(static_cast<IWinToastHandler::WinToastDismissalReason>(reason));
                      }
                      return S_OK;
                  }).Get(), &dismissedToken);
@@ -366,7 +366,7 @@ HRESULT	WinToast::createShellLink() {
 
 
 
-bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  WinToastHandler* handler)  {
+bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
     if (!isInitialized()) {
         DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
         return _isInitialized;
@@ -383,7 +383,7 @@ bool WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  WinToastHandl
             if (SUCCEEDED(hr)) {
                 hr = _notificationFactory->CreateToastNotification(xmlDocument(), &_notification);
                 if (SUCCEEDED(hr)) {
-                    hr = Util::setEventHandlers(notification(), std::shared_ptr<WinToastHandler>(handler));
+                    hr = Util::setEventHandlers(notification(), std::shared_ptr<IWinToastHandler>(handler));
                     if (SUCCEEDED(hr)) {
                         hr = _notifier->Show(notification());
                     }
@@ -441,7 +441,6 @@ WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :
     initComponentsFromType();
 }
 
-
 WinToastTemplate::~WinToastTemplate()
 {
     _textFields.clear();
@@ -461,35 +460,3 @@ void WinToastTemplate::initComponentsFromType() {
     _hasImage = _type < Text01;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
 }
-
-
-void WinToastHandler::toastActivated() const {
-    std::wcout << L"The user clicked in this toast" << std::endl;
-
-}
-
-void WinToastHandler::toastFailed() const {
-    std::wcout << L"Error showing current toast" << std::endl;
-}
-
-void WinToastHandler::toastDismissed(WinToastHandler::WinToastDismissalReason state) const {
-    switch (state) {
-    case UserCanceled:
-        std::wcout << L"The user dismissed this toast" << std::endl;
-        break;
-    case ApplicationHidden:
-        std::wcout <<  L"The application hid the toast using ToastNotifier.hide()" << std::endl;
-        break;
-    case TimedOut:
-        std::wcout << L"The toast has timed out" << std::endl;
-        break;
-    default:
-        std::wcout << L"Toast not activated" << std::endl;
-        break;
-    }
-}
-
-
-
-
-

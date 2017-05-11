@@ -26,17 +26,16 @@ using namespace Windows::Foundation;
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
 namespace WinToastLib {
-    class WinToastHandler {
+    class IWinToastHandler {
     public:
         enum WinToastDismissalReason {
             UserCanceled = ToastDismissalReason::ToastDismissalReason_UserCanceled,
             ApplicationHidden = ToastDismissalReason::ToastDismissalReason_ApplicationHidden,
             TimedOut = ToastDismissalReason::ToastDismissalReason_TimedOut
         };
-        virtual ~WinToastHandler() {}
-        virtual void toastActivated() const;
-        virtual void toastDismissed(WinToastDismissalReason state) const;
-        virtual void toastFailed() const;
+        virtual void toastActivated() const = 0;
+        virtual void toastDismissed(WinToastDismissalReason state) const = 0;
+        virtual void toastFailed() const = 0;
     };
 
     class WinToastTemplate {
@@ -86,7 +85,7 @@ namespace WinToastLib {
                                                     );
         virtual bool        initialize();
         virtual bool        isInitialized() const { return _isInitialized; }
-        virtual bool        showToast(_In_ const WinToastTemplate& toast, _In_ WinToastHandler* handler);
+        virtual bool        showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
         std::wstring        appName() const;
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);
