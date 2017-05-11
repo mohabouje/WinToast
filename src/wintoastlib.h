@@ -81,6 +81,7 @@ namespace WinToastLib {
 
     class WinToast {
     public:
+        WinToast(void);
         static WinToast* instance();
         static bool isCompatible();
         static std::wstring configureAUMI(_In_ const std::wstring& company,
@@ -95,6 +96,13 @@ namespace WinToastLib {
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);
         void                setAppName(_In_ const std::wstring& appName);
+
+    protected:
+        inline IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }
+        inline IToastNotifier*							notifier() const { return _notifier.Get(); }
+        inline IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
+        inline IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
+        inline IToastNotification*						notification() const { return _notification.Get(); }
     private:
         bool											_isInitialized;
         std::wstring                                    _appName;
@@ -105,13 +113,6 @@ namespace WinToastLib {
         ComPtr<IToastNotificationFactory>               _notificationFactory;
         ComPtr<IToastNotification>                      _notification;
         static WinToast*								_instance;
-
-        WinToast(void);
-        IXmlDocument*							xmlDocument() const { return _xmlDocument.Get(); }
-        IToastNotifier*							notifier() const { return _notifier.Get(); }
-        IToastNotificationFactory*				notificationFactory() const { return _notificationFactory.Get(); }
-        IToastNotificationManagerStatics*		notificationManager() const { return _notificationManager.Get(); }
-        IToastNotification*						notification() const { return _notification.Get(); }
 
         HRESULT     validateShellLink();
         HRESULT		createShellLink();
