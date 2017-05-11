@@ -88,6 +88,7 @@ namespace WinToastLib {
         virtual bool        isInitialized() const { return _isInitialized; }
         virtual INT64       showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
         virtual bool        hideToast(_In_ INT64 id);
+        virtual void        clear();
         std::wstring        appName() const;
         std::wstring        appUserModelId() const;
         void                setAppUserModelId(_In_ const std::wstring& appName);

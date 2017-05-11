@@ -402,7 +402,6 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
             }
         }
     }
-
     return id;
 }
 
@@ -415,6 +414,15 @@ bool WinToast::hideToast(INT64 id) {
     ComPtr<IToastNotification> notification = _buffer[id];
     _notifier->Hide(notification.Get());
     return find;
+}
+
+void WinToast::clear() {
+    auto end = _buffer.end();
+    for (auto it = _buffer.begin(); it != end; ++it) {
+        ComPtr<IToastNotification> notification = it->second;
+        _notifier->Hide(notification.Get());
+    }
+    _buffer.clear();
 }
 
 
