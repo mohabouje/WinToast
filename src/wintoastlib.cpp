@@ -19,10 +19,10 @@ namespace DllImporter {
 
     // Function load a function from library
     template <typename Function>
-    HRESULT loadFunctionFromLibrary(HINSTANCE library, LPCSTR name, Function &func) {
-        if (!library)
-            return false;
-
+	HRESULT loadFunctionFromLibrary(HINSTANCE library, LPCSTR name, Function &func) {
+		if (!library) {
+			return E_INVALIDARG;
+		}
         func = reinterpret_cast<Function>(GetProcAddress(library, name));
         return (func != nullptr) ? S_OK : E_FAIL;
     }
@@ -58,9 +58,10 @@ namespace DllImporter {
             hr = loadFunctionFromLibrary(LibPropSys, "PropVariantToString", PropVariantToString);
             if (SUCCEEDED(hr)) {
                 HINSTANCE LibComBase = LoadLibrary(L"COMBASE.DLL");
-                return SUCCEEDED(loadFunctionFromLibrary(LibComBase, "RoGetActivationFactory", RoGetActivationFactory))
-                        && SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsCreateStringReference", WindowsCreateStringReference))
-                        && SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsDeleteString", WindowsDeleteString));
+                const bool succeded = SUCCEEDED(loadFunctionFromLibrary(LibComBase, "RoGetActivationFactory", RoGetActivationFactory))
+										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsCreateStringReference", WindowsCreateStringReference))
+										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsDeleteString", WindowsDeleteString));
+				return succeded ? S_OK : E_FAIL;
             }
         }
         return hr;
@@ -230,17 +231,20 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
 bool WinToast::initialize() {
     if (_aumi.empty() || _appName.empty()) {
         DEBUG_MSG(L"Error: App User Model Id or Appname is empty!");
-        return _isInitialized = false;
+		_isInitialized = false;
+        return _isInitialized;
     }
 
     if (!isCompatible()) {
         DEBUG_MSG(L"Your OS is not compatible with this library! =(");
-        return _isInitialized = false;
+		_isInitialized = false;
+		return _isInitialized;
     }
 
     if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
         DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
-        return _isInitialized = false;
+		_isInitialized = false;
+		return _isInitialized;
     }
 
 
@@ -264,7 +268,7 @@ bool WinToast::initialize() {
 
 HRESULT	WinToast::validateShellLinkHelper() {
 
-    WCHAR	_path[MAX_PATH];
+	WCHAR	_path[MAX_PATH] = { 0 };
     Util::defaultShellLinkPath(_appName, _path);
     // Check if the file exist
     DWORD attr = GetFileAttributes(_path);
@@ -322,8 +326,8 @@ HRESULT	WinToast::validateShellLinkHelper() {
 
 
 HRESULT	WinToast::createShellLinkHelper() {
-    WCHAR   exePath[MAX_PATH];
-    WCHAR	slPath[MAX_PATH];
+	WCHAR   exePath[MAX_PATH]{0};
+	WCHAR	slPath[MAX_PATH]{0};
     Util::defaultShellLinkPath(_appName, slPath);
     Util::defaultExecutablePath(exePath);
     ComPtr<IShellLink> shellLink;
@@ -401,7 +405,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
     return id;
 }
 
-bool WinToast::hideToast(INT64 id) {
+bool WinToast::hideToast(_In_ INT64 id) {
     if (!isInitialized()) {
         DEBUG_MSG("Error when hiding the toast. WinToast is not initialized.");
         return false;
@@ -459,7 +463,7 @@ HRESULT WinToast::setImageFieldHelper(_In_ const std::wstring& path)  {
     return hr;
 }
 
-WinToastTemplate::WinToastTemplate(WinToastTemplateType type) : _type(type) {
+WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
     static const int TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
     _hasImage = _type < Text01;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
