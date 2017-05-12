@@ -174,8 +174,6 @@ namespace Util {
     }
 }
 
-
-
 WinToast* WinToast::_instance = nullptr;
 WinToast* WinToast::instance() {
     if (_instance == nullptr) {
@@ -190,6 +188,15 @@ WinToast::WinToast() : _isInitialized(false)
 }
 
 WinToast::~WinToast() {
+    _instance = nullptr;
+	delete _instance;
+	_xmlDocument.Reset();
+	_notificationManager.Reset();
+	_notifier.Reset();
+	_notificationFactory.Reset();
+	_buffer.clear();
+	_aumi.clear();
+	_appName.clear();
 }
 
 void WinToast::setAppName(_In_ const std::wstring& appName) {
@@ -267,13 +274,12 @@ bool WinToast::initialize() {
 }
 
 HRESULT	WinToast::validateShellLinkHelper() {
-
-	WCHAR	_path[MAX_PATH] = { 0 };
-    Util::defaultShellLinkPath(_appName, _path);
+	WCHAR	path[MAX_PATH] = { L'\0' };
+    Util::defaultShellLinkPath(_appName, path);
     // Check if the file exist
-    DWORD attr = GetFileAttributes(_path);
+    DWORD attr = GetFileAttributes(path);
     if (attr >= 0xFFFFFFF) {
-        DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << _path);
+        DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << path);
         return E_FAIL;
     }
 
@@ -289,7 +295,7 @@ HRESULT	WinToast::validateShellLinkHelper() {
         ComPtr<IPersistFile> persistFile;
         hr = shellLink.As(&persistFile);
         if (SUCCEEDED(hr)) {
-            hr = persistFile->Load(_path, STGM_READWRITE);
+            hr = persistFile->Load(path, STGM_READWRITE);
             if (SUCCEEDED(hr)) {
                 ComPtr<IPropertyStore> propertyStore;
                 hr = shellLink.As(&propertyStore);
@@ -309,7 +315,7 @@ HRESULT	WinToast::validateShellLinkHelper() {
                                 if (SUCCEEDED(hr)) {
                                     hr = propertyStore->Commit();
                                     if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
-                                        hr = persistFile->Save(_path, TRUE);
+                                        hr = persistFile->Save(path, TRUE);
                                     }
                                 }
                             }
@@ -326,8 +332,8 @@ HRESULT	WinToast::validateShellLinkHelper() {
 
 
 HRESULT	WinToast::createShellLinkHelper() {
-	WCHAR   exePath[MAX_PATH]{0};
-	WCHAR	slPath[MAX_PATH]{0};
+	WCHAR   exePath[MAX_PATH]{L'\0'};
+	WCHAR	slPath[MAX_PATH]{L'\0'};
     Util::defaultShellLinkPath(_appName, slPath);
     Util::defaultExecutablePath(exePath);
     ComPtr<IShellLink> shellLink;
