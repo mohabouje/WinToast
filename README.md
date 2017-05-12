@@ -21,7 +21,16 @@ WinToast integrates all standar templates availables in the [ToastTemplateType e
 
 ### Usage
 
-Import the header file wintoastlib.h to your project. For an easy usage, just use the available instance:
+Import the header file wintoastlib.h to your project. Check if the current OS support the library:
+
+    using namespace WinToastLib;
+    ....
+    if (WinToast::isCompatible()) {
+        std::wcout << L"Error, your system in not supported!" << std::endl;
+    }
+
+
+For an easy usage, just use the available instance:
         
     using namespace WinToastLib;
     ....
@@ -32,7 +41,7 @@ Import the header file wintoastlib.h to your project. For an easy usage, just us
 Check if the WinToas is initialized with succes & is compatible with your current OS:		
 		
     if (!WinToast::instance()->initialize()) {
-        qDebug() << "Error, your system in not compatible!";
+        std::wcout << L"Error, could not initialize the lib!" << std::endl;
     }
     
 Now, implement your own handler subclassing the interface `IWinToastHandler`:
@@ -55,7 +64,7 @@ Now, to notify any event just create a new template and launch it:
 	templ.setTextField(L"subtitle", 1);
 
 	if (!WinToast::instance()->showToast(templ, handler)) {
-	    std::wcout << L"Error: Could not launch your toast notification!";
+	    std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 	}
     
 **That's all my folks =)**
