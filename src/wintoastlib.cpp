@@ -205,10 +205,10 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
 
 bool WinToast::isCompatible() {
         return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
-            || (DllImporter::PropVariantToString == nullptr)
-            || (DllImporter::RoGetActivationFactory == nullptr)
-            || (DllImporter::WindowsCreateStringReference == nullptr)
-                 || (DllImporter::WindowsDeleteString == nullptr));
+                || (DllImporter::PropVariantToString == nullptr)
+                || (DllImporter::RoGetActivationFactory == nullptr)
+                || (DllImporter::WindowsCreateStringReference == nullptr)
+                || (DllImporter::WindowsDeleteString == nullptr));
 }
 
 std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
@@ -391,7 +391,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                         if (SUCCEEDED(hr)) {
                             id = guid.Data1;
                             _buffer[id] = notification;
-                            hr = _notifier->Show(notification.Get());
+                            _notifier->Show(notification.Get());
                         }
                     }
                 }
