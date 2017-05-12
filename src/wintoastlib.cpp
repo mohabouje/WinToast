@@ -195,13 +195,9 @@ void WinToast::setAppName(_In_ const std::wstring& appName) {
     _appName = appName;
 }
 
-std::wstring WinToast::appName() const {
-    return _appName;
-}
 
-std::wstring WinToast::appUserModelId() const {
-    return _aumi;
-}
+
+
 void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
     _aumi = aumi;
     DEBUG_MSG(L"Default App User Model Id: " << _aumi.c_str());
@@ -248,9 +244,9 @@ bool WinToast::initialize() {
     }
 
 
-    HRESULT hr = validateShellLink();
+    HRESULT hr = validateShellLinkHelper();
     if (FAILED(hr)) {
-        hr = createShellLink();
+        hr = createShellLinkHelper();
     }
 
     if (SUCCEEDED(hr)) {
@@ -266,7 +262,7 @@ bool WinToast::initialize() {
     return _isInitialized = SUCCEEDED(hr);
 }
 
-HRESULT	WinToast::validateShellLink() {
+HRESULT	WinToast::validateShellLinkHelper() {
 
     WCHAR	_path[MAX_PATH];
     Util::defaultShellLinkPath(_appName, _path);
@@ -325,7 +321,7 @@ HRESULT	WinToast::validateShellLink() {
 
 
 
-HRESULT	WinToast::createShellLink() {
+HRESULT	WinToast::createShellLinkHelper() {
     WCHAR   exePath[MAX_PATH];
     WCHAR	slPath[MAX_PATH];
     Util::defaultShellLinkPath(_appName, slPath);
@@ -380,10 +376,10 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
     if (SUCCEEDED(hr)) {
         const int fieldsCount = toast.textFieldsCount();
         for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
-            hr = setTextField(toast.textField(WinToastTemplate::TextField(i)), i);
+            hr = setTextFieldHelper(toast.textField(WinToastTemplate::TextField(i)), i);
         }
         if (SUCCEEDED(hr)) {
-            hr = toast.hasImage() ? setImageField(toast.imagePath()) : hr;
+            hr = toast.hasImage() ? setImageFieldHelper(toast.imagePath()) : hr;
             if (SUCCEEDED(hr)) {
                 ComPtr<IToastNotification> notification;
                 hr = _notificationFactory->CreateToastNotification(_xmlDocument.Get(), &notification);
@@ -424,7 +420,7 @@ void WinToast::clear() {
 }
 
 
-HRESULT WinToast::setTextField(_In_ const std::wstring& text, _In_ int pos) {
+HRESULT WinToast::setTextFieldHelper(_In_ const std::wstring& text, _In_ int pos) {
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
@@ -438,7 +434,7 @@ HRESULT WinToast::setTextField(_In_ const std::wstring& text, _In_ int pos) {
 }
 
 
-HRESULT WinToast::setImageField(_In_ const std::wstring& path)  {
+HRESULT WinToast::setImageFieldHelper(_In_ const std::wstring& path)  {
     wchar_t imagePath[MAX_PATH] = L"file:///";
     HRESULT hr = StringCchCat(imagePath, MAX_PATH, path.c_str());
     if (SUCCEEDED(hr)) {
@@ -463,28 +459,22 @@ HRESULT WinToast::setImageField(_In_ const std::wstring& path)  {
     return hr;
 }
 
-WinToastTemplate::WinToastTemplate(const WinToastTemplateType& type) :
-    _type(type)
-{
-    initComponentsFromType();
-}
-
-WinToastTemplate::~WinToastTemplate()
-{
-    _textFields.clear();
-}
-
-void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ const WinToastTemplate::TextField& pos) {
-    _textFields[pos] = txt;
-}
-void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
-    if (!_hasImage)
-        return;
-    _imagePath = imgPath;
-}
-
-void WinToastTemplate::initComponentsFromType() {
+WinToastTemplate::WinToastTemplate(WinToastTemplateType type) : _type(type) {
     static const int TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
     _hasImage = _type < Text01;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
+}
+
+WinToastTemplate::~WinToastTemplate() {
+    _textFields.clear();
+}
+
+void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastTemplate::TextField pos) {
+    _textFields[pos] = txt;
+}
+
+void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
+    if (_hasImage) {
+        _imagePath = imgPath;
+    }
 }

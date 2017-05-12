@@ -54,13 +54,14 @@ namespace WinToastLib {
             WinToastTemplateTypeCount
         };
 
-        WinToastTemplate(_In_ const WinToastTemplateType& type = ImageAndText02);
+        WinToastTemplate(_In_ WinToastTemplateType type = ImageAndText02);
         ~WinToastTemplate();
-        void                                setTextField(_In_ const std::wstring& txt, _In_ const TextField& pos);
-        void                                setImagePath(_In_ const std::wstring& imgPath);inline int                                  textFieldsCount() const { return _textFields.size(); }
+        void                                        setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
+        void                                        setImagePath(_In_ const std::wstring& imgPath);
+        inline int                                  textFieldsCount() const { return _textFields.size(); }
         inline bool                                 hasImage() const { return _hasImage; }
         inline std::vector<std::wstring>            textFields() const { return _textFields; }
-        inline std::wstring                         textField(_In_ const TextField& pos) const { return _textFields[pos]; }
+        inline std::wstring                         textField(_In_ TextField pos) const { return _textFields[pos]; }
         inline std::wstring                         imagePath() const { return _imagePath; }
         inline WinToastTemplateType                 type() const { return _type; }
     private:
@@ -68,7 +69,6 @@ namespace WinToastLib {
         std::vector<std::wstring>			_textFields;
         std::wstring                        _imagePath;
         WinToastTemplateType                _type;
-        void initComponentsFromType();
     };
 
     class WinToast {
@@ -76,21 +76,21 @@ namespace WinToastLib {
         WinToast(void);
         virtual ~WinToast();
         static WinToast* instance();
-        static bool isCompatible();
-        static std::wstring configureAUMI(_In_ const std::wstring& company,
+        static bool             isCompatible();
+        static std::wstring     configureAUMI(_In_ const std::wstring& company,
                                                     _In_ const std::wstring& name,
                                                     _In_ const std::wstring& surname,
                                                     _In_ const std::wstring& versionInfo
                                                     );
-        virtual bool        initialize();
-        virtual bool        isInitialized() const { return _isInitialized; }
-        virtual INT64       showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
-        virtual bool        hideToast(_In_ INT64 id);
-        virtual void        clear();
-        std::wstring        appName() const;
-        std::wstring        appUserModelId() const;
-        void                setAppUserModelId(_In_ const std::wstring& appName);
-        void                setAppName(_In_ const std::wstring& appName);
+        virtual bool            initialize();
+        virtual bool            isInitialized() const { return _isInitialized; }
+        virtual INT64           showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
+        virtual bool            hideToast(_In_ INT64 id);
+        virtual void            clear();
+        inline std::wstring     appName() const { return _appName; }
+        inline std::wstring     appUserModelId() const { return _aumi; }
+        void                    setAppUserModelId(_In_ const std::wstring& appName);
+        void                    setAppName(_In_ const std::wstring& appName);
     protected:
         bool											_isInitialized;
         std::wstring                                    _appName;
@@ -102,10 +102,10 @@ namespace WinToastLib {
         ComPtr<IToastNotificationFactory>               _notificationFactory;
         static WinToast*								_instance;
 
-        HRESULT     validateShellLink();
-        HRESULT		createShellLink();
-        HRESULT		setImageField(_In_ const std::wstring& path);
-        HRESULT     setTextField(_In_ const std::wstring& text, _In_ int pos);
+        HRESULT     validateShellLinkHelper();
+        HRESULT		createShellLinkHelper();
+        HRESULT		setImageFieldHelper(_In_ const std::wstring& path);
+        HRESULT     setTextFieldHelper(_In_ const std::wstring& text, _In_ int pos);
     };
 }
 #endif // WINTOASTLIB_H
