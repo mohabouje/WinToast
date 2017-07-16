@@ -1,3 +1,10 @@
+![releases](https://img.shields.io/github/tag/mohabouje/WinToast.svg)
+![issues](https://img.shields.io/github/issues/mohabouje/WinToast.svg)
+![license](https://img.shields.io/github/license/mohabouje/WinToast.svg)
+![built](https://img.shields.io/badge/built%20with-MVSC-6f62ba.svg)
+
+***
+
 WinToast
 ===================
 
