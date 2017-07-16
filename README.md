@@ -3,6 +3,10 @@
 ![license](https://img.shields.io/github/license/mohabouje/WinToast.svg)
 ![built](https://img.shields.io/badge/built%20with-MVSC-6f62ba.svg)
 
+[![GitHub forks](https://img.shields.io/github/forks/mohabouje/WinToast.svg?style=social&label=Fork)]()
+[![GitHub stars](https://img.shields.io/github/stars/mohabouje/WinToast.svg?style=social&label=Star)]()
+[![GitHub watchers](https://img.shields.io/github/watchers/mohabouje/WinToast.svg?style=social&label=Watch)]()
+
 ***
 
 WinToast
