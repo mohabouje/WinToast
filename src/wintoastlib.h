@@ -58,7 +58,7 @@ namespace WinToastLib {
         ~WinToastTemplate();
         void                                        setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
         void                                        setImagePath(_In_ const std::wstring& imgPath);
-        inline int                                  textFieldsCount() const { return _textFields.size(); }
+        inline int                                  textFieldsCount() const { return static_cast<int>(_textFields.size()); }
         inline bool                                 hasImage() const { return _hasImage; }
         inline std::vector<std::wstring>            textFields() const { return _textFields; }
         inline std::wstring                         textField(_In_ TextField pos) const { return _textFields[pos]; }
