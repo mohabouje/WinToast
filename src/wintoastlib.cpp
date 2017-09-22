@@ -369,8 +369,6 @@ HRESULT	WinToast::createShellLinkHelper() {
             }
         }
     }
-    CoTaskMemFree(exePath);
-    CoTaskMemFree(slPath);
     return hr;
 }
 
