@@ -379,6 +379,10 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
         DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
         return id;
     }
+    if (!handler) {
+        DEBUG_MSG("Error when launching the toast. handler cannot be null.");
+        return id;
+    }
 
     HRESULT hr = _notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &_xmlDocument);
     if (SUCCEEDED(hr)) {
