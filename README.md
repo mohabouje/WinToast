@@ -38,7 +38,7 @@ Import the header file wintoastlib.h to your project. Check if the current OS su
 using namespace WinToastLib;
 ....
 if (WinToast::isCompatible()) {
-std::wcout << L"Error, your system in not supported!" << std::endl;
+    std::wcout << L"Error, your system in not supported!" << std::endl;
 }
 ```
 
@@ -62,7 +62,7 @@ Check if the WinToas is initialized with succes & is compatible with your curren
 Now, implement your own handler subclassing the interface `IWinToastHandler`:
 
 ```cpp
-class WinToastHandlerExample : public WinToastHandler {
+class WinToastHandlerExample : public IWinToastHandler {
  public:
 	WinToastHandlerExample(); 
 	// Public interfaces
