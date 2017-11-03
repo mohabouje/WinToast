@@ -93,6 +93,7 @@ namespace WinToastLib {
         void                    setAppName(_In_ const std::wstring& appName);
     protected:
         bool											_isInitialized;
+        bool                                            _hasCoInitialized;
         std::wstring                                    _appName;
         std::wstring                                    _aumi;
         std::map<INT64, ComPtr<IToastNotification>>     _buffer;
