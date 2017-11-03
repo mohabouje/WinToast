@@ -224,15 +224,19 @@ bool WinToast::isCompatible() {
                 || (DllImporter::WindowsDeleteString == nullptr));
 }
 
-std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
-                                               _In_ const std::wstring &name,
-                                               _In_ const std::wstring &surname,
-                                               _In_ const std::wstring &versionInfo)
+std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
+                                               _In_ const std::wstring &productName,
+                                               _In_ const std::wstring &subProduct,
+                                               _In_ const std::wstring &versionInformation)
 {
-    std::wstring aumi = company;
-    aumi += L"." + name;
-    aumi += L"." + surname;
-    aumi += L"." + versionInfo;
+    std::wstring aumi = companyName;
+    aumi += L"." + productName;
+    if (subProduct.length() > 0) {
+        aumi += L"." + subProduct;
+        if (versionInformation.length() > 0) {
+            aumi += L"." + versionInformation;
+        }
+    }
 
     if (aumi.length() > SCHAR_MAX) {
         DEBUG_MSG("Error: max size allowed for AUMI: 128 characters.");

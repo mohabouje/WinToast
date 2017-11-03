@@ -77,10 +77,10 @@ namespace WinToastLib {
         virtual ~WinToast();
         static WinToast* instance();
         static bool             isCompatible();
-        static std::wstring     configureAUMI(_In_ const std::wstring& company,
-                                                    _In_ const std::wstring& name,
-                                                    _In_ const std::wstring& surname,
-                                                    _In_ const std::wstring& versionInfo
+        static std::wstring     configureAUMI(_In_ const std::wstring& companyName,
+                                                    _In_ const std::wstring& productName,
+                                                    _In_ const std::wstring& subProduct = std::wstring(),
+                                                    _In_ const std::wstring& versionInformation = std::wstring()
                                                     );
         virtual bool            initialize();
         virtual bool            isInitialized() const { return _isInitialized; }
