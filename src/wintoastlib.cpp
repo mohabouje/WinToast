@@ -51,13 +51,13 @@ namespace DllImporter {
     }
 
     inline HRESULT initialize() {
-        HINSTANCE LibShell32 = LoadLibrary(L"SHELL32.DLL");
+        HINSTANCE LibShell32 = LoadLibraryW(L"SHELL32.DLL");
         HRESULT hr = loadFunctionFromLibrary(LibShell32, "SetCurrentProcessExplicitAppUserModelID", SetCurrentProcessExplicitAppUserModelID);
         if (SUCCEEDED(hr)) {
-            HINSTANCE LibPropSys = LoadLibrary(L"PROPSYS.DLL");
+            HINSTANCE LibPropSys = LoadLibraryW(L"PROPSYS.DLL");
             hr = loadFunctionFromLibrary(LibPropSys, "PropVariantToString", PropVariantToString);
             if (SUCCEEDED(hr)) {
-                HINSTANCE LibComBase = LoadLibrary(L"COMBASE.DLL");
+                HINSTANCE LibComBase = LoadLibraryW(L"COMBASE.DLL");
                 const bool succeded = SUCCEEDED(loadFunctionFromLibrary(LibComBase, "RoGetActivationFactory", RoGetActivationFactory))
 										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsCreateStringReference", WindowsCreateStringReference))
 										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsDeleteString", WindowsDeleteString));
@@ -94,14 +94,14 @@ private:
 
 namespace Util {
     inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
-        DWORD written = GetModuleFileNameEx(GetCurrentProcess(), nullptr, path, nSize);
+        DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, path, nSize);
         DEBUG_MSG("Default executable path: " << path);
         return (written > 0) ? S_OK : E_FAIL;
     }
 
 
     inline HRESULT defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
-        DWORD written = GetEnvironmentVariable(L"APPDATA", path, nSize);
+        DWORD written = GetEnvironmentVariableW(L"APPDATA", path, nSize);
         HRESULT hr = written > 0 ? S_OK : E_INVALIDARG;
         if (SUCCEEDED(hr)) {
             errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
@@ -302,7 +302,7 @@ HRESULT	WinToast::validateShellLinkHelper() {
 	WCHAR	path[MAX_PATH] = { L'\0' };
     Util::defaultShellLinkPath(_appName, path);
     // Check if the file exist
-    DWORD attr = GetFileAttributes(path);
+    DWORD attr = GetFileAttributesW(path);
     if (attr >= 0xFFFFFFF) {
         DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << path);
         return E_FAIL;
@@ -361,7 +361,7 @@ HRESULT	WinToast::createShellLinkHelper() {
 	WCHAR	slPath[MAX_PATH]{L'\0'};
     Util::defaultShellLinkPath(_appName, slPath);
     Util::defaultExecutablePath(exePath);
-    ComPtr<IShellLink> shellLink;
+    ComPtr<IShellLinkW> shellLink;
     HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
     if (SUCCEEDED(hr)) {
         hr = shellLink->SetPath(exePath);
@@ -473,7 +473,7 @@ HRESULT WinToast::setTextFieldHelper(_In_ const std::wstring& text, _In_ int pos
 
 HRESULT WinToast::setImageFieldHelper(_In_ const std::wstring& path)  {
     wchar_t imagePath[MAX_PATH] = L"file:///";
-    HRESULT hr = StringCchCat(imagePath, MAX_PATH, path.c_str());
+    HRESULT hr = StringCchCatW(imagePath, MAX_PATH, path.c_str());
     if (SUCCEEDED(hr)) {
         ComPtr<IXmlNodeList> nodeList;
         HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"image").Get(), &nodeList);
