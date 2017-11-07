@@ -182,7 +182,9 @@ WinToast* WinToast::instance() {
     return _instance;
 }
 
-WinToast::WinToast() : _isInitialized(false)
+WinToast::WinToast() :
+    _isInitialized(false),
+    _hasCoInitialized(false)
 {
     DllImporter::initialize();
 }
@@ -197,6 +199,9 @@ WinToast::~WinToast() {
 	_buffer.clear();
 	_aumi.clear();
 	_appName.clear();
+    if (_hasCoInitialized) {
+        CoUninitialize();
+    }
 }
 
 void WinToast::setAppName(_In_ const std::wstring& appName) {
@@ -219,15 +224,19 @@ bool WinToast::isCompatible() {
                 || (DllImporter::WindowsDeleteString == nullptr));
 }
 
-std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
-                                               _In_ const std::wstring &name,
-                                               _In_ const std::wstring &surname,
-                                               _In_ const std::wstring &versionInfo)
+std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
+                                               _In_ const std::wstring &productName,
+                                               _In_ const std::wstring &subProduct,
+                                               _In_ const std::wstring &versionInformation)
 {
-    std::wstring aumi = company;
-    aumi += L"." + name;
-    aumi += L"." + surname;
-    aumi += L"." + versionInfo;
+    std::wstring aumi = companyName;
+    aumi += L"." + productName;
+    if (subProduct.length() > 0) {
+        aumi += L"." + subProduct;
+        if (versionInformation.length() > 0) {
+            aumi += L"." + versionInformation;
+        }
+    }
 
     if (aumi.length() > SCHAR_MAX) {
         DEBUG_MSG("Error: max size allowed for AUMI: 128 characters.");
@@ -235,23 +244,35 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &company,
     return aumi;
 }
 
+
 bool WinToast::initialize() {
+    _isInitialized = false;
     if (_aumi.empty() || _appName.empty()) {
         DEBUG_MSG(L"Error: App User Model Id or Appname is empty!");
-		_isInitialized = false;
-        return _isInitialized;
+        return false;
     }
 
     if (!isCompatible()) {
         DEBUG_MSG(L"Your OS is not compatible with this library! =(");
-		_isInitialized = false;
-		return _isInitialized;
+        return false;
     }
 
     if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
         DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
-		_isInitialized = false;
-		return _isInitialized;
+        return false;
+    }
+
+    if (!_hasCoInitialized) {
+        HRESULT initHr = CoInitializeEx(NULL, COINIT::COINIT_MULTITHREADED);
+        if (initHr != RPC_E_CHANGED_MODE) {
+            if (FAILED(initHr) && initHr != S_FALSE) {
+                DEBUG_MSG(L"Error on COM library initialization!");
+                return false;
+            }
+            else {
+                _hasCoInitialized = true;
+            }
+        }
     }
 
 
@@ -266,11 +287,15 @@ bool WinToast::initialize() {
             hr = _notificationManager->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
             if (SUCCEEDED(hr)) {
                 hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &_notificationFactory);
+                if (SUCCEEDED(hr)) {
+                    _isInitialized = true;
+                    return true;
+                }
             }
         }
     }
+    return false;
 
-    return _isInitialized = SUCCEEDED(hr);
 }
 
 HRESULT	WinToast::validateShellLinkHelper() {
