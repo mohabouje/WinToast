@@ -136,6 +136,10 @@ namespace Util {
         return NULL;
     }
 
+    inline PCWSTR AsString(HSTRING hstring) {
+		return DllImporter::WindowsGetStringRawBuffer(hstring, NULL);
+    }
+
     inline HRESULT setNodeStringValue(const std::wstring& string, IXmlNode *node, IXmlDocument *xml) {
         ComPtr<IXmlText> textNode;
         HRESULT hr = xml->CreateTextNode( WinToastStringWrapper(string).Get(), &textNode);
@@ -155,8 +159,21 @@ namespace Util {
         HRESULT hr = notification->add_Activated(
                     Callback < Implements < RuntimeClassFlags<ClassicCom>,
                     ITypedEventHandler<ToastNotification*, IInspectable* >> >(
-                    [eventHandler](IToastNotification*, IInspectable*)
+                    [eventHandler](IToastNotification*, IInspectable* inspectable)
                 {
+                    IToastActivatedEventArgs *activatedEventArgs;
+                    HRESULT hr = inspectable->QueryInterface(&activatedEventArgs);
+                    if (SUCCEEDED(hr)) {
+                        HSTRING argumentsHandle;
+                        hr = activatedEventArgs->get_Arguments(&argumentsHandle);
+                        if (SUCCEEDED(hr)) {
+                            PCWSTR arguments = Util::AsString(argumentsHandle);
+                            if (arguments && *arguments) {
+                                eventHandler->toastActivated((int)wcstol(arguments, NULL, 10));
+                                return S_OK;
+                            }
+                        }
+                    }
                     eventHandler->toastActivated();
                     return S_OK;
                 }).Get(), &activatedToken);
@@ -429,6 +446,15 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
             hr = setTextFieldHelper(toast.textField(WinToastTemplate::TextField(i)), i);
         }
         if (SUCCEEDED(hr)) {
+            const int actionsCount = toast.actionsCount();
+            WCHAR buf[12];
+            for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
+                _swprintf(buf, L"%d", i);
+                hr = addActionHelper(toast.actionLabel(i), buf);
+            }
+            DEBUG_MSG("xml: " << Util::AsString(_xmlDocument));
+        }
+        if (SUCCEEDED(hr)) {
             hr = toast.hasImage() ? setImageFieldHelper(toast.imagePath()) : hr;
             if (SUCCEEDED(hr)) {
                 ComPtr<IToastNotification> notification;
@@ -509,6 +535,66 @@ HRESULT WinToast::setImageFieldHelper(_In_ const std::wstring& path)  {
     return hr;
 }
 
+HRESULT WinToast::addActionHelper(_In_ const std::wstring& content, _In_ const std::wstring& arguments) {
+	ComPtr<IXmlNodeList> nodeList;
+	HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"actions").Get(), &nodeList);
+	if (FAILED(hr))
+		return hr;
+	UINT32 length;
+	hr = nodeList->get_Length(&length);
+	if (FAILED(hr))
+		return hr;
+	ComPtr<IXmlNode> actionsNode;
+	if (length > 0)
+		hr = nodeList->Item(0, &actionsNode);
+	else {
+		hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
+		if (FAILED(hr))
+			return hr;
+		hr = nodeList->get_Length(&length);
+		if (FAILED(hr))
+			return hr;
+		ComPtr<IXmlNode> toastNode;
+		hr = nodeList->Item(0, &toastNode);
+		if (FAILED(hr))
+			return hr;
+		ComPtr<IXmlElement> toastElement;
+		hr = toastNode.As(&toastElement);
+		if (SUCCEEDED(hr))
+                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"template").Get(), WinToastStringWrapper(L"ToastGeneric").Get());
+		if (SUCCEEDED(hr))
+                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(), WinToastStringWrapper(L"long").Get());
+		if (FAILED(hr))
+			return hr;
+		ComPtr<IXmlElement> actionsElement;
+		hr = _xmlDocument->CreateElement(WinToastStringWrapper(L"actions").Get(), &actionsElement);
+		if (FAILED(hr))
+			return hr;
+		hr = actionsElement.As(&actionsNode);
+		if (FAILED(hr))
+			return hr;
+		ComPtr<IXmlNode> appendedChild;
+		hr = toastNode->AppendChild(actionsNode.Get(), &appendedChild);
+	}
+	if (FAILED(hr))
+		return hr;
+	ComPtr<IXmlElement> actionElement;
+	hr = _xmlDocument->CreateElement(WinToastStringWrapper(L"action").Get(), &actionElement);
+	if (SUCCEEDED(hr))
+		hr = actionElement->SetAttribute(WinToastStringWrapper(L"content").Get(), WinToastStringWrapper(content).Get());
+	if (SUCCEEDED(hr))
+		hr = actionElement->SetAttribute(WinToastStringWrapper(L"arguments").Get(), WinToastStringWrapper(arguments).Get());
+	if (FAILED(hr))
+		return hr;
+	ComPtr<IXmlNode> actionNode;
+	hr = actionElement.As(&actionNode);
+	if (FAILED(hr))
+		return hr;
+	ComPtr<IXmlNode> appendedChild;
+	hr = actionsNode->AppendChild(actionNode.Get(), &appendedChild);
+	return hr;
+}
+
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
     static const int TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
     _hasImage = _type < Text01;
@@ -527,4 +613,9 @@ void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
     if (_hasImage) {
         _imagePath = imgPath;
     }
+}
+
+void WinToastLib::WinToastTemplate::addAction(const std::wstring & label)
+{
+	_actions.push_back(label);
 }

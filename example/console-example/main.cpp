@@ -9,6 +9,11 @@ public:
         exit(0);
     }
 
+    void toastActivated(int actionIndex) const {
+        std::wcout << L"The user clicked on action #" << actionIndex << std::endl;
+        exit(16 + actionIndex);
+    }
+
     void toastDismissed(WinToastDismissalReason state) const {
         switch (state) {
         case UserCanceled:
