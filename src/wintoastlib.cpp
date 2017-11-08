@@ -31,12 +31,14 @@ namespace DllImporter {
     typedef HRESULT(FAR STDAPICALLTYPE *f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
     typedef HRESULT(FAR STDAPICALLTYPE *f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid, _COM_Outptr_ void ** factory);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsCreateStringReference)(_In_reads_opt_(length + 1) PCWSTR sourceString, UINT32 length, _Out_ HSTRING_HEADER * hstringHeader, _Outptr_result_maybenull_ _Result_nullonfailure_ HSTRING * string);
+    typedef PCWSTR(FAR STDAPICALLTYPE *f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_ UINT32 *length);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsDeleteString)(_In_opt_ HSTRING string);
 
     static f_SetCurrentProcessExplicitAppUserModelID    SetCurrentProcessExplicitAppUserModelID;
     static f_PropVariantToString                        PropVariantToString;
     static f_RoGetActivationFactory                     RoGetActivationFactory;
     static f_WindowsCreateStringReference               WindowsCreateStringReference;
+    static f_WindowsGetStringRawBuffer                  WindowsGetStringRawBuffer;
     static f_WindowsDeleteString                        WindowsDeleteString;
 
 
@@ -60,6 +62,7 @@ namespace DllImporter {
                 HINSTANCE LibComBase = LoadLibraryW(L"COMBASE.DLL");
                 const bool succeded = SUCCEEDED(loadFunctionFromLibrary(LibComBase, "RoGetActivationFactory", RoGetActivationFactory))
 										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsCreateStringReference", WindowsCreateStringReference))
+										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsGetStringRawBuffer", WindowsGetStringRawBuffer))
 										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsDeleteString", WindowsDeleteString));
 				return succeded ? S_OK : E_FAIL;
             }
@@ -122,6 +125,16 @@ namespace Util {
         return hr;
     }
 
+
+    inline PCWSTR AsString(ComPtr<IXmlDocument> &xmlDocument) {
+        HSTRING xml;
+        ComPtr<IXmlNodeSerializer> ser;
+        HRESULT hr = xmlDocument.As<IXmlNodeSerializer>(&ser);
+        hr = ser->GetXml(&xml);
+        if (SUCCEEDED(hr))
+            return DllImporter::WindowsGetStringRawBuffer(xml, NULL);
+        return NULL;
+    }
 
     inline HRESULT setNodeStringValue(const std::wstring& string, IXmlNode *node, IXmlDocument *xml) {
         ComPtr<IXmlText> textNode;
