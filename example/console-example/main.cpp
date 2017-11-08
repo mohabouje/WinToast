@@ -49,11 +49,14 @@ int wmain(int argc, LPWSTR *argv)
     }
 
     LPWSTR text = L"Hello, world!", imagePath = NULL;
+    std::vector<std::wstring> actions;
 
     int i;
     for (i = 1; i < argc; i++)
         if (!wcscmp(L"-image", argv[i]))
             imagePath = argv[++i];
+        else if (!wcscmp(L"-action", argv[i]))
+            actions.push_back(argv[++i]);
         else if (argv[i][0] == L'-') {
             std::wcout << L"Unhandled option: " << argv[i] << std::endl;
             return 7;
@@ -81,6 +84,8 @@ int wmain(int argc, LPWSTR *argv)
         templ.setImagePath(imagePath);
     }
     templ.setTextField(text, WinToastTemplate::FirstLine);
+    for (auto const &action : actions)
+        templ.addAction(action);
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";

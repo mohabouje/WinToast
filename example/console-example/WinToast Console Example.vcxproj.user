@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <LocalDebuggerCommandArguments>-image "$(ProjectDir)if_terminal_298878.png"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-image "$(ProjectDir)if_terminal_298878.png" -action Yes -action No "Do you want to try to take over the world?"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
