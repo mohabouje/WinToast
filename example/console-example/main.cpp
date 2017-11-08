@@ -37,6 +37,23 @@ int wmain(int argc, LPWSTR *argv)
         return 1;
     }
 
+    LPWSTR text = L"Hello, world!", imagePath = NULL;
+
+    int i;
+    for (i = 1; i < argc; i++)
+        if (!wcscmp(L"-image", argv[i]))
+            imagePath = argv[++i];
+        else if (argv[i][0] == L'-') {
+            std::wcout << L"Unhandled option: " << argv[i] << std::endl;
+            return 1;
+        }
+        else if (i + 1 == argc)
+            text = argv[i];
+        else {
+            std::wcerr << L"Cannot handle multiple texts for now" << std::endl;
+            return 1;
+        }
+
     WinToast::instance()->setAppName(L"Console WinToast Example");
     WinToast::instance()->setAppUserModelId(L"WinToast Console Example");
     if (!WinToast::instance()->initialize()) {
@@ -44,8 +61,15 @@ int wmain(int argc, LPWSTR *argv)
         return 1;
     }
 
-    WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text01);
-    templ.setTextField(L"Hello, world!", WinToastTemplate::FirstLine);
+    WinToastTemplate templ;
+
+    if (imagePath == NULL)
+        templ = WinToastTemplate(WinToastTemplate::Text01);
+    else {
+        templ = WinToastTemplate(WinToastTemplate::ImageAndText01);
+        templ.setImagePath(imagePath);
+    }
+    templ.setTextField(text, WinToastTemplate::FirstLine);
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
