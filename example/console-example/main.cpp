@@ -77,9 +77,30 @@ int wmain(int argc, LPWSTR *argv)
 
     WinToast::instance()->setAppName(appName);
     WinToast::instance()->setAppUserModelId(appUserModelID);
-    if (!WinToast::instance()->initialize()) {
+    bool wasLinkCreated = false;
+    if (!WinToast::instance()->initialize(&wasLinkCreated)) {
         std::wcerr << L"Error, your system in not compatible!" << std::endl;
         return 9;
+    }
+
+    if (wasLinkCreated) {
+        WCHAR   exePath[MAX_PATH]{L'\0'};
+        DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exePath, MAX_PATH);
+        STARTUPINFOW si;
+        memset(&si, 0, sizeof(si));
+        si.cb = sizeof(si);
+        PROCESS_INFORMATION pi;
+        memset(&pi, 0, sizeof(pi));
+        Sleep(3000);
+        BOOL b = CreateProcessW(exePath, GetCommandLineW(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+        if (b) {
+            DWORD code = 1;
+            WaitForSingleObject(pi.hProcess, INFINITE);
+            if (!GetExitCodeProcess(pi.hProcess, &code))
+                std::wcerr << "Could not get exit code of child process!" << std::endl;
+            CloseHandle(pi.hProcess);
+            exit(code);
+        }
     }
 
     WinToastTemplate templ;
