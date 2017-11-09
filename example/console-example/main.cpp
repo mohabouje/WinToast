@@ -48,7 +48,7 @@ int wmain(int argc, LPWSTR *argv)
         return 6;
     }
 
-    LPWSTR text = L"Hello, world!", imagePath = NULL;
+    LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = L"Hello, world!", imagePath = NULL;
     std::vector<std::wstring> actions;
     INT64 expiration;
 
@@ -60,6 +60,10 @@ int wmain(int argc, LPWSTR *argv)
             actions.push_back(argv[++i]);
         else if (!wcscmp(L"-expire-ms", argv[i]))
             expiration = wcstol(argv[++i], NULL, 10);
+        else if (!wcscmp(L"-app-name", argv[i]))
+            appName = argv[++i];
+        else if (!wcscmp(L"-app-user-model-id", argv[i]) || !wcscmp(L"-app-id", argv[i]))
+            appUserModelID = argv[++i];
         else if (argv[i][0] == L'-') {
             std::wcout << L"Unhandled option: " << argv[i] << std::endl;
             return 7;
@@ -71,8 +75,8 @@ int wmain(int argc, LPWSTR *argv)
             return 8;
         }
 
-    WinToast::instance()->setAppName(L"Console WinToast Example");
-    WinToast::instance()->setAppUserModelId(L"WinToast Console Example");
+    WinToast::instance()->setAppName(appName);
+    WinToast::instance()->setAppUserModelId(appUserModelID);
     if (!WinToast::instance()->initialize()) {
         std::wcerr << L"Error, your system in not compatible!" << std::endl;
         return 9;
