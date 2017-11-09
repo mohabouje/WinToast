@@ -95,6 +95,65 @@ private:
 
 };
 
+class MyDateTime : public IReference<DateTime>
+{
+protected:
+    DateTime _dateTime;
+
+public:
+    static INT64 Now() {
+        FILETIME now;
+        GetSystemTimeAsFileTime(&now);
+        return ((((INT64)now.dwHighDateTime) << 32) | now.dwLowDateTime);
+    }
+
+    MyDateTime(DateTime dateTime) : _dateTime(dateTime) {}
+
+    MyDateTime(INT64 millisecondsFromNow) {
+        _dateTime.UniversalTime = Now() + millisecondsFromNow * 10000;
+    }
+
+    operator INT64() {
+        return _dateTime.UniversalTime;
+    }
+
+    HRESULT STDMETHODCALLTYPE get_Value(DateTime *dateTime) {
+        *dateTime = _dateTime;
+        return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObject) {
+        if (!ppvObject) {
+            return E_POINTER;
+        }
+        if (riid == __uuidof(IUnknown) || riid == __uuidof(IReference<DateTime>)) {
+            *ppvObject = static_cast<IUnknown*>(static_cast<IReference<DateTime>*>(this));
+            return S_OK;
+        }
+        return E_NOINTERFACE;
+    }
+
+    ULONG STDMETHODCALLTYPE Release() {
+        return 1;
+    }
+
+    ULONG STDMETHODCALLTYPE AddRef() {
+        return 2;
+    }
+
+    HRESULT STDMETHODCALLTYPE GetIids(ULONG *iidCount, IID **iids) {
+        return E_NOTIMPL;
+    }
+
+    HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING *className) {
+        return E_NOTIMPL;
+    }
+
+    HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel *trustLevel) {
+        return E_NOTIMPL;
+    }
+};
+
 namespace Util {
     inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
         DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, path, nSize);
@@ -154,7 +213,7 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler) {
+    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler, _In_ INT64 expirationTime) {
         EventRegistrationToken activatedToken, dismissedToken, failedToken;
         HRESULT hr = notification->add_Activated(
                     Callback < Implements < RuntimeClassFlags<ClassicCom>,
@@ -181,11 +240,13 @@ namespace Util {
         if (SUCCEEDED(hr)) {
             hr = notification->add_Dismissed(Callback < Implements < RuntimeClassFlags<ClassicCom>,
                      ITypedEventHandler<ToastNotification*, ToastDismissedEventArgs* >> >(
-                     [eventHandler](IToastNotification*, IToastDismissedEventArgs* e)
+                     [eventHandler, expirationTime](IToastNotification*, IToastDismissedEventArgs* e)
                  {
                      ToastDismissalReason reason;
                      if (SUCCEEDED(e->get_Reason(&reason)))
                      {
+                         if (reason == ToastDismissalReason_UserCanceled && expirationTime && MyDateTime::Now() >= expirationTime)
+                            reason = ToastDismissalReason_TimedOut;
                          eventHandler->toastDismissed(static_cast<IWinToastHandler::WinToastDismissalReason>(reason));
                      }
                      return S_OK;
@@ -427,7 +488,6 @@ HRESULT	WinToast::createShellLinkHelper() {
     return hr;
 }
 
-
 INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
     INT64 id = -1;
     if (!isInitialized()) {
@@ -460,7 +520,15 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                 ComPtr<IToastNotification> notification;
                 hr = _notificationFactory->CreateToastNotification(_xmlDocument.Get(), &notification);
                 if (SUCCEEDED(hr)) {
-                    hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler));
+                    INT64 expiration = 0, relativeExpiration = toast.getExpiration();
+                    if (relativeExpiration > 0) {
+                        MyDateTime expirationDateTime(relativeExpiration);
+                        expiration = expirationDateTime;
+                        hr = notification->put_ExpirationTime(&expirationDateTime);
+                    }
+                    if (SUCCEEDED(hr)) {
+                        hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
+                    }
                     if (SUCCEEDED(hr)) {
                         GUID guid;
                         hr = CoCreateGuid(&guid);
