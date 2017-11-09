@@ -336,7 +336,7 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
 }
 
 
-bool WinToast::initialize() {
+bool WinToast::initialize(bool *wasLinkCreated) {
     _isInitialized = false;
     if (_aumi.empty() || _appName.empty()) {
         DEBUG_MSG(L"Error: App User Model Id or Appname is empty!");
@@ -370,6 +370,8 @@ bool WinToast::initialize() {
     HRESULT hr = validateShellLinkHelper();
     if (FAILED(hr)) {
         hr = createShellLinkHelper();
+        if (SUCCEEDED(hr) && wasLinkCreated)
+            *wasLinkCreated = true;
     }
 
     if (SUCCEEDED(hr)) {

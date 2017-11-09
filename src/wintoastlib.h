@@ -90,7 +90,7 @@ namespace WinToastLib {
                                                     _In_ const std::wstring& subProduct = std::wstring(),
                                                     _In_ const std::wstring& versionInformation = std::wstring()
                                                     );
-        virtual bool            initialize();
+        virtual bool            initialize(bool *wasLinkCreated = NULL);
         virtual bool            isInitialized() const { return _isInitialized; }
         virtual INT64           showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
         virtual bool            hideToast(_In_ INT64 id);
