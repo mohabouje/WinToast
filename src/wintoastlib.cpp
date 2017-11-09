@@ -336,21 +336,15 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
 }
 
 
-bool WinToast::initialize() {
-    _isInitialized = false;
+enum WinToast::ShortcutResult WinToast::createShortcut() {
     if (_aumi.empty() || _appName.empty()) {
         DEBUG_MSG(L"Error: App User Model Id or Appname is empty!");
-        return false;
+        return SHORTCUT_MISSING_PARAMETERS;
     }
 
     if (!isCompatible()) {
         DEBUG_MSG(L"Your OS is not compatible with this library! =(");
-        return false;
-    }
-
-    if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
-        DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
-        return false;
+        return SHORTCUT_INCOMPATIBLE_OS;
     }
 
     if (!_hasCoInitialized) {
@@ -358,7 +352,7 @@ bool WinToast::initialize() {
         if (initHr != RPC_E_CHANGED_MODE) {
             if (FAILED(initHr) && initHr != S_FALSE) {
                 DEBUG_MSG(L"Error on COM library initialization!");
-                return false;
+                return SHORTCUT_COM_INIT_FAILURE;
             }
             else {
                 _hasCoInitialized = true;
@@ -366,30 +360,44 @@ bool WinToast::initialize() {
         }
     }
 
+    bool wasChanged;
+    HRESULT hr = validateShellLinkHelper(wasChanged);
+    if (SUCCEEDED(hr))
+        return wasChanged ? SHORTCUT_WAS_CHANGED : SHORTCUT_UNCHANGED;
 
-    HRESULT hr = validateShellLinkHelper();
-    if (FAILED(hr)) {
-        hr = createShellLinkHelper();
+    hr = createShellLinkHelper();
+    if (SUCCEEDED(hr))
+        return SHORTCUT_WAS_CREATED;
+    return SHORTCUT_CREATE_FAILED;
+}
+
+bool WinToast::initialize() {
+    _isInitialized = false;
+
+    if (createShortcut() < 0)
+        return false;
+
+    if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
+        DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
+        return false;
     }
 
+    HRESULT hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &_notificationManager);
     if (SUCCEEDED(hr)) {
-        hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &_notificationManager);
+        hr = _notificationManager->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
         if (SUCCEEDED(hr)) {
-            hr = _notificationManager->CreateToastNotifierWithId(WinToastStringWrapper(_aumi).Get(), &_notifier);
+            hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &_notificationFactory);
             if (SUCCEEDED(hr)) {
-                hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(), &_notificationFactory);
-                if (SUCCEEDED(hr)) {
-                    _isInitialized = true;
-                    return true;
-                }
+                _isInitialized = true;
+                return true;
             }
         }
     }
-    return false;
 
+    return false;
 }
 
-HRESULT	WinToast::validateShellLinkHelper() {
+HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
 	WCHAR	path[MAX_PATH] = { L'\0' };
     Util::defaultShellLinkPath(_appName, path);
     // Check if the file exist
@@ -421,8 +429,10 @@ HRESULT	WinToast::validateShellLinkHelper() {
                     if (SUCCEEDED(hr)) {
                         WCHAR AUMI[MAX_PATH];
                         hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
+                        wasChanged = false;
                         if (FAILED(hr) || _aumi != AUMI) {
                             // AUMI Changed for the same app, let's update the current value! =)
+                            wasChanged = true;
                             PropVariantClear(&appIdPropVar);
                             hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
                             if (SUCCEEDED(hr)) {
