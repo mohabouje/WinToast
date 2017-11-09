@@ -50,6 +50,7 @@ int wmain(int argc, LPWSTR *argv)
 
     LPWSTR text = L"Hello, world!", imagePath = NULL;
     std::vector<std::wstring> actions;
+    INT64 expiration;
 
     int i;
     for (i = 1; i < argc; i++)
@@ -57,6 +58,8 @@ int wmain(int argc, LPWSTR *argv)
             imagePath = argv[++i];
         else if (!wcscmp(L"-action", argv[i]))
             actions.push_back(argv[++i]);
+        else if (!wcscmp(L"-expire-ms", argv[i]))
+            expiration = wcstol(argv[++i], NULL, 10);
         else if (argv[i][0] == L'-') {
             std::wcout << L"Unhandled option: " << argv[i] << std::endl;
             return 7;
@@ -86,14 +89,16 @@ int wmain(int argc, LPWSTR *argv)
     templ.setTextField(text, WinToastTemplate::FirstLine);
     for (auto const &action : actions)
         templ.addAction(action);
+    if (expiration)
+        templ.setExpiration(expiration);
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
         return 10;
     }
 
-    // Give the handler a chance for 15 seconds
-    Sleep(15000);
+    // Give the handler a chance for 15 seconds (or the expiration plus 1 second)
+    Sleep(expiration ? expiration + 1000 : 15000);
 
     exit(2);
 }
