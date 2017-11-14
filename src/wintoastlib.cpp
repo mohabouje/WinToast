@@ -428,14 +428,14 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                         if (SUCCEEDED(hr)) {
                             id = guid.Data1;
                             _buffer[id] = notification;
-                            _notifier->Show(notification.Get());
+                            hr = _notifier->Show(notification.Get());
                         }
                     }
                 }
             }
         }
     }
-    return id;
+    return FAILED(hr) ? -1 : id;
 }
 
 bool WinToast::hideToast(_In_ INT64 id) {

@@ -68,7 +68,7 @@ void MainWindow::on_showToast_clicked()
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::ThirdLine);
 
-    if (!WinToast::instance()->showToast(templ, new CustomHandler())) {
+    if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
     }
 }
