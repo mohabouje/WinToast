@@ -608,60 +608,60 @@ HRESULT WinToast::setImageFieldHelper(_In_ const std::wstring& path)  {
 HRESULT WinToast::addActionHelper(_In_ const std::wstring& content, _In_ const std::wstring& arguments) {
 	ComPtr<IXmlNodeList> nodeList;
 	HRESULT hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"actions").Get(), &nodeList);
-	if (FAILED(hr))
-		return hr;
-	UINT32 length;
-	hr = nodeList->get_Length(&length);
-	if (FAILED(hr))
-		return hr;
-	ComPtr<IXmlNode> actionsNode;
-	if (length > 0)
-		hr = nodeList->Item(0, &actionsNode);
-	else {
-		hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
-		if (FAILED(hr))
-			return hr;
+	if (SUCCEEDED(hr)) {
+		UINT32 length;
 		hr = nodeList->get_Length(&length);
-		if (FAILED(hr))
-			return hr;
-		ComPtr<IXmlNode> toastNode;
-		hr = nodeList->Item(0, &toastNode);
-		if (FAILED(hr))
-			return hr;
-		ComPtr<IXmlElement> toastElement;
-		hr = toastNode.As(&toastElement);
-		if (SUCCEEDED(hr))
-                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"template").Get(), WinToastStringWrapper(L"ToastGeneric").Get());
-		if (SUCCEEDED(hr))
-                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(), WinToastStringWrapper(L"long").Get());
-		if (FAILED(hr))
-			return hr;
-		ComPtr<IXmlElement> actionsElement;
-		hr = _xmlDocument->CreateElement(WinToastStringWrapper(L"actions").Get(), &actionsElement);
-		if (FAILED(hr))
-			return hr;
-		hr = actionsElement.As(&actionsNode);
-		if (FAILED(hr))
-			return hr;
-		ComPtr<IXmlNode> appendedChild;
-		hr = toastNode->AppendChild(actionsNode.Get(), &appendedChild);
+		if (SUCCEEDED(hr)) {
+			ComPtr<IXmlNode> actionsNode;
+			if (length > 0) {
+				hr = nodeList->Item(0, &actionsNode);
+			} else {
+				hr = _xmlDocument->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
+				if (SUCCEEDED(hr)) {
+					hr = nodeList->get_Length(&length);
+					if (SUCCEEDED(hr)) {
+						ComPtr<IXmlNode> toastNode;
+						hr = nodeList->Item(0, &toastNode);
+						if (SUCCEEDED(hr)) {
+							ComPtr<IXmlElement> toastElement;
+							hr = toastNode.As(&toastElement);
+							if (SUCCEEDED(hr)) {
+								hr = toastElement->SetAttribute(WinToastStringWrapper(L"template").Get(), WinToastStringWrapper(L"ToastGeneric").Get())
+									&& toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(), WinToastStringWrapper(L"long").Get());
+								if (SUCCEEDED(hr)) {
+									ComPtr<IXmlElement> actionsElement;
+									hr = _xmlDocument->CreateElement(WinToastStringWrapper(L"actions").Get(), &actionsElement);
+									if (SUCCEEDED(hr)) {
+										hr = actionsElement.As(&actionsNode);
+										if (SUCCEEDED(hr)) {
+											ComPtr<IXmlNode> appendedChild;
+											hr = toastNode->AppendChild(actionsNode.Get(), &appendedChild);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if (SUCCEEDED(hr)) {
+				ComPtr<IXmlElement> actionElement;
+				hr = _xmlDocument->CreateElement(WinToastStringWrapper(L"action").Get(), &actionElement);
+				if (SUCCEEDED(hr)) {
+					hr = actionElement->SetAttribute(WinToastStringWrapper(L"content").Get(), WinToastStringWrapper(content).Get())
+						&& actionElement->SetAttribute(WinToastStringWrapper(L"arguments").Get(), WinToastStringWrapper(arguments).Get());
+					if (SUCCEEDED(hr)) {
+						ComPtr<IXmlNode> actionNode;
+						hr = actionElement.As(&actionNode);
+						if (SUCCEEDED(hr)) {
+							ComPtr<IXmlNode> appendedChild;
+							hr = actionsNode->AppendChild(actionNode.Get(), &appendedChild);
+						}
+					}
+				}
+			}
+		}
 	}
-	if (FAILED(hr))
-		return hr;
-	ComPtr<IXmlElement> actionElement;
-	hr = _xmlDocument->CreateElement(WinToastStringWrapper(L"action").Get(), &actionElement);
-	if (SUCCEEDED(hr))
-		hr = actionElement->SetAttribute(WinToastStringWrapper(L"content").Get(), WinToastStringWrapper(content).Get());
-	if (SUCCEEDED(hr))
-		hr = actionElement->SetAttribute(WinToastStringWrapper(L"arguments").Get(), WinToastStringWrapper(arguments).Get());
-	if (FAILED(hr))
-		return hr;
-	ComPtr<IXmlNode> actionNode;
-	hr = actionElement.As(&actionNode);
-	if (FAILED(hr))
-		return hr;
-	ComPtr<IXmlNode> appendedChild;
-	hr = actionsNode->AppendChild(actionNode.Get(), &appendedChild);
 	return hr;
 }
 
