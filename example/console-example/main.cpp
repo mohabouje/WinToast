@@ -41,11 +41,26 @@ public:
     }
 };
 
+
+enum Results {
+	ToastClicked,					// user clicked on the toast
+	ToastDismissed,					// user dismissed the toast
+	ToastTimeOut,					// toast timed out
+	ToastHided,						// application hid the toast
+	ToastNotActivated,				// toast was not activated
+	ToastFailed,					// toast failed
+	SystemNotSupported,				// system does not support toasts
+	UnhandledOption,				// unhandled option
+	MultipleTextNotSupported,		// multiple texts were provided
+	InitializationFailure,			// toast notification manager initialization failure
+	ToastNotLaunched				// toast could not be launched
+};
+
 int wmain(int argc, LPWSTR *argv)
 {
     if (!WinToast::isCompatible()) {
         std::wcerr << L"Error, your system in not supported!" << std::endl;
-        return 6;
+        return Results::SystemNotSupported;
     }
 
     LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = L"Hello, world!", imagePath = NULL;
@@ -66,13 +81,13 @@ int wmain(int argc, LPWSTR *argv)
             appUserModelID = argv[++i];
         else if (argv[i][0] == L'-') {
             std::wcout << L"Unhandled option: " << argv[i] << std::endl;
-            return 7;
+            return Results::UnhandledOption;
         }
         else if (i + 1 == argc)
             text = argv[i];
         else {
             std::wcerr << L"Cannot handle multiple texts for now" << std::endl;
-            return 8;
+			return Results::MultipleTextNotSupported;
         }
 
     WinToast::instance()->setAppName(appName);
@@ -80,7 +95,7 @@ int wmain(int argc, LPWSTR *argv)
     bool wasLinkCreated = false;
     if (!WinToast::instance()->initialize(&wasLinkCreated)) {
         std::wcerr << L"Error, your system in not compatible!" << std::endl;
-        return 9;
+        return Results::InitializationFailure;
     }
 
     if (wasLinkCreated) {
@@ -114,7 +129,7 @@ int wmain(int argc, LPWSTR *argv)
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
-        return 10;
+        return Results::ToastNotLaunched;
     }
 
     // Give the handler a chance for 15 seconds (or the expiration plus 1 second)
