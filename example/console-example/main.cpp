@@ -43,14 +43,14 @@ public:
 
 int wmain(int argc, LPWSTR *argv)
 {
-    if (WinToast::isCompatible()) {
+    if (!WinToast::isCompatible()) {
         std::wcerr << L"Error, your system in not supported!" << std::endl;
         return 6;
     }
 
     LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = L"Hello, world!", imagePath = NULL;
     std::vector<std::wstring> actions;
-    INT64 expiration;
+    INT64 expiration = 0;
 
     int i;
     for (i = 1; i < argc; i++)
@@ -103,16 +103,11 @@ int wmain(int argc, LPWSTR *argv)
         }
     }
 
-    WinToastTemplate templ;
-
-    if (imagePath == NULL)
-        templ = WinToastTemplate(WinToastTemplate::Text01);
-    else {
-        templ = WinToastTemplate(WinToastTemplate::ImageAndText01);
-        templ.setImagePath(imagePath);
-    }
-    templ.setTextField(text, WinToastTemplate::FirstLine);
-    for (auto const &action : actions)
+	WinToastTemplate templ((imagePath == NULL) ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
+    templ.setImagePath(imagePath);
+	templ.setTextField(text, WinToastTemplate::FirstLine);
+    
+	for (auto const &action : actions)
         templ.addAction(action);
     if (expiration)
         templ.setExpiration(expiration);
