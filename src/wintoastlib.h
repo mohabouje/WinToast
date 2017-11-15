@@ -35,6 +35,7 @@ namespace WinToastLib {
             TimedOut = ToastDismissalReason::ToastDismissalReason_TimedOut
         };
         virtual void toastActivated() const = 0;
+        virtual void toastActivated(int actionIndex) const = 0;
         virtual void toastDismissed(WinToastDismissalReason state) const = 0;
         virtual void toastFailed() const = 0;
     };
@@ -58,16 +59,23 @@ namespace WinToastLib {
         ~WinToastTemplate();
         void                                        setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
         void                                        setImagePath(_In_ const std::wstring& imgPath);
+        void                                        addAction(_In_ const std::wstring& label);
+        inline void                                 setExpiration(_In_ INT64 millisecondsFromNow) { _expiration = millisecondsFromNow; }
         inline int                                  textFieldsCount() const { return static_cast<int>(_textFields.size()); }
+        inline int                                  actionsCount() const { return static_cast<int>(_actions.size()); }
         inline bool                                 hasImage() const { return _hasImage; }
         inline std::vector<std::wstring>            textFields() const { return _textFields; }
         inline std::wstring                         textField(_In_ TextField pos) const { return _textFields[pos]; }
+        inline std::wstring                         actionLabel(_In_ int pos) const { return _actions[pos]; }
         inline std::wstring                         imagePath() const { return _imagePath; }
+        inline INT64                                getExpiration() const { return _expiration; }
         inline WinToastTemplateType                 type() const { return _type; }
     private:
         bool                                _hasImage;
         std::vector<std::wstring>			_textFields;
         std::wstring                        _imagePath;
+        std::vector<std::wstring>           _actions;
+        INT64                               _expiration;
         WinToastTemplateType                _type;
     };
 
@@ -107,6 +115,7 @@ namespace WinToastLib {
         HRESULT		createShellLinkHelper();
         HRESULT		setImageFieldHelper(_In_ const std::wstring& path);
         HRESULT     setTextFieldHelper(_In_ const std::wstring& text, _In_ int pos);
+        HRESULT     addActionHelper(_In_ const std::wstring& action, _In_ const std::wstring& arguments);
     };
 }
 #endif // WINTOASTLIB_H

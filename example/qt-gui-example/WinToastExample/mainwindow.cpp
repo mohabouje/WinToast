@@ -39,6 +39,10 @@ public:
         std::wcout << L"The user clicked in this toast" << std::endl;
     }
 
+    void toastActivated(int actionIndex) const {
+        std::wcout << L"The user clicked on button #" << actionIndex << L" in this toast" << std::endl;
+    }
+
     void toastFailed() const {
         std::wcout << L"Error showing current toast" << std::endl;
     }
