@@ -30,3 +30,11 @@
 *.ipch
 *.exp
 *.opensdf
+
+# Visual Studio
+*.VC.db
+*.VC.VC.opendb
+.vs/
+Debug/
+Release/
+enc_temp_folder/
