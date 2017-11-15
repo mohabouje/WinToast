@@ -18,7 +18,7 @@ Toast notifications allows your app to inform the users about relevant informati
 
 WinToast integrates all standar templates availables in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
 
-| Template     | Descriptin | Example   |
+| Template     | Description | Example   |
 | :------- | ----: | :---: |
 | ImageAndText01 | A large image and a single string wrapped across three lines of text. |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601606.png)   |
 | ImageAndText02   | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![12](https://i-msdn.sec.s-msft.com/dynimg/IC601607.png)   |
@@ -32,12 +32,12 @@ WinToast integrates all standar templates availables in the [ToastTemplateType e
 
 ### Usage
 
-Import the header file wintoastlib.h to your project. Check if the current OS support the library:
+Import the header file wintoastlib.h to your project. Check if the current OS supports the library:
 
 ```cpp
 using namespace WinToastLib;
 ....
-if (WinToast::isCompatible()) {
+if (!WinToast::isCompatible()) {
     std::wcout << L"Error, your system in not supported!" << std::endl;
 }
 ```
@@ -76,7 +76,7 @@ Now, to notify any event just create a new template and launch it:
 ```cpp
 WinToastHandlerExample* handler = new WinToastHandlerExample;
 WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
-templ.setImagePath(L"C:\example.png");
+templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
 
