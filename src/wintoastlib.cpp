@@ -97,9 +97,6 @@ private:
 
 class MyDateTime : public IReference<DateTime>
 {
-protected:
-    DateTime _dateTime;
-
 public:
     static INT64 Now() {
         FILETIME now;
@@ -108,7 +105,6 @@ public:
     }
 
     MyDateTime(DateTime dateTime) : _dateTime(dateTime) {}
-
     MyDateTime(INT64 millisecondsFromNow) {
         _dateTime.UniversalTime = Now() + millisecondsFromNow * 10000;
     }
@@ -133,25 +129,13 @@ public:
         return E_NOINTERFACE;
     }
 
-    ULONG STDMETHODCALLTYPE Release() {
-        return 1;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef() {
-        return 2;
-    }
-
-    HRESULT STDMETHODCALLTYPE GetIids(ULONG *iidCount, IID **iids) {
-        return E_NOTIMPL;
-    }
-
-    HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING *className) {
-        return E_NOTIMPL;
-    }
-
-    HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel *trustLevel) {
-        return E_NOTIMPL;
-    }
+    ULONG STDMETHODCALLTYPE Release() { return 1;  }
+    ULONG STDMETHODCALLTYPE AddRef() {  return 2; }
+    HRESULT STDMETHODCALLTYPE GetIids(ULONG *iidCount, IID **iids) { return E_NOTIMPL; }
+    HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING *className) { return E_NOTIMPL; }
+    HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel *trustLevel) {   return E_NOTIMPL; }
+protected:
+	DateTime _dateTime;
 };
 
 namespace Util {
@@ -522,7 +506,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                 ComPtr<IToastNotification> notification;
                 hr = _notificationFactory->CreateToastNotification(_xmlDocument.Get(), &notification);
                 if (SUCCEEDED(hr)) {
-                    INT64 expiration = 0, relativeExpiration = toast.getExpiration();
+                    INT64 expiration = 0, relativeExpiration = toast.expiration();
                     if (relativeExpiration > 0) {
                         MyDateTime expirationDateTime(relativeExpiration);
                         expiration = expirationDateTime;
@@ -530,16 +514,16 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                     }
                     if (SUCCEEDED(hr)) {
                         hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
-                    }
-                    if (SUCCEEDED(hr)) {
-                        GUID guid;
-                        hr = CoCreateGuid(&guid);
-                        if (SUCCEEDED(hr)) {
-                            id = guid.Data1;
-                            _buffer[id] = notification;
-                            hr = _notifier->Show(notification.Get());
-                        }
-                    }
+						if (SUCCEEDED(hr)) {
+							GUID guid;
+							hr = CoCreateGuid(&guid);
+							if (SUCCEEDED(hr)) {
+								id = guid.Data1;
+								_buffer[id] = notification;
+								hr = _notifier->Show(notification.Get());
+							}
+						}
+					}
                 }
             }
         }
@@ -667,7 +651,6 @@ HRESULT WinToast::addActionHelper(_In_ const std::wstring& content, _In_ const s
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
     static const int TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
-    _hasImage = _type < Text01;
     _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
 }
 
@@ -680,9 +663,7 @@ void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastT
 }
 
 void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
-    if (_hasImage) {
-        _imagePath = imgPath;
-    }
+    _imagePath = imgPath;
 }
 
 void WinToastLib::WinToastTemplate::addAction(const std::wstring & label)

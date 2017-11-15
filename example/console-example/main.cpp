@@ -56,8 +56,24 @@ enum Results {
 	ToastNotLaunched				// toast could not be launched
 };
 
+void print_help() {
+	std::cout << "--action" << "Set the actions in buttons" << std::endl;
+	std::cout << "--aumi" << "Set the App User Model Id" << std::endl;
+	std::cout << "--appname" << "Set the default appname" << std::endl;
+	std::cout << "--appid" << "Set the App Id" << std::endl;
+	std::cout << "--expirems" << "Set the default expiration time" << std::endl;
+	std::cout << "--text" << "Set the text for the notifications" << std::endl;
+	std::cout << "--help" << "Print the help description" << std::endl;
+}
+
+
 int wmain(int argc, LPWSTR *argv)
 {
+	if (argc == 1) {
+		print_help();
+		return 0;
+	}
+
     if (!WinToast::isCompatible()) {
         std::wcerr << L"Error, your system in not supported!" << std::endl;
         return Results::SystemNotSupported;
@@ -69,23 +85,26 @@ int wmain(int argc, LPWSTR *argv)
 
     int i;
     for (i = 1; i < argc; i++)
-        if (!wcscmp(L"-image", argv[i]))
+        if (!wcscmp(L"--image", argv[i]))
             imagePath = argv[++i];
-        else if (!wcscmp(L"-action", argv[i]))
+        else if (!wcscmp(L"--action", argv[i]))
             actions.push_back(argv[++i]);
-        else if (!wcscmp(L"-expire-ms", argv[i]))
+        else if (!wcscmp(L"--expirems", argv[i]))
             expiration = wcstol(argv[++i], NULL, 10);
-        else if (!wcscmp(L"-app-name", argv[i]))
+        else if (!wcscmp(L"--appname", argv[i]))
             appName = argv[++i];
-        else if (!wcscmp(L"-app-user-model-id", argv[i]) || !wcscmp(L"-app-id", argv[i]))
+        else if (!wcscmp(L"--aumi", argv[i]) || !wcscmp(L"-appid", argv[i]))
             appUserModelID = argv[++i];
+		else if (!wcscmp(L"--text", argv[i]))
+			text = argv[++i];
         else if (argv[i][0] == L'-') {
             std::wcout << L"Unhandled option: " << argv[i] << std::endl;
             return Results::UnhandledOption;
         }
-        else if (i + 1 == argc)
-            text = argv[i];
-        else {
+		else if (!wcscmp(L"--help", argv[i])) {
+			print_help();
+			return 0;
+		} else {
             std::wcerr << L"Cannot handle multiple texts for now" << std::endl;
 			return Results::MultipleTextNotSupported;
         }
@@ -129,7 +148,7 @@ int wmain(int argc, LPWSTR *argv)
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
-        return Results::ToastNotLaunched;
+		return Results::ToastFailed;
     }
 
     // Give the handler a chance for 15 seconds (or the expiration plus 1 second)
