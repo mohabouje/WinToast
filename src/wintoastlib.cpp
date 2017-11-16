@@ -1,5 +1,4 @@
 #include "wintoastlib.h"
-#include <VersionHelpers.h>
 #include <memory>
 #include <assert.h>
 
@@ -12,17 +11,32 @@
     #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
 #endif
 
-#ifndef _WIN32_WINNT_WINTHRESHOLD
-	#define _WIN32_WINNT_WINTHRESHOLD           0x0A00 // Windows 10  
-	#define _WIN32_WINNT_WIN10                  0x0A00 // Windows 10  
-#endif
-
 // Quickstart: Handling toast activations from Win32 apps in Windows 10
 // https://blogs.msdn.microsoft.com/tiles_and_toasts/2015/10/16/quickstart-handling-toast-activations-from-win32-apps-in-windows-10/
 
+
+// Thanks: https://stackoverflow.com/a/36545162/4297146
+typedef LONG NTSTATUS, *PNTSTATUS;
+#define STATUS_SUCCESS (0x00000000)
+typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+RTL_OSVERSIONINFOW GetRealOSVersion() {
+	HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
+	if (hMod) {
+		RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
+		if (fxPtr != nullptr) {
+			RTL_OSVERSIONINFOW rovi = { 0 };
+			rovi.dwOSVersionInfoSize = sizeof(rovi);
+			if (STATUS_SUCCESS == fxPtr(&rovi)) {
+				return rovi;
+			}
+		}
+	}
+	RTL_OSVERSIONINFOW rovi = { 0 };
+	return rovi;
+}
+
 using namespace WinToastLib;
 namespace DllImporter {
-
     // Function load a function from library
     template <typename Function>
 	HRESULT loadFunctionFromLibrary(HINSTANCE library, LPCSTR name, Function &func) {
@@ -312,7 +326,8 @@ bool WinToast::isCompatible() {
 }
 
 bool WinToastLib::WinToast::supportActions() {
-	return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINTHRESHOLD), LOBYTE(_WIN32_WINNT_WINTHRESHOLD), 0);
+	RTL_OSVERSIONINFOW tmp = GetRealOSVersion();
+	return tmp.dwMajorVersion > 6;
 }
 
 std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
@@ -507,9 +522,9 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
         for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
             hr = setTextFieldHelper(toast.textField(WinToastTemplate::TextField(i)), i);
         }
-		//bool modernActions = supportActions();
-		//if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
-		if (SUCCEEDED(hr)) {
+		bool modernActions = supportActions();
+		if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
+		if (SUCCEEDED(hr) && modernActions) {
             const int actionsCount = toast.actionsCount();
             WCHAR buf[12];
             for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
