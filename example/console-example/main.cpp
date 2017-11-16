@@ -74,7 +74,7 @@ int wmain(int argc, LPWSTR *argv)
 		return 0;
 	}
 
-    if (!WinToast::isCompatible()) {
+    if (WinToast::isCompatible()) {
         std::wcerr << L"Error, your system in not supported!" << std::endl;
         return Results::SystemNotSupported;
     }
@@ -84,7 +84,7 @@ int wmain(int argc, LPWSTR *argv)
     INT64 expiration = 0;
 
     int i;
-    for (i = 1; i < argc; i++)
+	for (i = 1; i < argc; i++)
         if (!wcscmp(L"--image", argv[i]))
             imagePath = argv[++i];
         else if (!wcscmp(L"--action", argv[i]))
@@ -93,15 +93,11 @@ int wmain(int argc, LPWSTR *argv)
             expiration = wcstol(argv[++i], NULL, 10);
         else if (!wcscmp(L"--appname", argv[i]))
             appName = argv[++i];
-        else if (!wcscmp(L"--aumi", argv[i]) || !wcscmp(L"-appid", argv[i]))
+        else if (!wcscmp(L"--aumi", argv[i]) || !wcscmp(L"--appid", argv[i]))
             appUserModelID = argv[++i];
 		else if (!wcscmp(L"--text", argv[i]))
 			text = argv[++i];
-        else if (argv[i][0] == L'-') {
-            std::wcout << L"Unhandled option: " << argv[i] << std::endl;
-            return Results::UnhandledOption;
-        }
-		else if (!wcscmp(L"--help", argv[i])) {
+        else if (!wcscmp(L"--help", argv[i])) {
 			print_help();
 			return 0;
 		} else {
