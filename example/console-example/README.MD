@@ -1,3 +1,5 @@
+
+
 WinToast Console Example!
 ===================
 
@@ -10,3 +12,9 @@ WinToast Console Example!
             --text : Set the text for the notifications
             --image : set the image path
             --help : Print the help description
+            
+Example:
+
+
+    "WinToast Contole Example.exe" --appname "Yolo" --aumi "My.Console.Example" --image "if_terminal_298878.png" --expirems 10000 --action Yes --action No --text "Do you want to try to take over the world?"
+
