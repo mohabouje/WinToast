@@ -507,9 +507,9 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
         for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
             hr = setTextFieldHelper(toast.textField(WinToastTemplate::TextField(i)), i);
         }
-		bool modernActions = supportActions();
-		if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
-		if (SUCCEEDED(hr) && modernActions) {
+		//bool modernActions = supportActions();
+		//if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
+		if (SUCCEEDED(hr)) {
             const int actionsCount = toast.actionsCount();
             WCHAR buf[12];
             for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
