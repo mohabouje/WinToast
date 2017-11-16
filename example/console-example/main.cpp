@@ -56,14 +56,26 @@ enum Results {
 	ToastNotLaunched				// toast could not be launched
 };
 
+
+#define COMMAND_ACTION		L"--action"
+#define COMMAND_AUMI		L"--aumi"
+#define COMMAND_APPNAME		L"--appname"
+#define COMMAND_APPID		L"--appid"
+#define COMMAND_EXPIREMS	L"--expirems"
+#define COMMAND_TEXT		L"--text"
+#define COMMAND_HELP		L"--help"
+#define COMMAND_IMAGE		L"--image"
+
 void print_help() {
-	std::cout << "--action" << "Set the actions in buttons" << std::endl;
-	std::cout << "--aumi" << "Set the App User Model Id" << std::endl;
-	std::cout << "--appname" << "Set the default appname" << std::endl;
-	std::cout << "--appid" << "Set the App Id" << std::endl;
-	std::cout << "--expirems" << "Set the default expiration time" << std::endl;
-	std::cout << "--text" << "Set the text for the notifications" << std::endl;
-	std::cout << "--help" << "Print the help description" << std::endl;
+	std::wcout << "WinToast Contole Example [OPTIONS]" << std::endl;
+	std::wcout << "\t" << COMMAND_ACTION << L" : Set the actions in buttons" << std::endl;
+	std::wcout << "\t" << COMMAND_AUMI << L" : Set the App User Model Id" << std::endl;
+	std::wcout << "\t" << COMMAND_APPNAME << L" : Set the default appname" << std::endl;
+	std::wcout << "\t" << COMMAND_APPID << L" : Set the App Id" << std::endl;
+	std::wcout << "\t" << COMMAND_EXPIREMS << L" : Set the default expiration time" << std::endl;
+	std::wcout << "\t" << COMMAND_TEXT << L" : Set the text for the notifications" << std::endl;
+	std::wcout << "\t" << COMMAND_IMAGE << L" : set the image path" << std::endl;
+	std::wcout << "\t" << COMMAND_HELP << L" : Print the help description" << std::endl;
 }
 
 
@@ -85,24 +97,24 @@ int wmain(int argc, LPWSTR *argv)
 
     int i;
 	for (i = 1; i < argc; i++)
-        if (!wcscmp(L"--image", argv[i]))
+        if (!wcscmp(COMMAND_IMAGE, argv[i]))
             imagePath = argv[++i];
-        else if (!wcscmp(L"--action", argv[i]))
+        else if (!wcscmp(COMMAND_ACTION, argv[i]))
             actions.push_back(argv[++i]);
-        else if (!wcscmp(L"--expirems", argv[i]))
+        else if (!wcscmp(COMMAND_EXPIREMS, argv[i]))
             expiration = wcstol(argv[++i], NULL, 10);
-        else if (!wcscmp(L"--appname", argv[i]))
+        else if (!wcscmp(COMMAND_APPNAME, argv[i]))
             appName = argv[++i];
-        else if (!wcscmp(L"--aumi", argv[i]) || !wcscmp(L"--appid", argv[i]))
+        else if (!wcscmp(COMMAND_AUMI, argv[i]) || !wcscmp(COMMAND_APPID, argv[i]))
             appUserModelID = argv[++i];
-		else if (!wcscmp(L"--text", argv[i]))
+		else if (!wcscmp(COMMAND_TEXT, argv[i]))
 			text = argv[++i];
-        else if (!wcscmp(L"--help", argv[i])) {
+        else if (!wcscmp(COMMAND_HELP, argv[i])) {
 			print_help();
 			return 0;
 		} else {
-            std::wcerr << L"Cannot handle multiple texts for now" << std::endl;
-			return Results::MultipleTextNotSupported;
+            std::wcerr << L"Option not recognized: " << argv[i]  << std::endl;
+			return Results::UnhandledOption;
         }
 
     WinToast::instance()->setAppName(appName);
