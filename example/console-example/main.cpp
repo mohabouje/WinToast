@@ -50,7 +50,7 @@ int wmain(int argc, LPWSTR *argv)
 
     LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = L"Hello, world!", imagePath = NULL;
     std::vector<std::wstring> actions;
-    INT64 expiration;
+    INT64 expiration = 0;
 
     int i;
     for (i = 1; i < argc; i++)
