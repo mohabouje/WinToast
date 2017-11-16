@@ -1,4 +1,5 @@
 #include "wintoastlib.h"
+#include <VersionHelpers.h>
 #include <memory>
 #include <assert.h>
 
@@ -9,6 +10,11 @@
     #define DEBUG_MSG(str) do { } while ( false )
  #else
     #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
+#endif
+
+#ifndef _WIN32_WINNT_WINTHRESHOLD
+	#define _WIN32_WINNT_WINTHRESHOLD           0x0A00 // Windows 10  
+	#define _WIN32_WINNT_WIN10                  0x0A00 // Windows 10  
 #endif
 
 // Quickstart: Handling toast activations from Win32 apps in Windows 10
@@ -34,13 +40,13 @@ namespace DllImporter {
     typedef PCWSTR(FAR STDAPICALLTYPE *f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_ UINT32 *length);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsDeleteString)(_In_opt_ HSTRING string);
 
+
     static f_SetCurrentProcessExplicitAppUserModelID    SetCurrentProcessExplicitAppUserModelID;
     static f_PropVariantToString                        PropVariantToString;
     static f_RoGetActivationFactory                     RoGetActivationFactory;
     static f_WindowsCreateStringReference               WindowsCreateStringReference;
     static f_WindowsGetStringRawBuffer                  WindowsGetStringRawBuffer;
     static f_WindowsDeleteString                        WindowsDeleteString;
-
 
     template<class T>
     _Check_return_ __inline HRESULT _1_GetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ T** factory) {
@@ -58,7 +64,13 @@ namespace DllImporter {
         if (SUCCEEDED(hr)) {
             HINSTANCE LibPropSys = LoadLibraryW(L"PROPSYS.DLL");
             hr = loadFunctionFromLibrary(LibPropSys, "PropVariantToString", PropVariantToString);
-            if (SUCCEEDED(hr)) {
+			if (SUCCEEDED(hr)) {
+				HINSTANCE LibPropSys = LoadLibraryW(L"PROPSYS.DLL");
+
+			}
+			
+			
+			if (SUCCEEDED(hr)) {
                 HINSTANCE LibComBase = LoadLibraryW(L"COMBASE.DLL");
                 const bool succeded = SUCCEEDED(loadFunctionFromLibrary(LibComBase, "RoGetActivationFactory", RoGetActivationFactory))
 										&& SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsCreateStringReference", WindowsCreateStringReference))
@@ -299,6 +311,10 @@ bool WinToast::isCompatible() {
                 || (DllImporter::WindowsDeleteString == nullptr));
 }
 
+bool WinToastLib::WinToast::supportActions() {
+	return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINTHRESHOLD), LOBYTE(_WIN32_WINNT_WINTHRESHOLD), 0);
+}
+
 std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
                                                _In_ const std::wstring &productName,
                                                _In_ const std::wstring &subProduct,
@@ -491,7 +507,9 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
         for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
             hr = setTextFieldHelper(toast.textField(WinToastTemplate::TextField(i)), i);
         }
-        if (SUCCEEDED(hr)) {
+		bool modernActions = supportActions();
+		if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
+		if (SUCCEEDED(hr) && modernActions) {
             const int actionsCount = toast.actionsCount();
             WCHAR buf[12];
             for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
@@ -674,3 +692,4 @@ void WinToastLib::WinToastTemplate::addAction(const std::wstring & label)
 {
 	_actions.push_back(label);
 }
+

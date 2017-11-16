@@ -27,6 +27,7 @@ using namespace Windows::Foundation;
 #define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT			L".lnk"
 namespace WinToastLib {
+
     class IWinToastHandler {
     public:
         enum WinToastDismissalReason {
@@ -57,6 +58,7 @@ namespace WinToastLib {
 
         WinToastTemplate(_In_ WinToastTemplateType type = ImageAndText02);
         ~WinToastTemplate();
+
         void                                        setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
         void                                        setImagePath(_In_ const std::wstring& imgPath);
         void                                        addAction(_In_ const std::wstring& label);
@@ -84,7 +86,8 @@ namespace WinToastLib {
         virtual ~WinToast();
         static WinToast* instance();
         static bool             isCompatible();
-        static std::wstring     configureAUMI(_In_ const std::wstring& companyName,
+		static bool				supportActions();
+		static std::wstring     configureAUMI(_In_ const std::wstring& companyName,
                                                     _In_ const std::wstring& productName,
                                                     _In_ const std::wstring& subProduct = std::wstring(),
                                                     _In_ const std::wstring& versionInformation = std::wstring()
