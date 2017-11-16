@@ -48,9 +48,10 @@ int wmain(int argc, LPWSTR *argv)
         return 6;
     }
 
-    LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = L"Hello, world!", imagePath = NULL;
+    LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = NULL, imagePath = NULL;
     std::vector<std::wstring> actions;
     INT64 expiration = 0;
+    bool onlyCreateShortcut = false;
 
     int i;
     for (i = 1; i < argc; i++)
@@ -64,6 +65,8 @@ int wmain(int argc, LPWSTR *argv)
             appName = argv[++i];
         else if (!wcscmp(L"-app-user-model-id", argv[i]) || !wcscmp(L"-app-id", argv[i]))
             appUserModelID = argv[++i];
+        else if (!wcscmp(L"-only-create-shortcut", argv[i]))
+            onlyCreateShortcut = true;
         else if (argv[i][0] == L'-') {
             std::wcout << L"Unhandled option: " << argv[i] << std::endl;
             return 7;
@@ -77,6 +80,18 @@ int wmain(int argc, LPWSTR *argv)
 
     WinToast::instance()->setAppName(appName);
     WinToast::instance()->setAppUserModelId(appUserModelID);
+    if (onlyCreateShortcut) {
+        if (imagePath || text || actions.size() > 0 || expiration) {
+            std::wcerr << L"-only-create-shortcut does not accept images/text/actions/expiration" << std::endl;
+            return 9;
+        }
+        enum WinToast::ShortcutResult result = WinToast::instance()->createShortcut();
+        return result ? 16 + result : 0;
+    }
+
+    if (!text)
+        text = L"Hello, world!";
+
     if (!WinToast::instance()->initialize()) {
         std::wcerr << L"Error, your system in not compatible!" << std::endl;
         return 9;
