@@ -421,9 +421,8 @@ HRESULT	WinToast::validateShellLinkHelper() {
                     if (SUCCEEDED(hr)) {
                         WCHAR AUMI[MAX_PATH];
                         hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
-                        if (SUCCEEDED(hr)) {
-                            hr = (_aumi == AUMI) ? S_OK : E_FAIL;
-                        } else { // AUMI Changed for the same app, let's update the current value! =)
+                        if (FAILED(hr) || _aumi != AUMI) {
+                            // AUMI Changed for the same app, let's update the current value! =)
                             PropVariantClear(&appIdPropVar);
                             hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
                             if (SUCCEEDED(hr)) {
