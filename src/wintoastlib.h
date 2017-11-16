@@ -92,7 +92,7 @@ namespace WinToastLib {
                                                     _In_ const std::wstring& subProduct = std::wstring(),
                                                     _In_ const std::wstring& versionInformation = std::wstring()
                                                     );
-        virtual bool            initialize(bool *wasLinkCreated = NULL);
+        virtual bool            initialize();
         virtual bool            isInitialized() const { return _isInitialized; }
         virtual INT64           showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler);
         virtual bool            hideToast(_In_ INT64 id);
@@ -101,6 +101,18 @@ namespace WinToastLib {
         inline std::wstring     appUserModelId() const { return _aumi; }
         void                    setAppUserModelId(_In_ const std::wstring& appName);
         void                    setAppName(_In_ const std::wstring& appName);
+
+        enum ShortcutResult {
+            SHORTCUT_UNCHANGED = 0,
+            SHORTCUT_WAS_CHANGED = 1,
+            SHORTCUT_WAS_CREATED = 2,
+
+            SHORTCUT_MISSING_PARAMETERS = -1,
+            SHORTCUT_INCOMPATIBLE_OS = -2,
+            SHORTCUT_COM_INIT_FAILURE = -3,
+            SHORTCUT_CREATE_FAILED = -4
+        };
+        virtual enum ShortcutResult createShortcut();
     protected:
         bool											_isInitialized;
         bool                                            _hasCoInitialized;
@@ -113,7 +125,7 @@ namespace WinToastLib {
         ComPtr<IToastNotificationFactory>               _notificationFactory;
         static WinToast*								_instance;
 
-        HRESULT     validateShellLinkHelper();
+        HRESULT     validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT		createShellLinkHelper();
         HRESULT		setImageFieldHelper(_In_ const std::wstring& path);
         HRESULT     setTextFieldHelper(_In_ const std::wstring& text, _In_ int pos);

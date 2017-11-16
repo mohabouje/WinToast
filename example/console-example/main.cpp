@@ -65,6 +65,7 @@ enum Results {
 #define COMMAND_TEXT		L"--text"
 #define COMMAND_HELP		L"--help"
 #define COMMAND_IMAGE		L"--image"
+#define COMMAND_SHORTCUT	L"--only-create-shortcut"
 
 void print_help() {
 	std::wcout << "WinToast Contole Example [OPTIONS]" << std::endl;
@@ -75,6 +76,7 @@ void print_help() {
 	std::wcout << "\t" << COMMAND_EXPIREMS << L" : Set the default expiration time" << std::endl;
 	std::wcout << "\t" << COMMAND_TEXT << L" : Set the text for the notifications" << std::endl;
 	std::wcout << "\t" << COMMAND_IMAGE << L" : set the image path" << std::endl;
+	std::wcout << "\t" << COMMAND_SHORTCUT << L" : create the shortcut for the app" << std::endl;
 	std::wcout << "\t" << COMMAND_HELP << L" : Print the help description" << std::endl;
 }
 
@@ -91,9 +93,11 @@ int wmain(int argc, LPWSTR *argv)
         return Results::SystemNotSupported;
     }
 
-    LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = L"Hello, world!", imagePath = NULL;
+    LPWSTR appName = L"Console WinToast Example", appUserModelID = L"WinToast Console Example", text = NULL, imagePath = NULL;
     std::vector<std::wstring> actions;
     INT64 expiration = 0;
+
+    bool onlyCreateShortcut = false;
 
     int i;
 	for (i = 1; i < argc; i++)
@@ -109,7 +113,9 @@ int wmain(int argc, LPWSTR *argv)
             appUserModelID = argv[++i];
 		else if (!wcscmp(COMMAND_TEXT, argv[i]))
 			text = argv[++i];
-        else if (!wcscmp(COMMAND_HELP, argv[i])) {
+		else if (!wcscmp(COMMAND_SHORTCUT, argv[i]))
+			onlyCreateShortcut = true;
+		else if (!wcscmp(COMMAND_HELP, argv[i])) {
 			print_help();
 			return 0;
 		} else {
@@ -119,31 +125,24 @@ int wmain(int argc, LPWSTR *argv)
 
     WinToast::instance()->setAppName(appName);
     WinToast::instance()->setAppUserModelId(appUserModelID);
-    bool wasLinkCreated = false;
-    if (!WinToast::instance()->initialize(&wasLinkCreated)) {
+
+    if (onlyCreateShortcut) {
+        if (imagePath || text || actions.size() > 0 || expiration) {
+            std::wcerr << L"-only-create-shortcut does not accept images/text/actions/expiration" << std::endl;
+            return 9;
+        }
+        enum WinToast::ShortcutResult result = WinToast::instance()->createShortcut();
+        return result ? 16 + result : 0;
+    }
+
+    if (!text)
+        text = L"Hello, world!";
+
+    if (!WinToast::instance()->initialize()) {
         std::wcerr << L"Error, your system in not compatible!" << std::endl;
         return Results::InitializationFailure;
     }
 
-    if (wasLinkCreated) {
-        WCHAR   exePath[MAX_PATH]{L'\0'};
-        DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exePath, MAX_PATH);
-        STARTUPINFOW si;
-        memset(&si, 0, sizeof(si));
-        si.cb = sizeof(si);
-        PROCESS_INFORMATION pi;
-        memset(&pi, 0, sizeof(pi));
-        Sleep(3000);
-        BOOL b = CreateProcessW(exePath, GetCommandLineW(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-        if (b) {
-            DWORD code = 1;
-            WaitForSingleObject(pi.hProcess, INFINITE);
-            if (!GetExitCodeProcess(pi.hProcess, &code))
-                std::wcerr << "Could not get exit code of child process!" << std::endl;
-            CloseHandle(pi.hProcess);
-            exit(code);
-        }
-    }
 
 	WinToastTemplate templ((imagePath != NULL) ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
     templ.setImagePath(imagePath);
@@ -160,7 +159,7 @@ int wmain(int argc, LPWSTR *argv)
     }
 
     // Give the handler a chance for 15 seconds (or the expiration plus 1 second)
-    Sleep(expiration ? expiration + 1000 : 15000);
+    Sleep(expiration ? (DWORD)expiration + 1000 : 15000);
 
     exit(2);
 }
