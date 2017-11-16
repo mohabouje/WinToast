@@ -509,7 +509,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
             const int actionsCount = toast.actionsCount();
             WCHAR buf[12];
             for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
-                _swprintf(buf, L"%d", i);
+                _snwprintf_s(buf, sizeof(buf) / sizeof(*buf), _TRUNCATE, L"%d", i);
                 hr = addActionHelper(toast.actionLabel(i), buf);
             }
             DEBUG_MSG("xml: " << Util::AsString(_xmlDocument));
