@@ -68,7 +68,7 @@ enum Results {
 #define COMMAND_SHORTCUT	L"--only-create-shortcut"
 
 void print_help() {
-	std::wcout << "WinToast Contole Example [OPTIONS]" << std::endl;
+	std::wcout << "WinToast Console Example [OPTIONS]" << std::endl;
 	std::wcout << "\t" << COMMAND_ACTION << L" : Set the actions in buttons" << std::endl;
 	std::wcout << "\t" << COMMAND_AUMI << L" : Set the App User Model Id" << std::endl;
 	std::wcout << "\t" << COMMAND_APPNAME << L" : Set the default appname" << std::endl;
@@ -128,7 +128,7 @@ int wmain(int argc, LPWSTR *argv)
 
     if (onlyCreateShortcut) {
         if (imagePath || text || actions.size() > 0 || expiration) {
-            std::wcerr << L"-only-create-shortcut does not accept images/text/actions/expiration" << std::endl;
+            std::wcerr << L"--only-create-shortcut does not accept images/text/actions/expiration" << std::endl;
             return 9;
         }
         enum WinToast::ShortcutResult result = WinToast::instance()->createShortcut();
