@@ -102,7 +102,7 @@ int wmain(int argc, LPWSTR *argv)
     }
 
     // Give the handler a chance for 15 seconds (or the expiration plus 1 second)
-    Sleep(expiration ? expiration + 1000 : 15000);
+    Sleep(expiration ? (DWORD)expiration + 1000 : 15000);
 
     exit(2);
 }
