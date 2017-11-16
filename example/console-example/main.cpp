@@ -133,7 +133,7 @@ int wmain(int argc, LPWSTR *argv)
         }
     }
 
-	WinToastTemplate templ((imagePath == NULL) ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
+	WinToastTemplate templ((imagePath != NULL) ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
     templ.setImagePath(imagePath);
 	templ.setTextField(text, WinToastTemplate::FirstLine);
     

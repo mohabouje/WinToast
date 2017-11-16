@@ -71,7 +71,7 @@ void MainWindow::on_showToast_clicked()
     templ.setTextField(ui->firstLine->text().toStdWString(), WinToastTemplate::FirstLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::ThirdLine);
-
+    templ.setExpiration(ui->spinBox->value() * 1000);
     if (ui->addYes->isChecked()) templ.addAction(L"Yes");
     if (ui->addNo->isChecked()) templ.addAction(L"No");
 
