@@ -86,7 +86,7 @@ int wmain(int argc, LPWSTR *argv)
 		return 0;
 	}
 
-    if (WinToast::isCompatible()) {
+    if (!WinToast::isCompatible()) {
         std::wcerr << L"Error, your system in not supported!" << std::endl;
         return Results::SystemNotSupported;
     }

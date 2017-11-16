@@ -287,7 +287,9 @@ WinToast::WinToast() :
     _isInitialized(false),
     _hasCoInitialized(false)
 {
-    DllImporter::initialize();
+	if (!isCompatible()) {
+		DEBUG_MSG(L"Warning: Your system is not compatible with this library ");
+	}
 }
 
 WinToast::~WinToast() {
@@ -318,11 +320,12 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
 }
 
 bool WinToast::isCompatible() {
-        return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
-                || (DllImporter::PropVariantToString == nullptr)
-                || (DllImporter::RoGetActivationFactory == nullptr)
-                || (DllImporter::WindowsCreateStringReference == nullptr)
-                || (DllImporter::WindowsDeleteString == nullptr));
+	DllImporter::initialize();
+    return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
+            || (DllImporter::PropVariantToString == nullptr)
+            || (DllImporter::RoGetActivationFactory == nullptr)
+            || (DllImporter::WindowsCreateStringReference == nullptr)
+            || (DllImporter::WindowsDeleteString == nullptr));
 }
 
 bool WinToastLib::WinToast::supportActions() {
