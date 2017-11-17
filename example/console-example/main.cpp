@@ -143,16 +143,17 @@ int wmain(int argc, LPWSTR *argv)
         return Results::InitializationFailure;
     }
 
-
-	WinToastTemplate templ((imagePath != NULL) ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
-    templ.setImagePath(imagePath);
+    bool withImage = (imagePath != NULL);
+	WinToastTemplate templ( withImage ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
 	templ.setTextField(text, WinToastTemplate::FirstLine);
     
 	for (auto const &action : actions)
         templ.addAction(action);
     if (expiration)
         templ.setExpiration(expiration);
-
+    if (withImage)
+        templ.setImagePath(imagePath);
+    
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
 		return Results::ToastFailed;
