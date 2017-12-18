@@ -165,15 +165,15 @@ public:
         return 2;
     }
 
-    HRESULT STDMETHODCALLTYPE GetIids(ULONG *iidCount, IID **iids) {
+    HRESULT STDMETHODCALLTYPE GetIids(ULONG*, IID**) {
         return E_NOTIMPL;
     }
 
-    HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING *className) {
+    HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING*) {
         return E_NOTIMPL;
     }
 
-    HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel *trustLevel) {
+    HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel*) {
         return E_NOTIMPL;
     }
 };
@@ -289,12 +289,9 @@ namespace Util {
     }
 }
 
-WinToast* WinToast::_instance = nullptr;
 WinToast* WinToast::instance() {
-    if (_instance == nullptr) {
-        _instance = new WinToast();
-    }
-    return _instance;
+    static WinToast instance;
+    return &instance;
 }
 
 WinToast::WinToast() :
@@ -308,8 +305,6 @@ WinToast::WinToast() :
 }
 
 WinToast::~WinToast() {
-    _instance = nullptr;
-	delete _instance;
 	_xmlDocument.Reset();
 	_notificationManager.Reset();
 	_notifier.Reset();

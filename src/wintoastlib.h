@@ -123,7 +123,6 @@ namespace WinToastLib {
         ComPtr<IToastNotificationManagerStatics>        _notificationManager;
         ComPtr<IToastNotifier>                          _notifier;
         ComPtr<IToastNotificationFactory>               _notificationFactory;
-        static WinToast*								_instance;
 
         HRESULT     validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT		createShellLinkHelper();
