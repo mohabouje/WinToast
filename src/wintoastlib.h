@@ -119,16 +119,13 @@ namespace WinToastLib {
         std::wstring                                    _appName;
         std::wstring                                    _aumi;
         std::map<INT64, ComPtr<IToastNotification>>     _buffer;
-        ComPtr<IXmlDocument>                            _xmlDocument;
-        ComPtr<IToastNotificationManagerStatics>        _notificationManager;
-        ComPtr<IToastNotifier>                          _notifier;
-        ComPtr<IToastNotificationFactory>               _notificationFactory;
 
         HRESULT     validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT		createShellLinkHelper();
-        HRESULT		setImageFieldHelper(_In_ const std::wstring& path);
-        HRESULT     setTextFieldHelper(_In_ const std::wstring& text, _In_ int pos);
-        HRESULT     addActionHelper(_In_ const std::wstring& action, _In_ const std::wstring& arguments);
+        HRESULT		setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path);
+        HRESULT     setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos);
+        HRESULT     addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
+		ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const;
     };
 }
 #endif // WINTOASTLIB_H
