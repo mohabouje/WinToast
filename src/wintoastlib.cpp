@@ -401,7 +401,7 @@ bool WinToast::initialize() {
     }
 
     _isInitialized = true;
-    return false;
+    return _isInitialized;
 }
 
 HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
