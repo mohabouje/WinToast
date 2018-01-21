@@ -43,6 +43,7 @@ namespace WinToastLib {
 
     class WinToastTemplate {
     public:
+        enum AudioOption { None = 0, Silent = 1, Loop = 2 };
         enum TextField { FirstLine = 0, SecondLine, ThirdLine };
         enum WinToastTemplateType {
             ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
@@ -61,6 +62,8 @@ namespace WinToastLib {
 
         void                                        setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
         void                                        setImagePath(_In_ const std::wstring& imgPath);
+        void                                        setAudioPath(_In_ const std::wstring& audioPath);
+        void                                        setAudioOption(_In_ const WinToastTemplate::AudioOption& audioOption);
         void                                        addAction(_In_ const std::wstring& label);
         inline void                                 setExpiration(_In_ INT64 millisecondsFromNow) { _expiration = millisecondsFromNow; }
         inline int                                  textFieldsCount() const { return static_cast<int>(_textFields.size()); }
@@ -70,14 +73,19 @@ namespace WinToastLib {
         inline std::wstring                         textField(_In_ TextField pos) const { return _textFields[pos]; }
         inline std::wstring                         actionLabel(_In_ int pos) const { return _actions[pos]; }
         inline std::wstring                         imagePath() const { return _imagePath; }
+        inline std::wstring                         audioPath() const { return _audioPath; }
         inline INT64                                expiration() const { return _expiration; }
         inline WinToastTemplateType                 type() const { return _type; }
+        inline WinToastTemplate::AudioOption        audioOption() const { return _audioOption; }
+
     private:
         std::vector<std::wstring>			_textFields;
         std::wstring                        _imagePath;
+        std::wstring                        _audioPath;
         std::vector<std::wstring>           _actions;
         INT64                               _expiration;
         WinToastTemplateType                _type;
+        WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::None;
     };
 
     class WinToast {
@@ -123,6 +131,7 @@ namespace WinToastLib {
         HRESULT     validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT		createShellLinkHelper();
         HRESULT		setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path);
+        HRESULT     setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_opt_ WinToastTemplate::AudioOption option = WinToastTemplate::AudioOption::None);
         HRESULT     setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos);
         HRESULT     addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
 		ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const;
