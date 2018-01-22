@@ -835,7 +835,7 @@ void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
     _audioPath = audioPath;
 }
 
-void WinToastTemplate::setAudioOption(const WinToastTemplate::AudioOption & audioOption) {
+void WinToastTemplate::setAudioOption(_In_ const WinToastTemplate::AudioOption & audioOption) {
     _audioOption = audioOption;
 }
 
