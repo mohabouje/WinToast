@@ -711,6 +711,7 @@ HRESULT WinToast::setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ con
             }
         }
     }
+    return hr;
 }
 
 HRESULT WinToast::setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos) {
