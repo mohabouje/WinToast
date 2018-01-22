@@ -144,7 +144,7 @@ int wmain(int argc, LPWSTR *argv)
     }
 
     bool withImage = (imagePath != NULL);
-	WinToastTemplate templ( withImage ? WinToastTemplate::ImageAndText01 : WinToastTemplate::Text01);
+	WinToastTemplate templ( withImage ? WinToastTemplate::ImageAndText02 : WinToastTemplate::Text02);
 	templ.setTextField(text, WinToastTemplate::FirstLine);
     
 	for (auto const &action : actions)
@@ -159,6 +159,8 @@ int wmain(int argc, LPWSTR *argv)
     // WinToastTemplate.setAudioPath(), must be ms-appx:// or ms-appdata:// path.
     //
     templ.setAudioOption(WinToastTemplate::AudioOption::Silent);
+
+    templ.setAttributionText(L"via SMS");
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
