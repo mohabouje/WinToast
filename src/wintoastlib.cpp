@@ -287,6 +287,51 @@ namespace Util {
         }
         return hr;
     }
+
+    inline HRESULT addAttribute(_In_ IXmlDocument *xml, const std::wstring &name, IXmlNamedNodeMap *attributeMap) {
+        ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
+        HRESULT hr = xml->CreateAttribute(WinToastStringWrapper(name).Get(), &srcAttribute);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> node;
+            hr = srcAttribute.As(&node);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IXmlNode> pNode;
+                hr = attributeMap->SetNamedItem(node.Get(), &pNode);
+            }
+        }
+        return hr;
+    }
+
+    inline HRESULT createElement(_In_ IXmlDocument *xml, _In_ const std::wstring& element_name, _In_ const std::vector<std::wstring>& attribute_names) {
+        ComPtr<IXmlNodeList> rootList;
+        HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &rootList);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> root;
+            hr = rootList->Item(0, &root);
+            if (SUCCEEDED(hr)) {
+                ComPtr<ABI::Windows::Data::Xml::Dom::IXmlElement> audioElement;
+                hr = xml->CreateElement(WinToastStringWrapper(element_name).Get(), &audioElement);
+                if (SUCCEEDED(hr)) {
+                    ComPtr<IXmlNode> audioNodeTmp;
+                    hr = audioElement.As(&audioNodeTmp);
+                    if (SUCCEEDED(hr)) {
+                        ComPtr<IXmlNode> audioNode;
+                        hr = root->AppendChild(audioNodeTmp.Get(), &audioNode);
+                        if (SUCCEEDED(hr)) {
+                            ComPtr<IXmlNamedNodeMap> attributes;
+                            hr = audioNode->get_Attributes(&attributes);
+                            if (SUCCEEDED(hr)) {
+                                for (auto it : attribute_names) {
+                                    hr = addAttribute(xml, it, attributes.Get());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return hr;
+    }
 }
 
 WinToast* WinToast::instance() {
@@ -540,30 +585,33 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                             _snwprintf_s(buf, sizeof(buf) / sizeof(*buf), _TRUNCATE, L"%d", i);
                             hr = addActionHelper(xmlDocument.Get(), toast.actionLabel(i), buf);
                         }
-                        DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
                     }
                     if (SUCCEEDED(hr)) {
                         hr = toast.hasImage() ? setImageFieldHelper(xmlDocument.Get(), toast.imagePath()) : hr;
                         if (SUCCEEDED(hr)) {
-                            ComPtr<IToastNotification> notification;
-                            hr = notificationFactory->CreateToastNotification(xmlDocument.Get(), &notification);
+                            hr = toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::AudioOption::None ? hr : setAudioFieldHelper(xmlDocument.Get(), toast.audioPath(), toast.audioOption());
                             if (SUCCEEDED(hr)) {
-                                INT64 expiration = 0, relativeExpiration = toast.expiration();
-                                if (relativeExpiration > 0) {
-                                    MyDateTime expirationDateTime(relativeExpiration);
-                                    expiration = expirationDateTime;
-                                    hr = notification->put_ExpirationTime(&expirationDateTime);
-                                }
+                                ComPtr<IToastNotification> notification;
+                                hr = notificationFactory->CreateToastNotification(xmlDocument.Get(), &notification);
                                 if (SUCCEEDED(hr)) {
-                                    hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
-                                }
-                                if (SUCCEEDED(hr)) {
-                                    GUID guid;
-                                    hr = CoCreateGuid(&guid);
+                                    INT64 expiration = 0, relativeExpiration = toast.expiration();
+                                    if (relativeExpiration > 0) {
+                                        MyDateTime expirationDateTime(relativeExpiration);
+                                        expiration = expirationDateTime;
+                                        hr = notification->put_ExpirationTime(&expirationDateTime);
+                                    }
                                     if (SUCCEEDED(hr)) {
-                                        id = guid.Data1;
-                                        _buffer[id] = notification;
-                                        hr = notifier->Show(notification.Get());
+                                        hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
+                                    }
+                                    if (SUCCEEDED(hr)) {
+                                        GUID guid;
+                                        hr = CoCreateGuid(&guid);
+                                        if (SUCCEEDED(hr)) {
+                                            id = guid.Data1;
+                                            _buffer[id] = notification;
+                                            DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
+                                            hr = notifier->Show(notification.Get());
+                                        }
                                     }
                                 }
                             }
@@ -657,6 +705,55 @@ HRESULT WinToast::setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::ws
     return hr;
 }
 
+HRESULT WinToast::setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_opt_ WinToastTemplate::AudioOption option) {
+    std::vector<std::wstring> attrs;
+    if (!path.empty()) attrs.push_back(L"src");
+    if (option == WinToastTemplate::AudioOption::Loop) attrs.push_back(L"loop");
+    if (option == WinToastTemplate::AudioOption::Silent) attrs.push_back(L"silent");
+    Util::createElement(xml, L"audio", attrs);
+
+    ComPtr<IXmlNodeList> nodeList;
+    HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"audio").Get(), &nodeList);
+    if (SUCCEEDED(hr)) {
+        ComPtr<IXmlNode> node;
+        hr = nodeList->Item(0, &node);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNamedNodeMap> attributes;
+            hr = node->get_Attributes(&attributes);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IXmlNode> editedNode;
+                if (!path.empty()) {
+                    if (SUCCEEDED(hr)) {
+                        hr = attributes->GetNamedItem(WinToastStringWrapper(L"src").Get(), &editedNode);
+                        if (SUCCEEDED(hr)) {
+                            Util::setNodeStringValue(path, editedNode.Get(), xml);
+                        }
+                    }
+                }
+                //
+                // These options are mutually exclusive
+                //
+                switch (option) {
+                case WinToastTemplate::AudioOption::Loop:
+                    hr = attributes->GetNamedItem(WinToastStringWrapper(L"loop").Get(), &editedNode);
+                    if (SUCCEEDED(hr)) {
+                        Util::setNodeStringValue(L"true", editedNode.Get(), xml);
+                    }
+                    break;
+                case WinToastTemplate::AudioOption::Silent:
+                    hr = attributes->GetNamedItem(WinToastStringWrapper(L"silent").Get(), &editedNode);
+                    if (SUCCEEDED(hr)) {
+                        Util::setNodeStringValue(L"true", editedNode.Get(), xml);
+                    }
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    return hr;
+}
+
 HRESULT WinToast::addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& content, _In_ const std::wstring& arguments) {
 	ComPtr<IXmlNodeList> nodeList;
 	HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"actions").Get(), &nodeList);
@@ -734,7 +831,15 @@ void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
     _imagePath = imgPath;
 }
 
-void WinToastLib::WinToastTemplate::addAction(const std::wstring & label)
+void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
+    _audioPath = audioPath;
+}
+
+void WinToastTemplate::setAudioOption(_In_ const WinToastTemplate::AudioOption & audioOption) {
+    _audioOption = audioOption;
+}
+
+void WinToastTemplate::addAction(const std::wstring & label)
 {
 	_actions.push_back(label);
 }
