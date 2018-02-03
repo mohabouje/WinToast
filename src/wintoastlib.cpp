@@ -302,9 +302,9 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT createElement(_In_ IXmlDocument *xml, _In_ const std::wstring& element_name, _In_ const std::vector<std::wstring>& attribute_names) {
+    inline HRESULT createElement(_In_ IXmlDocument *xml, _In_ const std::wstring& root_node, _In_ const std::wstring& element_name, _In_ const std::vector<std::wstring>& attribute_names) {
         ComPtr<IXmlNodeList> rootList;
-        HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &rootList);
+        HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(root_node).Get(), &rootList);
         if (SUCCEEDED(hr)) {
             ComPtr<IXmlNode> root;
             hr = rootList->Item(0, &root);
@@ -576,6 +576,14 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                     for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
                         hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), i);
                     }
+                    //
+                    // Note that we do this *after* using toast.textFieldsCount() to
+                    // iterate/fill the template's text fields, since we're adding
+                    // yet another text field.
+                    //
+                    if (!toast.attributionText().empty()) {
+                        hr = setAttributionTextFieldHelper(xmlDocument.Get(), toast.attributionText());
+                    }
                     bool modernActions = supportActions();
                     if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
                     if (SUCCEEDED(hr) && modernActions) {
@@ -665,6 +673,46 @@ void WinToast::clear() {
     _buffer.clear();
 }
 
+//
+// Available as of Windows 10 Anniversary Update
+// Ref: https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/adaptive-interactive-toasts
+//
+// NOTE: This will add a new text field, so be aware when iterating over
+//       the toast's text fields or getting a count of them.
+//
+HRESULT WinToast::setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text) {
+    Util::createElement(xml, L"binding", L"text", { L"placement" });
+    ComPtr<IXmlNodeList> nodeList;
+    HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
+    if (SUCCEEDED(hr)) {
+        UINT32 nodeListLength;
+        hr = nodeList->get_Length(&nodeListLength);
+        if (SUCCEEDED(hr)) {
+            for (UINT32 i = 0; i < nodeListLength; i++) {
+                ComPtr<IXmlNode> textNode;
+                hr = nodeList->Item(i, &textNode);
+                if (SUCCEEDED(hr)) {
+                    ComPtr<IXmlNamedNodeMap> attributes;
+                    hr = textNode->get_Attributes(&attributes);
+                    if (SUCCEEDED(hr)) {
+                        ComPtr<IXmlNode> editedNode;
+                        if (SUCCEEDED(hr)) {
+                            hr = attributes->GetNamedItem(WinToastStringWrapper(L"placement").Get(), &editedNode);
+                            if (FAILED(hr) || !editedNode) {
+                                continue;
+                            }
+                            hr = Util::setNodeStringValue(L"attribution", editedNode.Get(), xml);
+                            if (SUCCEEDED(hr)) {
+                                return setTextFieldHelper(xml, text, i);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return hr;
+}
 
 HRESULT WinToast::setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos) {
     ComPtr<IXmlNodeList> nodeList;
@@ -710,7 +758,7 @@ HRESULT WinToast::setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::ws
     if (!path.empty()) attrs.push_back(L"src");
     if (option == WinToastTemplate::AudioOption::Loop) attrs.push_back(L"loop");
     if (option == WinToastTemplate::AudioOption::Silent) attrs.push_back(L"silent");
-    Util::createElement(xml, L"audio", attrs);
+    Util::createElement(xml, L"toast", L"audio", attrs);
 
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"audio").Get(), &nodeList);
@@ -837,6 +885,10 @@ void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
 
 void WinToastTemplate::setAudioOption(_In_ const WinToastTemplate::AudioOption & audioOption) {
     _audioOption = audioOption;
+}
+
+void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionText) {
+    _attributionText = attributionText;
 }
 
 void WinToastTemplate::addAction(const std::wstring & label)

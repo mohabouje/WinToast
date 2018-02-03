@@ -64,6 +64,7 @@ namespace WinToastLib {
         void                                        setImagePath(_In_ const std::wstring& imgPath);
         void                                        setAudioPath(_In_ const std::wstring& audioPath);
         void                                        setAudioOption(_In_ const WinToastTemplate::AudioOption& audioOption);
+        void                                        setAttributionText(_In_ const std::wstring & attributionText);
         void                                        addAction(_In_ const std::wstring& label);
         inline void                                 setExpiration(_In_ INT64 millisecondsFromNow) { _expiration = millisecondsFromNow; }
         inline int                                  textFieldsCount() const { return static_cast<int>(_textFields.size()); }
@@ -74,6 +75,7 @@ namespace WinToastLib {
         inline std::wstring                         actionLabel(_In_ int pos) const { return _actions[pos]; }
         inline std::wstring                         imagePath() const { return _imagePath; }
         inline std::wstring                         audioPath() const { return _audioPath; }
+        inline std::wstring                         attributionText() const { return _attributionText; }
         inline INT64                                expiration() const { return _expiration; }
         inline WinToastTemplateType                 type() const { return _type; }
         inline WinToastTemplate::AudioOption        audioOption() const { return _audioOption; }
@@ -86,6 +88,7 @@ namespace WinToastLib {
         INT64                               _expiration;
         WinToastTemplateType                _type;
         WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::None;
+        std::wstring                        _attributionText;
     };
 
     class WinToast {
@@ -133,6 +136,7 @@ namespace WinToastLib {
         HRESULT		setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path);
         HRESULT     setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_opt_ WinToastTemplate::AudioOption option = WinToastTemplate::AudioOption::None);
         HRESULT     setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos);
+        HRESULT     setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text);
         HRESULT     addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
 		ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const;
     };
