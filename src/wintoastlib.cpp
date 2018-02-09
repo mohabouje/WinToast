@@ -373,7 +373,7 @@ bool WinToast::isCompatible() {
 		|| (DllImporter::WindowsDeleteString == nullptr));
 }
 
-bool WinToastLib::WinToast::supportActions() {
+bool WinToastLib::WinToast::isWindows10() {
 	RTL_OSVERSIONINFOW tmp = GetRealOSVersion();
 	return tmp.dwMajorVersion > 6;
 
@@ -576,50 +576,55 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                     for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
                         hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), i);
                     }
-                    //
-                    // Note that we do this *after* using toast.textFieldsCount() to
-                    // iterate/fill the template's text fields, since we're adding
-                    // yet another text field.
-                    //
-                    if (!toast.attributionText().empty()) {
-                        hr = setAttributionTextFieldHelper(xmlDocument.Get(), toast.attributionText());
-                    }
-                    bool modernActions = supportActions();
-                    if (!modernActions) DEBUG_MSG("Modern Actions not supported in this os version");
-                    if (SUCCEEDED(hr) && modernActions) {
+
+                    // Modern feature are supported Windows > Windows 10
+                    if (SUCCEEDED(hr) && isWindows10()) {
+
+                        // Note that we do this *after* using toast.textFieldsCount() to
+                        // iterate/fill the template's text fields, since we're adding yet another text field.
+                        if (SUCCEEDED(hr)
+                            && !toast.attributionText().empty()) {
+                            hr = setAttributionTextFieldHelper(xmlDocument.Get(), toast.attributionText());
+                        }
+
                         const int actionsCount = toast.actionsCount();
                         WCHAR buf[12];
                         for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
                             _snwprintf_s(buf, sizeof(buf) / sizeof(*buf), _TRUNCATE, L"%d", i);
                             hr = addActionHelper(xmlDocument.Get(), toast.actionLabel(i), buf);
                         }
+
+                        if (SUCCEEDED(hr)) {
+                            hr = (toast.audioOption() == WinToastTemplate::AudioOption::Default)
+                                ? hr : setAudioFieldHelper(xmlDocument.Get(), toast.audioPath(), toast.audioOption());
+                        }
+                    } else {
+                        DEBUG_MSG("Modern features (Actions/Sounds/Attributes) not supported in this os version");
                     }
+
                     if (SUCCEEDED(hr)) {
                         hr = toast.hasImage() ? setImageFieldHelper(xmlDocument.Get(), toast.imagePath()) : hr;
                         if (SUCCEEDED(hr)) {
-                            hr = toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::AudioOption::None ? hr : setAudioFieldHelper(xmlDocument.Get(), toast.audioPath(), toast.audioOption());
+                            ComPtr<IToastNotification> notification;
+                            hr = notificationFactory->CreateToastNotification(xmlDocument.Get(), &notification);
                             if (SUCCEEDED(hr)) {
-                                ComPtr<IToastNotification> notification;
-                                hr = notificationFactory->CreateToastNotification(xmlDocument.Get(), &notification);
+                                INT64 expiration = 0, relativeExpiration = toast.expiration();
+                                if (relativeExpiration > 0) {
+                                    MyDateTime expirationDateTime(relativeExpiration);
+                                    expiration = expirationDateTime;
+                                    hr = notification->put_ExpirationTime(&expirationDateTime);
+                                }
                                 if (SUCCEEDED(hr)) {
-                                    INT64 expiration = 0, relativeExpiration = toast.expiration();
-                                    if (relativeExpiration > 0) {
-                                        MyDateTime expirationDateTime(relativeExpiration);
-                                        expiration = expirationDateTime;
-                                        hr = notification->put_ExpirationTime(&expirationDateTime);
-                                    }
+                                    hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
+                                }
+                                if (SUCCEEDED(hr)) {
+                                    GUID guid;
+                                    hr = CoCreateGuid(&guid);
                                     if (SUCCEEDED(hr)) {
-                                        hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
-                                    }
-                                    if (SUCCEEDED(hr)) {
-                                        GUID guid;
-                                        hr = CoCreateGuid(&guid);
-                                        if (SUCCEEDED(hr)) {
-                                            id = guid.Data1;
-                                            _buffer[id] = notification;
-                                            DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
-                                            hr = notifier->Show(notification.Get());
-                                        }
+                                        id = guid.Data1;
+                                        _buffer[id] = notification;
+                                        DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
+                                        hr = notifier->Show(notification.Get());
                                     }
                                 }
                             }

@@ -43,7 +43,7 @@ namespace WinToastLib {
 
     class WinToastTemplate {
     public:
-        enum AudioOption { None = 0, Silent = 1, Loop = 2 };
+        enum AudioOption { Default = 0, Silent = 1, Loop = 2 };
         enum TextField { FirstLine = 0, SecondLine, ThirdLine };
         enum WinToastTemplateType {
             ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
@@ -87,7 +87,7 @@ namespace WinToastLib {
         std::vector<std::wstring>           _actions;
         INT64                               _expiration;
         WinToastTemplateType                _type;
-        WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::None;
+        WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::Default;
         std::wstring                        _attributionText;
     };
 
@@ -97,7 +97,7 @@ namespace WinToastLib {
         virtual ~WinToast();
         static WinToast* instance();
         static bool             isCompatible();
-		static bool				supportActions();
+		static bool				isWindows10();
 		static std::wstring     configureAUMI(_In_ const std::wstring& companyName,
                                                     _In_ const std::wstring& productName,
                                                     _In_ const std::wstring& subProduct = std::wstring(),
@@ -134,7 +134,7 @@ namespace WinToastLib {
         HRESULT     validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT		createShellLinkHelper();
         HRESULT		setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path);
-        HRESULT     setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_opt_ WinToastTemplate::AudioOption option = WinToastTemplate::AudioOption::None);
+        HRESULT     setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_opt_ WinToastTemplate::AudioOption option = WinToastTemplate::AudioOption::Default);
         HRESULT     setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos);
         HRESULT     setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text);
         HRESULT     addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
