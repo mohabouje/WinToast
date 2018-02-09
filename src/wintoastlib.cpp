@@ -373,7 +373,7 @@ bool WinToast::isCompatible() {
 		|| (DllImporter::WindowsDeleteString == nullptr));
 }
 
-bool WinToastLib::WinToast::isWindows10() {
+bool WinToastLib::WinToast::supportModernFeatures() {
 	RTL_OSVERSIONINFOW tmp = GetRealOSVersion();
 	return tmp.dwMajorVersion > 6;
 
@@ -578,7 +578,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                     }
 
                     // Modern feature are supported Windows > Windows 10
-                    if (SUCCEEDED(hr) && isWindows10()) {
+                    if (SUCCEEDED(hr) && supportModernFeatures()) {
 
                         // Note that we do this *after* using toast.textFieldsCount() to
                         // iterate/fill the template's text fields, since we're adding yet another text field.

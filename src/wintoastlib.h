@@ -97,7 +97,7 @@ namespace WinToastLib {
         virtual ~WinToast();
         static WinToast* instance();
         static bool             isCompatible();
-		static bool				isWindows10();
+		static bool				supportModernFeatures();
 		static std::wstring     configureAUMI(_In_ const std::wstring& companyName,
                                                     _In_ const std::wstring& productName,
                                                     _In_ const std::wstring& subProduct = std::wstring(),
