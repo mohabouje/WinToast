@@ -32,7 +32,8 @@ WinToast integrates all standard templates availables in the [ToastTemplateType 
 
 ### Usage
 
-Import the header file wintoastlib.h to your project. Check if the current OS supports the library:
+
+First step, Import the header file wintoastlib.h to your project. You should check if your Windows Version is supported by the library.
 
 ```cpp
 using namespace WinToastLib;
@@ -42,24 +43,25 @@ if (!WinToast::isCompatible()) {
 }
 ```
 
-For an easy usage, just use the available instance:
+For an easy usage,  you can just use the available singleton instance and start to configure your [App User Model Id](https://msdn.microsoft.com/en-us/library/windows/desktop/dd378459%28v=vs.85%29.aspx), this can be done by using the existing helper:
 
 ```cpp        
 using namespace WinToastLib;
 ....
 WinToast::instance()->setAppName(L"WinToastExample");
-WinToast::instance()->setAppUserModelId(
-	WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006"));
+const auto aumi = WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006");
+WinToast::instance()->setAppUserModelId(aumi);
+	
 ```		
-Check if the WinToas is initialized with succes & is compatible with your current OS:
+Now is time to initialize all the dependencies and check if WinToas has been initialized  successfully before starting using it:
 
 ```cpp		
-    if (!WinToast::instance()->initialize()) {
-        std::wcout << L"Error, could not initialize the lib!" << std::endl;
-    }
+if (!WinToast::instance()->initialize()) {
+  std::wcout << L"Error, could not initialize the lib!" << std::endl;
+}
 ```
     
-Now, implement your own handler subclassing the interface `IWinToastHandler`:
+To manage the different user actions, you can implement your own handler, subclassing the interface `IWinToastHandler`:
 
 ```cpp
 class WinToastHandlerExample : public IWinToastHandler {
@@ -71,7 +73,8 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastFailed() const;
  };
  ```      
-Now, to notify any event just create a new template and launch it:
+ 
+To notify any event just configure your own toast template and launch it:
 
 ```cpp
 WinToastHandlerExample* handler = new WinToastHandlerExample;
@@ -84,7 +87,38 @@ if (!WinToast::instance()->showToast(templ, handler)) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
  ```   
-**That's all my folks =)**
+## Modern features - Windows 10
+
+If your system support the new modern features (Version > Windows 8.1) available in Windows 10,  you can add some interesting fields as:
+
+ - **Actions**: you can add your own actions, this fact allow you to interact with user in a different way:
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text02);
+templ.setTextField(L"Do you think this feature is cool?", WinToastTemplate::FirstLine);
+templ.setTextField(L"Ofc,it is!", WinToastTemplate::SecondLine);
+
+std::vector<std::wstring> actions;
+actions.push_back(L"Yes");
+actions.push_back(L"No");
+for (auto const &action : actions)	
+    templ.addAction(action);
+WinToast::instance()->showToast(templ, handler) 
+ ```  
+
+!["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
+ - **Attribution text**: you can add/remove the attribution text, by default is empty.  Use `WinToastTemplate::setAttributionText` to modify it.
+ - **Audio Properties**: you can modify the different behaviors of the sound:
+	 - *Default*: plays the audio file just one time.
+	 - *Silent*: turn off the sound.
+	 - *Loop*: plays the given sound in a loop during the toast existence.
+
+> WinToast allows the modification of the default audio file. Add 
+> the given file in to your projects resources (*must be ms-appx:// or
+> ms-appdata:// path*) and define it by calling: `WinToastTemplate::setAudioPath`
+
+***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
+
 
 
 
