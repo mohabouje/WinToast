@@ -171,11 +171,6 @@ int wmain(int argc, LPWSTR *argv)
     if (withImage)
         templ.setImagePath(imagePath);
 
-    //
-    // Loop and Silent are mutually exclusive. Also note that a custom sound, set via
-    // WinToastTemplate.setAudioPath(), must be ms-appx:// or ms-appdata:// path.
-    //
-
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";

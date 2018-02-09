@@ -595,7 +595,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                         }
 
                         if (SUCCEEDED(hr)) {
-                            hr = (toast.audioOption() == WinToastTemplate::AudioOption::Default)
+                            hr = (toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::Default)
                                 ? hr : setAudioFieldHelper(xmlDocument.Get(), toast.audioPath(), toast.audioOption());
                         }
                     } else {
