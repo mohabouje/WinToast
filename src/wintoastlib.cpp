@@ -657,9 +657,9 @@ bool WinToast::hideToast(_In_ INT64 id) {
     const bool find = _buffer.find(id) != _buffer.end();
 	if (find) {
 		bool succeded = false;
-		ComPtr<IToastNotifier> not = notifier(&succeded);
+		ComPtr<IToastNotifier> notify = notifier(&succeded);
 		if (succeded) {
-			not->Hide(_buffer[id].Get());
+			notify->Hide(_buffer[id].Get());
 		}
 		_buffer.erase(id);
 	}
@@ -668,11 +668,11 @@ bool WinToast::hideToast(_In_ INT64 id) {
 
 void WinToast::clear() {
 	bool succeded = false;
-	ComPtr<IToastNotifier> not = notifier(&succeded);
+	ComPtr<IToastNotifier> notify = notifier(&succeded);
 	if (succeded) {
 		auto end = _buffer.end();
 		for (auto it = _buffer.begin(); it != end; ++it) {
-			not->Hide(it->second.Get());
+			notify->Hide(it->second.Get());
 		}
 	}
     _buffer.clear();
