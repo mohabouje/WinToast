@@ -637,7 +637,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
     return FAILED(hr) ? -1 : id;
 }
 
-ComPtr<IToastNotifier> WinToast::notifier(bool* succeded) const  {
+ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const  {
 	ComPtr<IToastNotificationManagerStatics> notificationManager;
 	ComPtr<IToastNotifier> notifier;
 	HRESULT hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &notificationManager);
@@ -896,7 +896,7 @@ void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionTe
     _attributionText = attributionText;
 }
 
-void WinToastTemplate::addAction(const std::wstring & label)
+void WinToastTemplate::addAction(_In_ const std::wstring & label)
 {
 	_actions.push_back(label);
 }
