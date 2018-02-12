@@ -637,7 +637,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
     return FAILED(hr) ? -1 : id;
 }
 
-ComPtr<IToastNotifier> WinToast::notifier(bool* succeded) const  {
+ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const  {
 	ComPtr<IToastNotificationManagerStatics> notificationManager;
 	ComPtr<IToastNotifier> notifier;
 	HRESULT hr = DllImporter::Wrap_GetActivationFactory(WinToastStringWrapper(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(), &notificationManager);
@@ -657,9 +657,9 @@ bool WinToast::hideToast(_In_ INT64 id) {
     const bool find = _buffer.find(id) != _buffer.end();
 	if (find) {
 		bool succeded = false;
-		ComPtr<IToastNotifier> not = notifier(&succeded);
+		ComPtr<IToastNotifier> notify = notifier(&succeded);
 		if (succeded) {
-			not->Hide(_buffer[id].Get());
+			notify->Hide(_buffer[id].Get());
 		}
 		_buffer.erase(id);
 	}
@@ -668,11 +668,11 @@ bool WinToast::hideToast(_In_ INT64 id) {
 
 void WinToast::clear() {
 	bool succeded = false;
-	ComPtr<IToastNotifier> not = notifier(&succeded);
+	ComPtr<IToastNotifier> notify = notifier(&succeded);
 	if (succeded) {
 		auto end = _buffer.end();
 		for (auto it = _buffer.begin(); it != end; ++it) {
-			not->Hide(it->second.Get());
+			notify->Hide(it->second.Get());
 		}
 	}
     _buffer.clear();
@@ -896,7 +896,7 @@ void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionTe
     _attributionText = attributionText;
 }
 
-void WinToastTemplate::addAction(const std::wstring & label)
+void WinToastTemplate::addAction(_In_ const std::wstring & label)
 {
 	_actions.push_back(label);
 }
