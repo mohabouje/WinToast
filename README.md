@@ -82,11 +82,15 @@ WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
 templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
+templ.setExpiration(300000); // Expire after 300000 ms = 5 min
 
 if (!WinToast::instance()->showToast(templ, handler)) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
- ```   
+ ```
+
+**Note:** Default Windows behavior is to hide notification automatically after time set in Windows Ease of Access Settings. If you need to preserve notification in Windows Action Center for longer period of time, you have to call `setExpiration` method as shown in previous code example. 
+ 
 ## Modern features - Windows 10
 
 If your system support the new modern features (Version > Windows 8.1) available in Windows 10,  you can add some interesting fields as:
