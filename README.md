@@ -117,7 +117,7 @@ WinToast::instance()->showToast(templ, handler)
  
 <div id='id5' />
 
-### Example of Usage
+## Example of Usage
 
 *For an easy usage,  you can just use the available singleton instance.* 
 
