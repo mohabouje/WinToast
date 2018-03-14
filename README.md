@@ -16,6 +16,15 @@ WinToast is a lightly library written in C++ which brings a complete integration
 
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
+**Index**
+1. [Toast Templates](#id1)
+2. [Event Handler](#id2)
+3. [Expiration Time](#id3)
+4. [Modern Features](#id4)
+5. [Example of usage](#id5)
+
+<div id='id1' />
+
 ## Toast Templates
 
 WinToast integrates all standard templates availables in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
@@ -39,6 +48,7 @@ templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
  ```  
+<div id='id2' />
 
 ## Event Handler
 
@@ -62,7 +72,9 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastDismissed(WinToastDismissalReason state) const;
 	void toastFailed() const;
  };
- ```  
+ ``` 
+ <div id='id3' />
+ 
  ## Expiration Time
  
 Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attemps to raise toast notifications immediately after you call Show, so this property is rarely used. 
@@ -70,6 +82,7 @@ Set the time after which a toast notification is no longer considered current or
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
 
+ <div id='id4' />
  
  ## Modern features - Windows 10
 
@@ -103,6 +116,7 @@ WinToast::instance()->showToast(templ, handler)
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
  
+<div id='id5' />
 
 ### Example of Usage
 
