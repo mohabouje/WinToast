@@ -87,6 +87,19 @@ if (!WinToast::instance()->showToast(templ, handler)) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
  ```   
+ 
+## Expiration Time
+Set the time after which a toast notification is no longer considered current or valid and should not be displayed. 
+
+#### Remarks
+
+ Windows attemps to raise toast notifications immediately after you
+ call Show, so this property is rarely used. 
+ 
+> For Windows 8.x app, this property also causes the toast notification to be removed from the
+> Action Center once the specified data and time is reached.
+
+ 
 ## Modern features - Windows 10
 
 If your system support the new modern features (Version > Windows 8.1) available in Windows 10,  you can add some interesting fields as:
