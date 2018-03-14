@@ -16,7 +16,6 @@ WinToast is a lightly library written in C++ which brings a complete integration
 
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
-**Index**
 1. [Toast Templates](#id1)
 2. [Event Handler](#id2)
 3. [Expiration Time](#id3)
