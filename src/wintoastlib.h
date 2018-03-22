@@ -43,6 +43,7 @@ namespace WinToastLib {
 
     class WinToastTemplate {
     public:
+        enum Duration { Default, Short, Long };
         enum AudioOption { Default = 0, Silent = 1, Loop = 2 };
         enum TextField { FirstLine = 0, SecondLine, ThirdLine };
         enum WinToastTemplateType {
@@ -66,7 +67,8 @@ namespace WinToastLib {
         void                                        setAudioOption(_In_ const WinToastTemplate::AudioOption& audioOption);
         void                                        setAttributionText(_In_ const std::wstring & attributionText);
         void                                        addAction(_In_ const std::wstring& label);
-        inline void                                 setExpiration(_In_ INT64 millisecondsFromNow) { _expiration = millisecondsFromNow; }
+        void                                        setDuration(_In_ const Duration Duration) { _duration = duration; }
+        void                                        setExpiration(_In_ INT64 millisecondsFromNow) { _expiration = millisecondsFromNow; }
         inline int                                  textFieldsCount() const { return static_cast<int>(_textFields.size()); }
         inline int                                  actionsCount() const { return static_cast<int>(_actions.size()); }
         inline bool                                 hasImage() const { return _type < Text01; }
@@ -79,16 +81,17 @@ namespace WinToastLib {
         inline INT64                                expiration() const { return _expiration; }
         inline WinToastTemplateType                 type() const { return _type; }
         inline WinToastTemplate::AudioOption        audioOption() const { return _audioOption; }
-
+        inline Duration                             duration() const { return _duration; }
     private:
         std::vector<std::wstring>			_textFields;
         std::wstring                        _imagePath;
         std::wstring                        _audioPath;
         std::vector<std::wstring>           _actions;
         INT64                               _expiration;
-        WinToastTemplateType                _type;
+        WinToastTemplateType                _type = WinToastTemplateType::Text01;
         WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::Default;
         std::wstring                        _attributionText;
+        Duration                            _duration = Duration::Default;
     };
 
     class WinToast {
