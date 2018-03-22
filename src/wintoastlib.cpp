@@ -614,9 +614,16 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                                     expiration = expirationDateTime;
                                     hr = notification->put_ExpirationTime(&expirationDateTime);
                                 }
+
+                                if (SUCCEEDED(hr) && toast.duration() != WinToastTemplate::Duration::Default) {
+                                    hr = addDurationHelper(xmlDocument.Get(),
+                                                           (toast.duration() == WinToastTemplate::Duration::Short) ? L"short" : L"long");
+                                }
+
                                 if (SUCCEEDED(hr)) {
                                     hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
                                 }
+
                                 if (SUCCEEDED(hr)) {
                                     GUID guid;
                                     hr = CoCreateGuid(&guid);
@@ -712,6 +719,27 @@ HRESULT WinToast::setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ con
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+    return hr;
+}
+
+HRESULT WinToast::addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& duration) {
+    ComPtr<IXmlNodeList> nodeList;
+    HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
+    if (SUCCEEDED(hr)) {
+        hr = nodeList->get_Length(&length);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> toastNode;
+            hr = nodeList->Item(0, &toastNode);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IXmlElement> toastElement;
+                hr = toastNode.As(&toastElement);
+                if (SUCCEEDED(hr)) {
+                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(),
+                                                    WinToastStringWrapper(labels[duration]).Get());
                 }
             }
         }
