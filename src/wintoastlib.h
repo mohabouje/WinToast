@@ -138,7 +138,7 @@ namespace WinToastLib {
         HRESULT     setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos);
         HRESULT     setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text);
         HRESULT     addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
-		ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const;
+		ComPtr<IToastNotifier> notifier(_In_ bool* succeded) const;
     };
 }
 #endif // WINTOASTLIB_H

@@ -16,6 +16,16 @@ WinToast is a lightly library written in C++ which brings a complete integration
 
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
+1. [Toast Templates](#id1)
+2. [Event Handler](#id2)
+3. [Expiration Time](#id3)
+4. [Modern Features](#id4)
+5. [Example of usage](#id5)
+
+<div id='id1' />
+
+## Toast Templates
+
 WinToast integrates all standard templates availables in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
 
 | Template     | Description | Example   |
@@ -29,39 +39,28 @@ WinToast integrates all standard templates availables in the [ToastTemplateType 
 | Text03 | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601604.png)|
 | Text04 |   One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601605.png) |
 
-
-### Usage
-
-
-First step, Import the header file wintoastlib.h to your project. You should check if your Windows Version is supported by the library.
+Example of a `ImageAndText02` template:
 
 ```cpp
-using namespace WinToastLib;
-....
-if (!WinToast::isCompatible()) {
-    std::wcout << L"Error, your system in not supported!" << std::endl;
-}
-```
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
+templ.setImagePath(L"C:/example.png");
+templ.setTextField(L"title", WinToastTemplate::FirstLine);
+templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
+ ```  
+<div id='id2' />
 
-For an easy usage,  you can just use the available singleton instance and start to configure your [App User Model Id](https://msdn.microsoft.com/en-us/library/windows/desktop/dd378459%28v=vs.85%29.aspx), this can be done by using the existing helper:
+## Event Handler
 
-```cpp        
-using namespace WinToastLib;
-....
-WinToast::instance()->setAppName(L"WinToastExample");
-const auto aumi = WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006");
-WinToast::instance()->setAppUserModelId(aumi);
-	
-```		
-Now is time to initialize all the dependencies and check if WinToas has been initialized  successfully before starting using it:
+WinToast handle different events:
 
-```cpp		
-if (!WinToast::instance()->initialize()) {
-  std::wcout << L"Error, could not initialize the lib!" << std::endl;
-}
-```
-    
-To manage the different user actions, you can implement your own handler, subclassing the interface `IWinToastHandler`:
+ - **Activated**: Occurs when user activates a toast notification through a click or touch. Apps that are running subscribe to this event
+ - **Dismissed**: Occurs when a toast notification leaves the screen, either by expiring or being explicitly dismissed by the user. 
+	* Application Hidden:  The application hid the toast using ToastNotifier.hide.
+	* User Canceled: The user dismissed the toast.
+	* Timed Out: The toast has expired
+ - **Failed**: Occurs when an error is caused when Windows attempts to raise a toast notification.
+
+Create your custom handler to interact with the user actions by subclassing the interface `IWinToastHandler`:
 
 ```cpp
 class WinToastHandlerExample : public IWinToastHandler {
@@ -72,35 +71,19 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastDismissed(WinToastDismissalReason state) const;
 	void toastFailed() const;
  };
- ```      
+ ``` 
+ <div id='id3' />
  
-To notify any event just configure your own toast template and launch it:
-
-```cpp
-WinToastHandlerExample* handler = new WinToastHandlerExample;
-WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
-templ.setImagePath(L"C:/example.png");
-templ.setTextField(L"title", WinToastTemplate::FirstLine);
-templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
-
-if (!WinToast::instance()->showToast(templ, handler)) {
-    std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
-}
- ```   
+ ## Expiration Time
  
-## Expiration Time
-Set the time after which a toast notification is no longer considered current or valid and should not be displayed. 
-
-#### Remarks
-
- Windows attemps to raise toast notifications immediately after you
- call Show, so this property is rarely used. 
+Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attemps to raise toast notifications immediately after you call Show, so this property is rarely used. 
  
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
 
+ <div id='id4' />
  
-## Modern features - Windows 10
+ ## Modern features - Windows 10
 
 If your system support the new modern features (Version > Windows 8.1) available in Windows 10,  you can add some interesting fields as:
 
@@ -131,6 +114,59 @@ WinToast::instance()->showToast(templ, handler)
 > ms-appdata:// path*) and define it by calling: `WinToastTemplate::setAudioPath`
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
+ 
+<div id='id5' />
+
+## Example of Usage
+
+*For an easy usage,  you can just use the available singleton instance.* 
+
+First step, Import the header file wintoastlib.h to your project. You should check if your Windows Version is supported by the library.
+
+```cpp
+using namespace WinToastLib;
+....
+if (!WinToast::isCompatible()) {
+    std::wcout << L"Error, your system in not supported!" << std::endl;
+}
+```
+
+ Configure your [App User Model Id](https://msdn.microsoft.com/en-us/library/windows/desktop/dd378459%28v=vs.85%29.aspx), this can be done by using the existing helper:
+
+```cpp        
+using namespace WinToastLib;
+....
+WinToast::instance()->setAppName(L"WinToastExample");
+const auto aumi = WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006");
+WinToast::instance()->setAppUserModelId(aumi);	
+```	
+Initialize all the dependencies and check if WinToast has been initialized successfully in your system:
+
+```cpp		
+if (!WinToast::instance()->initialize()) {
+  std::wcout << L"Error, could not initialize the lib!" << std::endl;
+}
+```
+    
+Implement your own action handler by subclassing the interface `IWinToastHandler` and custom your template:
+
+```cpp
+WinToastHandlerExample* handler = new WinToastHandlerExample;
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
+templ.setImagePath(L"C:/example.png");
+templ.setTextField(L"title", WinToastTemplate::FirstLine);
+templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
+ ```   
+
+Finaly show the final results.
+
+```cpp
+
+if (!WinToast::instance()->showToast(templ, handler)) {
+    std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
+}
+ ```   
+
 
 
 
