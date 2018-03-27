@@ -1,4 +1,4 @@
-#ifndef WINTOASTLIB_H
+﻿#ifndef WINTOASTLIB_H
 #define WINTOASTLIB_H
 #include <Windows.h>
 #include <sdkddkver.h>
@@ -85,7 +85,7 @@ namespace WinToastLib {
         std::wstring                        _imagePath;
         std::wstring                        _audioPath;
         std::vector<std::wstring>           _actions;
-        INT64                               _expiration;
+        INT64                               _expiration = 0;
         WinToastTemplateType                _type;
         WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::Default;
         std::wstring                        _attributionText;
