@@ -108,7 +108,7 @@ int wmain(int argc, LPWSTR *argv)
    
 
     bool onlyCreateShortcut = false;
-    WinToastTemplate::AudioOption audioOption = WinToastTemplate::Default;
+    WinToastTemplate::AudioOption audioOption = WinToastTemplate::AudioOption::Default;
 
     int i;
 	for (i = 1; i < argc; i++)
@@ -159,8 +159,8 @@ int wmain(int argc, LPWSTR *argv)
     }
 
     bool withImage = (imagePath != NULL);
-	WinToastTemplate templ( withImage ? WinToastTemplate::ImageAndText02 : WinToastTemplate::Text02);
-	templ.setTextField(text, WinToastTemplate::FirstLine);
+	WinToastTemplate templ( withImage ? WinToastTemplate::WinToastTemplateType::ImageAndText02 : WinToastTemplate::WinToastTemplateType::Text02);
+	templ.setTextField(text, WinToastTemplate::TextField::FirstLine);
     templ.setAudioOption(audioOption);
     templ.setAttributionText(attribute);
 

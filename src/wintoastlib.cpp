@@ -595,7 +595,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                         }
 
                         if (SUCCEEDED(hr)) {
-                            hr = (toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::Default)
+                            hr = (toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::AudioOption::Default)
                                 ? hr : setAudioFieldHelper(xmlDocument.Get(), toast.audioPath(), toast.audioOption());
                         }
                     } else {
@@ -730,6 +730,7 @@ HRESULT WinToast::addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstr
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
+        UINT32 length;
         hr = nodeList->get_Length(&length);
         if (SUCCEEDED(hr)) {
             ComPtr<IXmlNode> toastNode;
@@ -739,7 +740,7 @@ HRESULT WinToast::addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstr
                 hr = toastNode.As(&toastElement);
                 if (SUCCEEDED(hr)) {
                     hr = toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(),
-                                                    WinToastStringWrapper(labels[duration]).Get());
+                                                    WinToastStringWrapper(duration).Get());
                 }
             }
         }
@@ -897,7 +898,8 @@ HRESULT WinToast::addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstrin
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
     static const std::size_t TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
-    _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
+    const std::size_t position = static_cast<std::underlying_type<WinToastTemplateType>::type>(type);
+    _textFields = std::vector<std::wstring>(TextFieldsCount[position], L"");
 }
 
 WinToastTemplate::~WinToastTemplate() {
@@ -905,7 +907,8 @@ WinToastTemplate::~WinToastTemplate() {
 }
 
 void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastTemplate::TextField pos) {
-    _textFields[pos] = txt;
+    const std::size_t position = static_cast<std::underlying_type<TextField>::type>(pos);
+    _textFields[position] = txt;
 }
 
 void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
@@ -916,8 +919,16 @@ void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
     _audioPath = audioPath;
 }
 
-void WinToastTemplate::setAudioOption(_In_ const WinToastTemplate::AudioOption & audioOption) {
+void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOption) {
     _audioOption = audioOption;
+}
+
+void WinToastTemplate::setDuration(_In_ Duration duration) {
+    _duration = duration;
+}
+
+void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) {
+    _expiration = millisecondsFromNow;
 }
 
 void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionText) {
@@ -927,4 +938,57 @@ void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionTe
 void WinToastTemplate::addAction(_In_ const std::wstring & label)
 {
 	_actions.push_back(label);
+}
+
+std::size_t WinToastTemplate::textFieldsCount() const {
+    return _textFields.size();
+}
+
+std::size_t WinToastTemplate::actionsCount() const {
+    return _actions.size();
+}
+
+bool WinToastTemplate::hasImage() const {
+    return _type <  WinToastTemplateType::Text01;
+}
+
+const std::vector<std::wstring>& WinToastTemplate::textFields() const {
+    return _textFields;
+}
+
+const std::wstring& WinToastTemplate::textField(_In_ TextField pos) const {
+    const std::size_t position = static_cast<std::underlying_type<TextField>::type>(pos);
+    return _textFields[position];
+}
+
+const std::wstring& WinToastTemplate::actionLabel(_In_ int pos) const {
+    return _actions[pos];
+}
+
+const std::wstring& WinToastTemplate::imagePath() const {
+    return _imagePath;
+}
+
+const std::wstring& WinToastTemplate::audioPath() const {
+    return _audioPath;
+}
+
+const std::wstring& WinToastTemplate::attributionText() const {
+    return _attributionText;
+}
+
+INT64 WinToastTemplate::expiration() const {
+    return _expiration;
+}
+
+WinToastTemplate::WinToastTemplateType WinToastTemplate::type() const {
+    return _type;
+}
+
+WinToastTemplate::AudioOption WinToastTemplate::audioOption() const {
+    return _audioOption;
+}
+
+WinToastTemplate::Duration WinToastTemplate::duration() const {
+    return _duration;
 }
