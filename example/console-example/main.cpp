@@ -159,8 +159,8 @@ int wmain(int argc, LPWSTR *argv)
     }
 
     bool withImage = (imagePath != NULL);
-	WinToastTemplate templ( withImage ? WinToastTemplate::WinToastTemplateType::ImageAndText02 : WinToastTemplate::WinToastTemplateType::Text02);
-	templ.setTextField(text, WinToastTemplate::TextField::FirstLine);
+	WinToastTemplate templ( withImage ? WinToastTemplate::ImageAndText02 : WinToastTemplate::Text02);
+	templ.setTextField(text, WinToastTemplate::FirstLine);
     templ.setAudioOption(audioOption);
     templ.setAttributionText(attribute);
 

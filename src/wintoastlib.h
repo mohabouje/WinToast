@@ -43,10 +43,10 @@ namespace WinToastLib {
 
     class WinToastTemplate {
     public:
-        enum class Duration { Default, Short, Long };
-        enum class AudioOption { Default = 0, Silent = 1, Loop = 2 };
-        enum class TextField { FirstLine = 0, SecondLine, ThirdLine };
-        enum class WinToastTemplateType {
+        enum Duration { System, Short, Long };
+        enum AudioOption { Default = 0, Silent = 1, Loop = 2 };
+        enum TextField { FirstLine = 0, SecondLine, ThirdLine };
+        enum WinToastTemplateType {
             ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
             ImageAndText02 = ToastTemplateType::ToastTemplateType_ToastImageAndText02,
             ImageAndText03 = ToastTemplateType::ToastTemplateType_ToastImageAndText03,
@@ -91,7 +91,7 @@ namespace WinToastLib {
         INT64                               _expiration = 0;
         AudioOption                         _audioOption = WinToastTemplate::AudioOption::Default;
         WinToastTemplateType                _type = WinToastTemplateType::Text01;
-        Duration                            _duration = Duration::Default;
+        Duration                            _duration = Duration::System;
     };
 
     class WinToast {
@@ -99,9 +99,9 @@ namespace WinToastLib {
         WinToast(void);
         virtual ~WinToast();
         static WinToast* instance();
-        static bool             isCompatible();
-		static bool				supportModernFeatures();
-		static std::wstring     configureAUMI(_In_ const std::wstring& companyName,
+        static bool isCompatible();
+		static bool	isSupportingModernFeatures();
+		static std::wstring configureAUMI(_In_ const std::wstring& companyName,
                                                     _In_ const std::wstring& productName,
                                                     _In_ const std::wstring& subProduct = std::wstring(),
                                                     _In_ const std::wstring& versionInformation = std::wstring()

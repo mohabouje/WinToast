@@ -373,7 +373,7 @@ bool WinToast::isCompatible() {
 		|| (DllImporter::WindowsDeleteString == nullptr));
 }
 
-bool WinToastLib::WinToast::supportModernFeatures() {
+bool WinToastLib::WinToast::isSupportingModernFeatures() {
 	RTL_OSVERSIONINFOW tmp = GetRealOSVersion();
 	return tmp.dwMajorVersion > 6;
 
@@ -578,7 +578,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                     }
 
                     // Modern feature are supported Windows > Windows 10
-                    if (SUCCEEDED(hr) && supportModernFeatures()) {
+                    if (SUCCEEDED(hr) && isSupportingModernFeatures()) {
 
                         // Note that we do this *after* using toast.textFieldsCount() to
                         // iterate/fill the template's text fields, since we're adding yet another text field.
@@ -615,7 +615,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                                     hr = notification->put_ExpirationTime(&expirationDateTime);
                                 }
 
-                                if (SUCCEEDED(hr) && toast.duration() != WinToastTemplate::Duration::Default) {
+                                if (SUCCEEDED(hr) && toast.duration() != WinToastTemplate::Duration::System) {
                                     hr = addDurationHelper(xmlDocument.Get(),
                                                            (toast.duration() == WinToastTemplate::Duration::Short) ? L"short" : L"long");
                                 }
@@ -898,8 +898,7 @@ HRESULT WinToast::addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstrin
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
     static const std::size_t TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
-    const std::size_t position = static_cast<std::underlying_type<WinToastTemplateType>::type>(type);
-    _textFields = std::vector<std::wstring>(TextFieldsCount[position], L"");
+    _textFields = std::vector<std::wstring>(TextFieldsCount[type], L"");
 }
 
 WinToastTemplate::~WinToastTemplate() {
@@ -907,8 +906,7 @@ WinToastTemplate::~WinToastTemplate() {
 }
 
 void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastTemplate::TextField pos) {
-    const std::size_t position = static_cast<std::underlying_type<TextField>::type>(pos);
-    _textFields[position] = txt;
+    _textFields[pos] = txt;
 }
 
 void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
@@ -957,8 +955,7 @@ const std::vector<std::wstring>& WinToastTemplate::textFields() const {
 }
 
 const std::wstring& WinToastTemplate::textField(_In_ TextField pos) const {
-    const std::size_t position = static_cast<std::underlying_type<TextField>::type>(pos);
-    return _textFields[position];
+    return _textFields[pos];
 }
 
 const std::wstring& WinToastTemplate::actionLabel(_In_ int pos) const {
