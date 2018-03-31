@@ -89,6 +89,7 @@ namespace WinToastLib {
         std::vector<std::wstring>           _actions;
         INT64                               _expiration;
         WinToastTemplateType                _type = WinToastTemplateType::Text01;
+        INT64                               _expiration = 0;
         WinToastTemplate::AudioOption       _audioOption = WinToastTemplate::AudioOption::Default;
         std::wstring                        _attributionText;
         Duration                            _duration = Duration::Default;
