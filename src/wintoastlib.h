@@ -97,7 +97,7 @@ namespace WinToastLib {
     class WinToast {
     public:
         enum WinToastError {
-            NoError,
+            NoError = 0,
             NotInitialized,
             SystemNotSupported,
             ShellLinkNotCreated,
