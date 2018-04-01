@@ -17,10 +17,10 @@ WinToast is a lightly library written in C++ which brings a complete integration
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
 1. [Toast Templates](#id1)
-2. [Error Handling](#id2)
-3. [Event Handler](#id3)
-4. [Expiration Time](#id4)
-5. [Modern Features](#id5)
+2. [Event Handler](#id3)
+3. [Expiration Time](#id4)
+4. [Modern Features](#id5)
+5. [Error Handling](#id2)
 6. [Example of usage](#id6)
 
 <div id='id1' />
@@ -50,12 +50,6 @@ templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
  ```  
  
 *The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
- 
- <div id='id2' />
-## Error Handling
-
-
- 
  
 <div id='id3' />
 
@@ -128,6 +122,46 @@ WinToast::instance()->showToast(templ, handler)
 > ms-appdata:// path*) and define it by calling: `WinToastTemplate::setAudioPath`
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
+ 
+<div id='id2' />
+
+ ## Error Handling
+There are several reasons WinToast can fail that's why the library notifies caller about fail reason. Those are the code for each failure:
+
+| WinToastError | Error Code | Error message |
+|--|--|--|
+| NoError | 0x00 | No error. The process was executed correctly |
+| NotInitialized | 0x01 | The library has not been initialized |
+| SystemNotSupported | 0x02 | The OS does not support WinToast |
+| ShellLinkNotCreated | 0x03 | The library was not able to create a Shell Link for the app |
+| InvalidAppUserModelID | 0x04 | The AUMI is not a valid one |
+| InvalidParameters | 0x05 | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
+| NotDisplayed | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
+| UnknownError | 0x07 | Unknown error |
+
+A common example of usage is to check while initializing the library or showing a toast notification the possible failure code:
+
+```cpp
+WinToast::WinToastError error;
+const bool succedded = WinToast::instance()->initialize(&error);
+if (!succedded) {  
+    std::wcout << L"Error, could not initialize the lib. Error number: " 
+    << error << std::endl;
+}
+...
+// Configure the template
+...
+const bool launched = WinToast::instance()->showToast(templ, handler, &error);
+if (!launched) {
+    std::wcout << L"Error: Could not launch your toast notification. Error: "
+     << error << std::endl;
+}
+ ```  
+
+
+ 
+ 
+ 
  
 <div id='id6' />
 
