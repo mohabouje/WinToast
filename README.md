@@ -140,8 +140,8 @@ There are several reasons WinToast can fail that's why the library notifies call
 | `ShellLinkNotCreated` | 0x03 | The library was not able to create a Shell Link for the app |
 | `InvalidAppUserModelID` | 0x04 | The AUMI is not a valid one |
 | `InvalidParameters` | 0x05 | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
-| `NotDisplayed | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
-| `UnknownError | 0x07 | Unknown error |
+| `NotDisplayed` | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
+| `UnknownError` | 0x07 | Unknown error |
 
 A common example of usage is to check while initializing the library or showing a toast notification the possible failure code:
 
