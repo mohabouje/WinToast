@@ -72,9 +72,9 @@ class WinToastHandlerExample : public IWinToastHandler {
  public:
 	WinToastHandlerExample(); 
 	// Public interfaces
-	void toastActivated() const;
-	void toastDismissed(WinToastDismissalReason state) const;
-	void toastFailed() const;
+	void toastActivated() const override;
+	void toastDismissed(WinToastDismissalReason state) const override;
+	void toastFailed() const override;
  };
  ``` 
  <div id='id4' />
