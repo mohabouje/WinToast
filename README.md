@@ -17,10 +17,11 @@ WinToast is a lightly library written in C++ which brings a complete integration
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
 1. [Toast Templates](#id1)
-2. [Event Handler](#id2)
-3. [Expiration Time](#id3)
-4. [Modern Features](#id4)
-5. [Example of usage](#id5)
+2. [Error Handling](#id2)
+3. [Event Handler](#id3)
+4. [Expiration Time](#id4)
+5. [Modern Features](#id5)
+6. [Example of usage](#id6)
 
 <div id='id1' />
 
@@ -47,7 +48,16 @@ templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
  ```  
-<div id='id2' />
+ 
+*The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
+ 
+ <div id='id2' />
+## Error Handling
+
+
+ 
+ 
+<div id='id3' />
 
 ## Event Handler
 
@@ -72,7 +82,7 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastFailed() const;
  };
  ``` 
- <div id='id3' />
+ <div id='id4' />
  
  ## Expiration Time
  
@@ -81,7 +91,7 @@ Set the time after which a toast notification is no longer considered current or
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
 
- <div id='id4' />
+ <div id='id5' />
  
  ## Modern features - Windows 10
 
@@ -104,6 +114,10 @@ WinToast::instance()->showToast(templ, handler)
 
 !["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
  - **Attribution text**: you can add/remove the attribution text, by default is empty.  Use `WinToastTemplate::setAttributionText` to modify it.
+ - **Duration**: The amount of time the toast should display. This attribute can have one of the following values: 
+         - *System*: default system configuration.
+	 - *Short*: default system short time configuration.
+	 - *Long*: default system long time configuration.
  - **Audio Properties**: you can modify the different behaviors of the sound:
 	 - *Default*: plays the audio file just one time.
 	 - *Silent*: turn off the sound.
@@ -115,7 +129,7 @@ WinToast::instance()->showToast(templ, handler)
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
  
-<div id='id5' />
+<div id='id6' />
 
 ## Example of Usage
 
