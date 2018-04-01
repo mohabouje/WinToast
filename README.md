@@ -46,12 +46,11 @@ Example of a `ImageAndText02` template:
 
 ```cpp
 WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
-templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
+templ.setImagePath(L"C:/example.png"); 
  ```  
- 
-*The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
+**Note:** The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
  
 <div id='id3' />
 
@@ -86,6 +85,9 @@ Set the time after which a toast notification is no longer considered current or
  
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
+
+**Note:** Default Windows behavior is to hide notification automatically after time set in Windows Ease of Access Settings.
+If you need to preserve notification in Windows Action Center for longer period of time, you have to call `WinToastTemplate::setExpiration` method. 
 
  <div id='id5' />
  
