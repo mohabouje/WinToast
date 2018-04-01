@@ -33,14 +33,14 @@ WinToast integrates all standard templates availables in the [ToastTemplateType 
 
 | Template     | Description | Example   |
 | :------- | ----: | :---: |
-| ImageAndText01 | A large image and a single string wrapped across three lines of text. |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601606.png)   |
-| ImageAndText02   | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![12](https://i-msdn.sec.s-msft.com/dynimg/IC601607.png)   |
-| ImageAndText03 | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601608.png) |
-| ImageAndText04 |    A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601609.png)  |
-| Text01 | Single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601602.png)|
-| Text02   | One string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601603.png) |
-| Text03 | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601604.png)|
-| Text04 |   One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601605.png) |
+| `ImageAndText01` | A large image and a single string wrapped across three lines of text. |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601606.png)   |
+| `ImageAndText02`   | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![12](https://i-msdn.sec.s-msft.com/dynimg/IC601607.png)   |
+| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601608.png) |
+| `ImageAndText04` |    A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601609.png)  |
+| `Text01` | Single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601602.png)|
+| `Text02`  | One string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601603.png) |
+| `Text03` | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601604.png)|
+| `Text04` |   One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601605.png) |
 
 Example of a `ImageAndText02` template:
 
@@ -134,14 +134,14 @@ There are several reasons WinToast can fail that's why the library notifies call
 
 | WinToastError | Error Code | Error message |
 |--|--|--|
-| NoError | 0x00 | No error. The process was executed correctly |
-| NotInitialized | 0x01 | The library has not been initialized |
-| SystemNotSupported | 0x02 | The OS does not support WinToast |
-| ShellLinkNotCreated | 0x03 | The library was not able to create a Shell Link for the app |
-| InvalidAppUserModelID | 0x04 | The AUMI is not a valid one |
-| InvalidParameters | 0x05 | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
-| NotDisplayed | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
-| UnknownError | 0x07 | Unknown error |
+| `NoError` | 0x00 | No error. The process was executed correctly |
+| `NotInitialized` | 0x01 | The library has not been initialized |
+| `SystemNotSupported` | 0x02 | The OS does not support WinToast |
+| `ShellLinkNotCreated` | 0x03 | The library was not able to create a Shell Link for the app |
+| `InvalidAppUserModelID` | 0x04 | The AUMI is not a valid one |
+| `InvalidParameters` | 0x05 | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
+| `NotDisplayed | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
+| `UnknownError | 0x07 | Unknown error |
 
 A common example of usage is to check while initializing the library or showing a toast notification the possible failure code:
 
