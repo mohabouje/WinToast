@@ -181,12 +181,12 @@ if (!WinToast::isCompatible()) {
  Configure your [App User Model Id](https://msdn.microsoft.com/en-us/library/windows/desktop/dd378459%28v=vs.85%29.aspx), this can be done by using the existing helper:
 
 ```cpp        
-using namespace WinToastLib;
-....
+
 WinToast::instance()->setAppName(L"WinToastExample");
 const auto aumi = WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006");
 WinToast::instance()->setAppUserModelId(aumi);	
 ```	
+
 Initialize all the dependencies and check if WinToast has been initialized successfully in your system:
 
 ```cpp		
