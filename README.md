@@ -17,10 +17,13 @@ WinToast is a lightly library written in C++ which brings a complete integration
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
 1. [Toast Templates](#id1)
-2. [Event Handler](#id2)
-3. [Expiration Time](#id3)
-4. [Modern Features](#id4)
-5. [Example of usage](#id5)
+2. [Event Handler](#id3)
+3. [Expiration Time](#id4)
+4. [Modern Features](#id5)
+5. [Error Handling](#id2)
+6. [Windows 10 Configuration](#id7)
+7. [Example of usage](#id6)
+
 
 <div id='id1' />
 
@@ -47,7 +50,10 @@ templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
  ```  
-<div id='id2' />
+ 
+*The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
+ 
+<div id='id3' />
 
 ## Event Handler
 
@@ -72,7 +78,7 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastFailed() const;
  };
  ``` 
- <div id='id3' />
+ <div id='id4' />
  
  ## Expiration Time
  
@@ -81,7 +87,7 @@ Set the time after which a toast notification is no longer considered current or
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
 
- <div id='id4' />
+ <div id='id5' />
  
  ## Modern features - Windows 10
 
@@ -104,6 +110,10 @@ WinToast::instance()->showToast(templ, handler)
 
 !["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
  - **Attribution text**: you can add/remove the attribution text, by default is empty.  Use `WinToastTemplate::setAttributionText` to modify it.
+ - **Duration**: The amount of time the toast should display. This attribute can have one of the following values: 
+         - *System*: default system configuration.
+	 - *Short*: default system short time configuration.
+	 - *Long*: default system long time configuration.
  - **Audio Properties**: you can modify the different behaviors of the sound:
 	 - *Default*: plays the audio file just one time.
 	 - *Silent*: turn off the sound.
@@ -115,7 +125,42 @@ WinToast::instance()->showToast(templ, handler)
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
  
-<div id='id5' />
+<div id='id2' />
+
+ ## Error Handling
+There are several reasons WinToast can fail that's why the library notifies caller about fail reason. Those are the code for each failure:
+
+| WinToastError | Error Code | Error message |
+|--|--|--|
+| NoError | 0x00 | No error. The process was executed correctly |
+| NotInitialized | 0x01 | The library has not been initialized |
+| SystemNotSupported | 0x02 | The OS does not support WinToast |
+| ShellLinkNotCreated | 0x03 | The library was not able to create a Shell Link for the app |
+| InvalidAppUserModelID | 0x04 | The AUMI is not a valid one |
+| InvalidParameters | 0x05 | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
+| NotDisplayed | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
+| UnknownError | 0x07 | Unknown error |
+
+A common example of usage is to check while initializing the library or showing a toast notification the possible failure code:
+
+```cpp
+WinToast::WinToastError error;
+const bool succedded = WinToast::instance()->initialize(&error);
+if (!succedded) {  
+    std::wcout << L"Error, could not initialize the lib. Error number: " 
+    << error << std::endl;
+}
+...
+// Configure the template
+...
+const bool launched = WinToast::instance()->showToast(templ, handler, &error);
+if (!launched) {
+    std::wcout << L"Error: Could not launch your toast notification. Error: "
+     << error << std::endl;
+}
+ ```  
+
+<div id='id6' />
 
 ## Example of Usage
 
@@ -166,8 +211,15 @@ if (!WinToast::instance()->showToast(templ, handler)) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
  ```   
+ <div id='id7' />
 
+## Windows 10 - Toast Configuration
 
+Windows allows the configuration of the default behavior of a toast notification. This can be done in the *Ease of Access* configuration by modifying the *Other options* tab. 
+
+The system configuration help you to define how long you want notifications to appear for (5 seconds to 5 minutes) as turning on visual notifications for sound.
+
+![Ease of Access configuration](https://camo.githubusercontent.com/56c8edd1a7a4a43be07ba211d9d828478fdbad39/68747470733a2f2f7777772e686f77746f6765656b2e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031362f30332f656173655f6f665f6163636573732e706e67)
 
 
 

@@ -373,7 +373,7 @@ bool WinToast::isCompatible() {
 		|| (DllImporter::WindowsDeleteString == nullptr));
 }
 
-bool WinToastLib::WinToast::supportModernFeatures() {
+bool WinToastLib::WinToast::isSupportingModernFeatures() {
 	RTL_OSVERSIONINFOW tmp = GetRealOSVersion();
 	return tmp.dwMajorVersion > 6;
 
@@ -429,18 +429,33 @@ enum WinToast::ShortcutResult WinToast::createShortcut() {
         return wasChanged ? SHORTCUT_WAS_CHANGED : SHORTCUT_UNCHANGED;
 
     hr = createShellLinkHelper();
-    if (SUCCEEDED(hr))
-        return SHORTCUT_WAS_CREATED;
-    return SHORTCUT_CREATE_FAILED;
+    return SUCCEEDED(hr) ? SHORTCUT_WAS_CREATED : SHORTCUT_CREATE_FAILED;
 }
 
-bool WinToast::initialize() {
+bool WinToast::initialize(_Out_ WinToastError* error) {
     _isInitialized = false;
 
-    if (createShortcut() < 0)
+    if (!isCompatible()) {
+        setError(error, WinToastError::SystemNotSupported);
+        DEBUG_MSG(L"Error: system not supported.");
         return false;
+    }
+
+
+    if (_aumi.empty() || _appName.empty()) {
+        setError(error, WinToastError::InvalidParameters);
+        DEBUG_MSG(L"Error while initializing, did you set up a valid AUMI and App name?");
+        return false;
+    }
+
+    if (createShortcut() < 0) {
+        setError(error, WinToastError::ShellLinkNotCreated);
+        DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
+        return false;
+    }
 
     if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
+        setError(error, WinToastError::InvalidAppUserModelID);
         DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
         return false;
     }
@@ -448,6 +463,19 @@ bool WinToast::initialize() {
     _isInitialized = true;
     return _isInitialized;
 }
+
+bool WinToast::isInitialized() const {
+    return _isInitialized;
+}
+
+const std::wstring& WinToast::appName() const {
+    return _appName;
+}
+
+const std::wstring& WinToast::appUserModelId() const {
+    return _aumi;
+}
+
 
 HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
 	WCHAR	path[MAX_PATH] = { L'\0' };
@@ -549,14 +577,17 @@ HRESULT	WinToast::createShellLinkHelper() {
     return hr;
 }
 
-INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler)  {
+INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler, _Out_ WinToastError* error)  {
+    setError(error, WinToastError::NoError);
     INT64 id = -1;
     if (!isInitialized()) {
-        DEBUG_MSG("Error when launching the toast. WinToast is not initialized =(");
+        setError(error, WinToastError::NotInitialized);
+        DEBUG_MSG("Error when launching the toast. WinToast is not initialized.");
         return id;
     }
     if (!handler) {
-        DEBUG_MSG("Error when launching the toast. handler cannot be null.");
+        setError(error, WinToastError::InvalidHandler);
+        DEBUG_MSG("Error when launching the toast. Handler cannot be null.");
         return id;
     }
 
@@ -578,7 +609,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                     }
 
                     // Modern feature are supported Windows > Windows 10
-                    if (SUCCEEDED(hr) && supportModernFeatures()) {
+                    if (SUCCEEDED(hr) && isSupportingModernFeatures()) {
 
                         // Note that we do this *after* using toast.textFieldsCount() to
                         // iterate/fill the template's text fields, since we're adding yet another text field.
@@ -595,9 +626,15 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                         }
 
                         if (SUCCEEDED(hr)) {
-                            hr = (toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::Default)
+                            hr = (toast.audioPath().empty() && toast.audioOption() == WinToastTemplate::AudioOption::Default)
                                 ? hr : setAudioFieldHelper(xmlDocument.Get(), toast.audioPath(), toast.audioOption());
                         }
+
+                        if (SUCCEEDED(hr) && toast.duration() != WinToastTemplate::Duration::System) {
+                            hr = addDurationHelper(xmlDocument.Get(),
+                                (toast.duration() == WinToastTemplate::Duration::Short) ? L"short" : L"long");
+                        }
+
                     } else {
                         DEBUG_MSG("Modern features (Actions/Sounds/Attributes) not supported in this os version");
                     }
@@ -614,9 +651,14 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                                     expiration = expirationDateTime;
                                     hr = notification->put_ExpirationTime(&expirationDateTime);
                                 }
+
                                 if (SUCCEEDED(hr)) {
                                     hr = Util::setEventHandlers(notification.Get(), std::shared_ptr<IWinToastHandler>(handler), expiration);
+                                    if (FAILED(hr)) {
+                                        setError(error, WinToastError::InvalidHandler);
+                                    }
                                 }
+
                                 if (SUCCEEDED(hr)) {
                                     GUID guid;
                                     hr = CoCreateGuid(&guid);
@@ -625,6 +667,9 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                                         _buffer[id] = notification;
                                         DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
                                         hr = notifier->Show(notification.Get());
+                                        if (FAILED(hr)) {
+                                            setError(error, WinToastError::NotDisplayed);
+                                        }
                                     }
                                 }
                             }
@@ -647,7 +692,6 @@ ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const  {
 	*succeded = SUCCEEDED(hr);
 	return notifier;
 }
-
 
 bool WinToast::hideToast(_In_ INT64 id) {
     if (!isInitialized()) {
@@ -719,6 +763,28 @@ HRESULT WinToast::setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ con
     return hr;
 }
 
+HRESULT WinToast::addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& duration) {
+    ComPtr<IXmlNodeList> nodeList;
+    HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
+    if (SUCCEEDED(hr)) {
+        UINT32 length;
+        hr = nodeList->get_Length(&length);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> toastNode;
+            hr = nodeList->Item(0, &toastNode);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IXmlElement> toastElement;
+                hr = toastNode.As(&toastElement);
+                if (SUCCEEDED(hr)) {
+                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(),
+                                                    WinToastStringWrapper(duration).Get());
+                }
+            }
+        }
+    }
+    return hr;
+}
+
 HRESULT WinToast::setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos) {
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
@@ -779,27 +845,27 @@ HRESULT WinToast::setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::ws
                     if (SUCCEEDED(hr)) {
                         hr = attributes->GetNamedItem(WinToastStringWrapper(L"src").Get(), &editedNode);
                         if (SUCCEEDED(hr)) {
-                            Util::setNodeStringValue(path, editedNode.Get(), xml);
+                            hr = Util::setNodeStringValue(path, editedNode.Get(), xml);
                         }
                     }
                 }
-                //
-                // These options are mutually exclusive
-                //
-                switch (option) {
-                case WinToastTemplate::AudioOption::Loop:
-                    hr = attributes->GetNamedItem(WinToastStringWrapper(L"loop").Get(), &editedNode);
-                    if (SUCCEEDED(hr)) {
-                        Util::setNodeStringValue(L"true", editedNode.Get(), xml);
+
+                if (SUCCEEDED(hr)) {
+                    switch (option) {
+                    case WinToastTemplate::AudioOption::Loop:
+                        hr = attributes->GetNamedItem(WinToastStringWrapper(L"loop").Get(), &editedNode);
+                        if (SUCCEEDED(hr)) {
+                            hr = Util::setNodeStringValue(L"true", editedNode.Get(), xml);
+                        }
+                        break;
+                    case WinToastTemplate::AudioOption::Silent:
+                        hr = attributes->GetNamedItem(WinToastStringWrapper(L"silent").Get(), &editedNode);
+                        if (SUCCEEDED(hr)) {
+                            hr = Util::setNodeStringValue(L"true", editedNode.Get(), xml);
+                        }
+                    default:
+                        break;
                     }
-                    break;
-                case WinToastTemplate::AudioOption::Silent:
-                    hr = attributes->GetNamedItem(WinToastStringWrapper(L"silent").Get(), &editedNode);
-                    if (SUCCEEDED(hr)) {
-                        Util::setNodeStringValue(L"true", editedNode.Get(), xml);
-                    }
-                default:
-                    break;
                 }
             }
         }
@@ -867,9 +933,15 @@ HRESULT WinToast::addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstrin
     return hr;
 }
 
+void WinToast::setError(_Out_ WinToastError* error, _In_ WinToastError value) {
+    if (error) {
+        *error = value;
+    } 
+}
+
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
     static const std::size_t TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
-    _textFields = std::vector<std::wstring>(TextFieldsCount[_type], L"");
+    _textFields = std::vector<std::wstring>(TextFieldsCount[type], L"");
 }
 
 WinToastTemplate::~WinToastTemplate() {
@@ -888,8 +960,16 @@ void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
     _audioPath = audioPath;
 }
 
-void WinToastTemplate::setAudioOption(_In_ const WinToastTemplate::AudioOption & audioOption) {
+void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOption) {
     _audioOption = audioOption;
+}
+
+void WinToastTemplate::setDuration(_In_ Duration duration) {
+    _duration = duration;
+}
+
+void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) {
+    _expiration = millisecondsFromNow;
 }
 
 void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionText) {
@@ -899,4 +979,56 @@ void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionTe
 void WinToastTemplate::addAction(_In_ const std::wstring & label)
 {
 	_actions.push_back(label);
+}
+
+std::size_t WinToastTemplate::textFieldsCount() const {
+    return _textFields.size();
+}
+
+std::size_t WinToastTemplate::actionsCount() const {
+    return _actions.size();
+}
+
+bool WinToastTemplate::hasImage() const {
+    return _type <  WinToastTemplateType::Text01;
+}
+
+const std::vector<std::wstring>& WinToastTemplate::textFields() const {
+    return _textFields;
+}
+
+const std::wstring& WinToastTemplate::textField(_In_ TextField pos) const {
+    return _textFields[pos];
+}
+
+const std::wstring& WinToastTemplate::actionLabel(_In_ int pos) const {
+    return _actions[pos];
+}
+
+const std::wstring& WinToastTemplate::imagePath() const {
+    return _imagePath;
+}
+
+const std::wstring& WinToastTemplate::audioPath() const {
+    return _audioPath;
+}
+
+const std::wstring& WinToastTemplate::attributionText() const {
+    return _attributionText;
+}
+
+INT64 WinToastTemplate::expiration() const {
+    return _expiration;
+}
+
+WinToastTemplate::WinToastTemplateType WinToastTemplate::type() const {
+    return _type;
+}
+
+WinToastTemplate::AudioOption WinToastTemplate::audioOption() const {
+    return _audioOption;
+}
+
+WinToastTemplate::Duration WinToastTemplate::duration() const {
+    return _duration;
 }

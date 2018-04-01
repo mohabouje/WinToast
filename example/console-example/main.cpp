@@ -108,7 +108,7 @@ int wmain(int argc, LPWSTR *argv)
    
 
     bool onlyCreateShortcut = false;
-    WinToastTemplate::AudioOption audioOption = WinToastTemplate::Default;
+    WinToastTemplate::AudioOption audioOption = WinToastTemplate::AudioOption::Default;
 
     int i;
 	for (i = 1; i < argc; i++)
