@@ -434,6 +434,7 @@ enum WinToast::ShortcutResult WinToast::createShortcut() {
 
 bool WinToast::initialize(_Out_ WinToastError* error) {
     _isInitialized = false;
+    setError(error, WinToastError::NoError);
 
     if (!isCompatible()) {
         setError(error, WinToastError::SystemNotSupported);
