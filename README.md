@@ -223,6 +223,9 @@ The system configuration help you to define how long you want notifications to a
 
 ![Ease of Access configuration](https://camo.githubusercontent.com/56c8edd1a7a4a43be07ba211d9d828478fdbad39/68747470733a2f2f7777772e686f77746f6765656b2e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031362f30332f656173655f6f665f6163636573732e706e67)
 
+## Libraries based on WinToast
+ - [Zroya](https://github.com/malja/zroya): a python binding 
+ - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): a Pidgin extension to display toast notifications
 
 
 
