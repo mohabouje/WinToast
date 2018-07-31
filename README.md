@@ -19,10 +19,11 @@ Toast notifications allows your app to inform the users about relevant informati
 1. [Toast Templates](#id1)
 2. [Event Handler](#id3)
 3. [Expiration Time](#id4)
-4. [Modern Features](#id5)
+4. [Additional features available on Windows 10](#id5)
 5. [Error Handling](#id2)
-6. [Windows 10 Configuration](#id7)
-7. [Example of usage](#id6)
+6. [Example of usage](#id6)
+7. [Toast configuration on Windows 10](#id7)
+8. [Software that uses WinToast](#id8)
 
 
 <div id='id1' />
@@ -91,7 +92,7 @@ If you need to preserve notification in Windows Action Center for longer period 
 
  <div id='id5' />
  
- ## Modern features - Windows 10
+ ## Additional features available on Windows 10
 
 If your system support the new modern features (Version > Windows 8.1) available in Windows 10,  you can add some interesting fields as:
 
@@ -215,7 +216,7 @@ if (!WinToast::instance()->showToast(templ, handler)) {
  ```   
  <div id='id7' />
 
-## Windows 10 - Toast Configuration
+## Toast configuration on Windows 10
 
 Windows allows the configuration of the default behavior of a toast notification. This can be done in the *Ease of Access* configuration by modifying the *Other options* tab. 
 
@@ -223,6 +224,8 @@ The system configuration help you to define how long you want notifications to a
 
 ![Ease of Access configuration](https://camo.githubusercontent.com/56c8edd1a7a4a43be07ba211d9d828478fdbad39/68747470733a2f2f7777772e686f77746f6765656b2e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031362f30332f656173655f6f665f6163636573732e706e67)
 
+ <div id='id8' />
+ 
 ## Software that uses WinToast
  - [Zroya](https://github.com/malja/zroya): a python binding 
  - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): a Pidgin extension to display toast notifications
