@@ -30,7 +30,7 @@ Toast notifications allows your app to inform the users about relevant informati
 
 ## Toast Templates
 
-WinToast integrates all standard templates availables in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
+WinToast integrates all standard templates available in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
 
 | Template     | Description | Example   |
 | :------- | ----: | :---: |
@@ -78,11 +78,11 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastFailed() const override;
  };
  ``` 
- <div id='id4' />
- 
- ## Expiration Time
- 
-Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attemps to raise toast notifications immediately after you call Show, so this property is rarely used. 
+<div id='id4' />
+
+## Expiration Time
+
+Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attempts to raise toast notifications immediately after you call Show, so this property is rarely used. 
  
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
@@ -90,11 +90,11 @@ Set the time after which a toast notification is no longer considered current or
 **Note:** Default Windows behavior is to hide notification automatically after time set in Windows Ease of Access Settings.
 If you need to preserve notification in Windows Action Center for longer period of time, you have to call `WinToastTemplate::setExpiration` method. 
 
- <div id='id5' />
- 
- ## Additional features available on Windows 10
+<div id='id5' />
 
-If your system support the new modern features (Version > Windows 8.1) available in Windows 10,  you can add some interesting fields as:
+## Additional features available on Windows 10
+
+If your system supports the new modern features (Version > Windows 8.1) available in Windows 10, you can add some interesting fields as:
 
  - **Actions**: you can add your own actions, this fact allow you to interact with user in a different way:
 
@@ -127,10 +127,10 @@ WinToast::instance()->showToast(templ, handler)
 > ms-appdata:// path*) and define it by calling: `WinToastTemplate::setAudioPath`
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
- 
+
 <div id='id2' />
 
- ## Error Handling
+## Error Handling
 There are several reasons WinToast can fail that's why the library notifies caller about fail reason. Those are the code for each failure:
 
 | WinToastError | Error Code | Error message |
@@ -206,7 +206,7 @@ templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
  ```   
 
-Finaly show the final results.
+Finally show the results:
 
 ```cpp
 
@@ -214,21 +214,18 @@ if (!WinToast::instance()->showToast(templ, handler)) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
  ```   
- <div id='id7' />
+<div id='id7' />
 
 ## Toast configuration on Windows 10
 
 Windows allows the configuration of the default behavior of a toast notification. This can be done in the *Ease of Access* configuration by modifying the *Other options* tab. 
 
-The system configuration help you to define how long you want notifications to appear for (5 seconds to 5 minutes) as turning on visual notifications for sound.
+The system configuration helps you to define how long you want notifications to appear for (5 seconds to 5 minutes) as turning on visual notifications for sound.
 
 ![Ease of Access configuration](https://camo.githubusercontent.com/56c8edd1a7a4a43be07ba211d9d828478fdbad39/68747470733a2f2f7777772e686f77746f6765656b2e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031362f30332f656173655f6f665f6163636573732e706e67)
 
- <div id='id8' />
- 
+<div id='id8' />
+
 ## Software that uses WinToast
- - [Zroya](https://github.com/malja/zroya): a python binding 
- - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): a Pidgin extension to display toast notifications
-
-
-
+ - [Zroya](https://github.com/malja/zroya): A python binding.
+ - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): A Pidgin extension to display toast notifications.
