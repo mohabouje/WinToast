@@ -23,7 +23,7 @@ Toast notifications allows your app to inform the users about relevant informati
 5. [Error Handling](#id2)
 6. [Example of usage](#id6)
 7. [Toast configuration on Windows 10](#id7)
-8. [Software that uses WinToast](#id8)
+8. [Projects using WinToast](#id8)
 
 
 <div id='id1' />
@@ -226,6 +226,11 @@ The system configuration helps you to define how long you want notifications to 
 
 <div id='id8' />
 
-## Software that uses WinToast
- - [Zroya](https://github.com/malja/zroya): A python binding.
- - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): A Pidgin extension to display toast notifications.
+## Projects using WinToast
+ - [Git for Windows](https://github.com/git-for-windows/git): A fork of Git containing Windows-specific patches.
+ - [nheko](https://github.com/mujx/nheko): Desktop client for the Matrix protocol.
+ - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
+ - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
+ - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
+ - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): Windows Toast Notification Plugin for Pidgin. 
+ - [Dnai-Editor](https://github.com/Nicolas-Constanty/Dnai.Editor): Visual Scripting, node editor.
