@@ -230,6 +230,7 @@ The system configuration helps you to define how long you want notifications to 
 
 ## Projects using WinToast
  - [Git for Windows](https://github.com/git-for-windows/git): A fork of Git containing Windows-specific patches.
+ - [QGIS](https://github.com/qgis/QGIS): QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)
  - [nheko](https://github.com/mujx/nheko): Desktop client for the Matrix protocol.
  - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
  - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
