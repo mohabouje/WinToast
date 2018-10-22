@@ -236,3 +236,4 @@ The system configuration helps you to define how long you want notifications to 
  - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
  - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): Windows Toast Notification Plugin for Pidgin. 
  - [Dnai-Editor](https://github.com/Nicolas-Constanty/Dnai.Editor): Visual Scripting, node editor.
+ - [Spectral](https://gitlab.com/b0/spectral): A glossy client for Matrix, written in QtQuick Controls 2 and C++.
