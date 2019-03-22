@@ -79,15 +79,47 @@ namespace WinToastLib {
             WinToastTemplateTypeCount
         };
 
+        enum class SystemSoundFile {
+            Default, 
+            IM, 
+            Mail,
+            Reminder, 
+            SMS, 
+            Alarm,
+            Alarm2,
+            Alarm3,
+            Alarm4,
+            Alarm5,
+            Alarm6,
+            Alarm7,
+            Alarm8,
+            Alarm9,
+            Alarm10,
+            Call,
+            Call1,
+            Call2,
+            Call3,
+            Call4,
+            Call5,
+            Call6,
+            Call7,
+            Call8,
+            Call9,
+            Call10,
+        }
+
+
         WinToastTemplate(_In_ WinToastTemplateType type = WinToastTemplateType::ImageAndText02);
         ~WinToastTemplate();
 
+        void setAudioPath(_In_ WinToastTemplate::SystemSoundFile audio);
+        void setAudioPath(_In_ const std::wstring& audioPath);
+        void setAudioOption(_In_ WinToastTemplate::AudioOption audioOption);
+
         void setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
         void setImagePath(_In_ const std::wstring& imgPath);
-        void setAudioPath(_In_ const std::wstring& audioPath);
         void setAttributionText(_In_ const std::wstring & attributionText);
         void addAction(_In_ const std::wstring& label);
-        void setAudioOption(_In_ WinToastTemplate::AudioOption audioOption);
         void setDuration(_In_ Duration duration);
         void setExpiration(_In_ INT64 millisecondsFromNow);
         std::size_t textFieldsCount() const;

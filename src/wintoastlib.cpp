@@ -421,14 +421,14 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
 
 const std::wstring& WinToast::strerror(WinToastError error) const {
     static const std::unordered_map<WinToastError, std::wstring> Labels = {
-        {WinToastError::NoError, "No error. The process was executed correctly"},
-        {WinToastError::NotInitialized, "The library has not been initialized"},
-        {WinToastError::SystemNotSupported, "The OS does not support WinToast"},
-        {WinToastError::ShellLinkNotCreated, "The library was not able to create a Shell Link for the app"},
-        {WinToastError::InvalidAppUserModelID, "The AUMI is not a valid one"},
-        {WinToastError::InvalidParameters, "The parameters used to configure the library are not valid normally because an invalid AUMI or App Name"},
-        {WinToastError::NotDisplayed, "The toast was created correctly but WinToast was not able to display the toast"},
-        {WinToastError::UnknownError, "Unknown error"}
+        {WinToastError::NoError, L"No error. The process was executed correctly"},
+        {WinToastError::NotInitialized, L"The library has not been initialized"},
+        {WinToastError::SystemNotSupported, L"The OS does not support WinToast"},
+        {WinToastError::ShellLinkNotCreated, L"The library was not able to create a Shell Link for the app"},
+        {WinToastError::InvalidAppUserModelID, L"The AUMI is not a valid one"},
+        {WinToastError::InvalidParameters, L"The parameters used to configure the library are not valid normally because an invalid AUMI or App Name"},
+        {WinToastError::NotDisplayed, L"The toast was created correctly but WinToast was not able to display the toast"},
+        {WinToastError::UnknownError, L"Unknown error"}
     }
 
     const auto iter = Labels.find(error);
@@ -998,6 +998,41 @@ void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
     _audioPath = audioPath;
 }
 
+void WinToastTemplate::setAudioPath(_In_ SystemSoundFile file) {
+    static const std::unordered_map<SystemSoundFile, std::wstring> Files = {
+        {SystemSoundFile::Default, L"ms-winsoundevent:Notification.Default"},
+        {SystemSoundFile::IM, L"ms-winsoundevent:Notification.IM"},
+        {SystemSoundFile::Mail, L"ms-winsoundevent:Notification.Mail"},
+        {SystemSoundFile::Reminder, L"ms-winsoundevent:Notification.Reminder"},
+        {SystemSoundFile::SMS, L"ms-winsoundevent:Notification.SMS"},
+        {SystemSoundFile::Alarm, L"ms-winsoundevent:Notification.Alarm"},
+        {SystemSoundFile::Alarm1, L"ms-winsoundevent:Notification.Alarm1"},
+        {SystemSoundFile::Alarm2, L"ms-winsoundevent:Notification.Alarm2"},
+        {SystemSoundFile::Alarm3, L"ms-winsoundevent:Notification.Alarm3"},
+        {SystemSoundFile::Alarm4, L"ms-winsoundevent:Notification.Alarm4"},
+        {SystemSoundFile::Alarm5, L"ms-winsoundevent:Notification.Alarm5"},
+        {SystemSoundFile::Alarm6, L"ms-winsoundevent:Notification.Alarm6"},
+        {SystemSoundFile::Alarm7, L"ms-winsoundevent:Notification.Alarm7"},
+        {SystemSoundFile::Alarm8, L"ms-winsoundevent:Notification.Alarm8"},
+        {SystemSoundFile::Alarm9, L"ms-winsoundevent:Notification.Alarm9"},
+        {SystemSoundFile::Alarm10, L"ms-winsoundevent:Notification.Alarm10"},
+        {SystemSoundFile::Call, L"ms-winsoundevent:Notification.Call"},
+        {SystemSoundFile::Call1, L"ms-winsoundevent:Notification.Call1"},
+        {SystemSoundFile::Call2, L"ms-winsoundevent:Notification.Call2"},
+        {SystemSoundFile::Call3, L"ms-winsoundevent:Notification.Call3"},
+        {SystemSoundFile::Call4, L"ms-winsoundevent:Notification.Call4"},
+        {SystemSoundFile::Call5, L"ms-winsoundevent:Notification.Call5"},
+        {SystemSoundFile::Call6, L"ms-winsoundevent:Notification.Call6"},
+        {SystemSoundFile::Call7, L"ms-winsoundevent:Notification.Call7"},
+        {SystemSoundFile::Call8, L"ms-winsoundevent:Notification.Call8"},
+        {SystemSoundFile::Call9, L"ms-winsoundevent:Notification.Call9"},
+        {SystemSoundFile::Call10, L"ms-winsoundevent:Notification.Call10"},
+    }
+    const auto iter = Files.find(file);
+    assert(iter != Files.end());
+    _audioPath = iter->second;
+}
+
 void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOption) {
     _audioOption = audioOption;
 }
@@ -1014,8 +1049,7 @@ void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionTe
     _attributionText = attributionText;
 }
 
-void WinToastTemplate::addAction(_In_ const std::wstring & label)
-{
+void WinToastTemplate::addAction(_In_ const std::wstring & label) {
 	_actions.push_back(label);
 }
 
