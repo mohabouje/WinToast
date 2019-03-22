@@ -64,7 +64,7 @@ namespace WinToastLib {
     class WinToastTemplate {
     public:
         enum Duration { System, Short, Long };
-        enum AudioOption { Default = 0, Silent = 1, Loop = 2 };
+        enum AudioOption { Default = 0, Silent, Loop };
         enum TextField { FirstLine = 0, SecondLine, ThirdLine };
         enum WinToastTemplateType {
             ImageAndText01 = ToastTemplateType::ToastTemplateType_ToastImageAndText01,
@@ -110,16 +110,19 @@ namespace WinToastLib {
         WinToastTemplate(_In_ WinToastTemplateType type = WinToastTemplateType::ImageAndText02);
         ~WinToastTemplate();
 
+        void setFirstLine(_In_ const std::wstring& text);
+        void setSecondLine(_In_ const std::wstring& text);
+        void setThirdLine(_In_ const std::wstring& text);
+        void setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
+        void setAttributionText(_In_ const std::wstring & attributionText);
+        void setImagePath(_In_ const std::wstring& imgPath);
         void setAudioPath(_In_ WinToastTemplate::AudioSystemFile audio);
         void setAudioPath(_In_ const std::wstring& audioPath);
         void setAudioOption(_In_ WinToastTemplate::AudioOption audioOption);
-
-        void setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
-        void setImagePath(_In_ const std::wstring& imgPath);
-        void setAttributionText(_In_ const std::wstring & attributionText);
-        void addAction(_In_ const std::wstring& label);
         void setDuration(_In_ Duration duration);
         void setExpiration(_In_ INT64 millisecondsFromNow);
+        void addAction(_In_ const std::wstring& label);
+
         std::size_t textFieldsCount() const;
         std::size_t actionsCount() const;
         bool hasImage() const;
@@ -176,10 +179,9 @@ namespace WinToastLib {
         static bool isCompatible();
 		static bool	isSupportingModernFeatures();
 		static std::wstring configureAUMI(_In_ const std::wstring& companyName,
-                                                    _In_ const std::wstring& productName,
-                                                    _In_ const std::wstring& subProduct = std::wstring(),
-                                                    _In_ const std::wstring& versionInformation = std::wstring()
-                                                    );
+                                          _In_ const std::wstring& productName,
+                                          _In_ const std::wstring& subProduct = std::wstring(),
+                                          _In_ const std::wstring& versionInformation = std::wstring());
         static const std::wstring& strerror(_In_ WinToastError error);
         virtual bool initialize(_Out_ WinToastError* error = nullptr);
         virtual bool isInitialized() const;
@@ -190,7 +192,7 @@ namespace WinToastLib {
 
         const std::wstring& appName() const;
         const std::wstring& appUserModelId() const;
-        void setAppUserModelId(_In_ const std::wstring& appName);
+        void setAppUserModelId(_In_ const std::wstring& aumi);
         void setAppName(_In_ const std::wstring& appName);
 
     protected:

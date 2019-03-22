@@ -74,7 +74,7 @@ namespace DllImporter {
     }
 
     template<typename T>
-    inline HRESULT Wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout_ Details::ComPtrRef<T> factory) throw() {
+    inline HRESULT Wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout_ Details::ComPtrRef<T> factory) noexcept {
         return _1_GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
     }
 
@@ -994,7 +994,9 @@ WinToastTemplate::~WinToastTemplate() {
 }
 
 void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastTemplate::TextField pos) {
-    _textFields[pos] = txt;
+    const auto position = static_cast<std::size_t>(pos);
+    assert(position < _textFields.size());
+    _textFields[position] = txt;
 }
 
 void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
@@ -1041,6 +1043,18 @@ void WinToastTemplate::setAudioPath(_In_ AudioSystemFile file) {
 
 void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOption) {
     _audioOption = audioOption;
+}
+
+void WinToastTemplate::setFirstLine(const std::wstring &text) {
+    setTextField(text, WinToastTemplate::FirstLine);
+}
+
+void WinToastTemplate::setSecondLine(const std::wstring &text) {
+    setTextField(text, WinToastTemplate::SecondLine);
+}
+
+void WinToastTemplate::setThirdLine(const std::wstring &text) {
+    setTextField(text, WinToastTemplate::ThirdLine);
 }
 
 void WinToastTemplate::setDuration(_In_ Duration duration) {
