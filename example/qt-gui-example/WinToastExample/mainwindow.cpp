@@ -11,6 +11,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->audioMode->addItem("Default", WinToastTemplate::AudioOption::Default);
+    ui->audioMode->addItem("Loop", WinToastTemplate::AudioOption::Loop);
+    ui->audioMode->addItem("Silence", WinToastTemplate::AudioOption::Silent);
+
+    ui->audioSystemFile->addItem("Default", WinToastTemplate::AudioSystemFile::DefaultSound);
+    ui->audioSystemFile->addItem("Mail", WinToastTemplate::AudioSystemFile::Mail);
+    ui->audioSystemFile->addItem("SMS", WinToastTemplate::AudioSystemFile::SMS);
+    ui->audioSystemFile->addItem("Alarm", WinToastTemplate::AudioSystemFile::Alarm);
+
     WinToast::instance()->setAppName(L"WinToastExample");
     WinToast::instance()->setAppUserModelId(
                 WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006"));
@@ -72,6 +82,8 @@ void MainWindow::on_showToast_clicked()
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::ThirdLine);
     templ.setExpiration(ui->spinBox->value() * 1000);
+    templ.setAudioPath(static_cast<WinToastTemplate::AudioSystemFile>(ui->audioSystemFile->currentData().toInt()));
+    templ.setAudioOption(static_cast<WinToastTemplate::AudioOption>(ui->audioMode->currentData().toInt()));
     if (ui->addYes->isChecked()) templ.addAction(L"Yes");
     if (ui->addNo->isChecked()) templ.addAction(L"No");
 

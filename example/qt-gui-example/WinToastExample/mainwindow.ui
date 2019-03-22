@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>670</width>
-    <height>175</height>
+    <height>220</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,15 +15,15 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="4" column="2">
+     <widget class="QComboBox" name="audioSystemFile"/>
+    </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
        <string>First Line</string>
       </property>
      </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QLineEdit" name="firstLine"/>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label_2">
@@ -32,8 +32,63 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="2">
-     <widget class="QLineEdit" name="secondLine"/>
+    <item row="8" column="0">
+     <widget class="QCheckBox" name="addYes">
+      <property name="text">
+       <string>Add Yes Action</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Audio System File</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="2">
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="showToast">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Show Toast</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_3">
@@ -42,21 +97,27 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="0">
-     <widget class="QCheckBox" name="addYes">
-      <property name="text">
-       <string>Add Yes Action</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="0">
+    <item row="9" column="0">
      <widget class="QCheckBox" name="addNo">
       <property name="text">
        <string>Add No Action</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="0">
+    <item row="2" column="2">
+     <widget class="QLineEdit" name="secondLine"/>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Expiration time (secs)</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLineEdit" name="firstLine"/>
+    </item>
+    <item row="6" column="0">
      <widget class="QSpinBox" name="spinBox">
       <property name="maximum">
        <number>10</number>
@@ -110,54 +171,13 @@
       </layout>
      </widget>
     </item>
-    <item row="9" column="2">
-     <widget class="QWidget" name="widget_2" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="showToast">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Show Toast</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+    <item row="5" column="2">
+     <widget class="QComboBox" name="audioMode"/>
     </item>
-    <item row="4" column="2">
-     <widget class="QLabel" name="label_4">
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_6">
       <property name="text">
-       <string>Expiration time (secs)</string>
+       <string>Audio Mode</string>
       </property>
      </widget>
     </item>
