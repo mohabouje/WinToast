@@ -419,6 +419,22 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
     return aumi;
 }
 
+const std::wstring& WinToast::strerror(WinToastError error) const {
+    static const std::unordered_map<WinToastError, std::wstring> Labels = {
+        {WinToastError::NoError, "No error. The process was executed correctly"},
+        {WinToastError::NotInitialized, "The library has not been initialized"},
+        {WinToastError::SystemNotSupported, "The OS does not support WinToast"},
+        {WinToastError::ShellLinkNotCreated, "The library was not able to create a Shell Link for the app"},
+        {WinToastError::InvalidAppUserModelID, "The AUMI is not a valid one"},
+        {WinToastError::InvalidParameters, "The parameters used to configure the library are not valid normally because an invalid AUMI or App Name"},
+        {WinToastError::NotDisplayed, "The toast was created correctly but WinToast was not able to display the toast"},
+        {WinToastError::UnknownError, "Unknown error"}
+    }
+
+    const auto iter = Labels.find(error);
+    assert(iter != Labels.end());
+    return iter->second;
+}
 
 enum WinToast::ShortcutResult WinToast::createShortcut() {
     if (_aumi.empty() || _appName.empty()) {

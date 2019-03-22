@@ -150,6 +150,7 @@ namespace WinToastLib {
                                                     _In_ const std::wstring& subProduct = std::wstring(),
                                                     _In_ const std::wstring& versionInformation = std::wstring()
                                                     );
+        static const std::wstring& strerror(_In_ WinToastError error) const;
         virtual bool initialize(_Out_ WinToastError* error = nullptr);
         virtual bool isInitialized() const;
         virtual bool hideToast(_In_ INT64 id);
