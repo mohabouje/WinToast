@@ -1,64 +1,45 @@
-//
-// Copyright (C) 2016-2019 Mohammed Boujemaoui <mohabouje@gmail.com>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of
-// this software and associated documentation files (the "Software"), to deal in
-// the Software without restriction, including without limitation the rights to
-// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-// the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
+/* * Copyright (C) 2016-2019 Mohammed Boujemaoui <mohabouje@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 #include "wintoastlib.h"
 #include <memory>
 #include <assert.h>
+#include <unordered_map>
+#include <array>
 
 #pragma comment(lib,"shlwapi")
 #pragma comment(lib,"user32")
 
 #ifdef NDEBUG
     #define DEBUG_MSG(str) do { } while ( false )
- #else
+#else
     #define DEBUG_MSG(str) do { std::wcout << str << std::endl; } while( false )
 #endif
 
-// Thanks: https://stackoverflow.com/a/36545162/4297146
-
-typedef LONG NTSTATUS, *PNTSTATUS;
-
+#define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
+#define DEFAULT_LINK_FORMAT			L".lnk"
 #define STATUS_SUCCESS (0x00000000)
 
-typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-
-RTL_OSVERSIONINFOW GetRealOSVersion() {
-	HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
-	if (hMod) {
-		RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
-		if (fxPtr != nullptr) {
-			RTL_OSVERSIONINFOW rovi = { 0 };
-			rovi.dwOSVersionInfoSize = sizeof(rovi);
-			if (STATUS_SUCCESS == fxPtr(&rovi)) {
-				return rovi;
-			}
-		}
-	}
-	RTL_OSVERSIONINFOW rovi = { 0 };
-	return rovi;
-}
 
 // Quickstart: Handling toast activations from Win32 apps in Windows 10
 // https://blogs.msdn.microsoft.com/tiles_and_toasts/2015/10/16/quickstart-handling-toast-activations-from-win32-apps-in-windows-10/
-
 using namespace WinToastLib;
 namespace DllImporter {
 
@@ -93,7 +74,7 @@ namespace DllImporter {
     }
 
     template<typename T>
-    inline HRESULT Wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout_ Details::ComPtrRef<T> factory) throw() {
+    inline HRESULT Wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout_ Details::ComPtrRef<T> factory) noexcept {
         return _1_GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
     }
 
@@ -118,33 +99,34 @@ namespace DllImporter {
 
 class WinToastStringWrapper {
 public:
-    WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) throw() {
+    WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) noexcept {
         HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
         if (!SUCCEEDED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
     }
-    WinToastStringWrapper(_In_ const std::wstring &stringRef) throw() {
+
+    WinToastStringWrapper(_In_ const std::wstring &stringRef) noexcept {
         HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
         if (FAILED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
     }
+
     ~WinToastStringWrapper() {
         DllImporter::WindowsDeleteString(_hstring);
     }
-    inline HSTRING Get() const throw() { return _hstring; }
+
+    inline HSTRING Get() const noexcept {
+        return _hstring;
+    }
 private:
     HSTRING _hstring;
     HSTRING_HEADER _header;
 
 };
 
-class MyDateTime : public IReference<DateTime>
-{
-protected:
-    DateTime _dateTime;
-
+class InternalDateTime : public IReference<DateTime> {
 public:
     static INT64 Now() {
         FILETIME now;
@@ -152,11 +134,13 @@ public:
         return ((((INT64)now.dwHighDateTime) << 32) | now.dwLowDateTime);
     }
 
-    MyDateTime(DateTime dateTime) : _dateTime(dateTime) {}
+    InternalDateTime(DateTime dateTime) : _dateTime(dateTime) {}
 
-    MyDateTime(INT64 millisecondsFromNow) {
+    InternalDateTime(INT64 millisecondsFromNow) {
         _dateTime.UniversalTime = Now() + millisecondsFromNow * 10000;
     }
+
+    virtual ~InternalDateTime() = default;
 
     operator INT64() {
         return _dateTime.UniversalTime;
@@ -197,9 +181,31 @@ public:
     HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel*) {
         return E_NOTIMPL;
     }
+
+protected:
+    DateTime _dateTime;
 };
 
 namespace Util {
+
+    typedef LONG NTSTATUS, *PNTSTATUS;
+    typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+    inline RTL_OSVERSIONINFOW getRealOSVersion() {
+        HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
+        if (hMod) {
+            RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
+            if (fxPtr != nullptr) {
+                RTL_OSVERSIONINFOW rovi = { 0 };
+                rovi.dwOSVersionInfoSize = sizeof(rovi);
+                if (STATUS_SUCCESS == fxPtr(&rovi)) {
+                    return rovi;
+                }
+            }
+        }
+        RTL_OSVERSIONINFOW rovi = { 0 };
+        return rovi;
+    }
+
     inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
         DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, path, nSize);
         DEBUG_MSG("Default executable path: " << path);
@@ -236,12 +242,12 @@ namespace Util {
         HRESULT hr = xmlDocument.As<IXmlNodeSerializer>(&ser);
         hr = ser->GetXml(&xml);
         if (SUCCEEDED(hr))
-            return DllImporter::WindowsGetStringRawBuffer(xml, NULL);
-        return NULL;
+            return DllImporter::WindowsGetStringRawBuffer(xml, nullptr);
+        return nullptr;
     }
 
     inline PCWSTR AsString(HSTRING hstring) {
-		return DllImporter::WindowsGetStringRawBuffer(hstring, NULL);
+        return DllImporter::WindowsGetStringRawBuffer(hstring, nullptr);
     }
 
     inline HRESULT setNodeStringValue(const std::wstring& string, IXmlNode *node, IXmlDocument *xml) {
@@ -273,7 +279,7 @@ namespace Util {
                         if (SUCCEEDED(hr)) {
                             PCWSTR arguments = Util::AsString(argumentsHandle);
                             if (arguments && *arguments) {
-                                eventHandler->toastActivated((int)wcstol(arguments, NULL, 10));
+                                eventHandler->toastActivated(static_cast<int>(wcstol(arguments, nullptr, 10)));
                                 return S_OK;
                             }
                         }
@@ -290,7 +296,7 @@ namespace Util {
                      ToastDismissalReason reason;
                      if (SUCCEEDED(e->get_Reason(&reason)))
                      {
-                         if (reason == ToastDismissalReason_UserCanceled && expirationTime && MyDateTime::Now() >= expirationTime)
+                         if (reason == ToastDismissalReason_UserCanceled && expirationTime && InternalDateTime::Now() >= expirationTime)
                             reason = ToastDismissalReason_TimedOut;
                          eventHandler->toastDismissed(static_cast<IWinToastHandler::WinToastDismissalReason>(reason));
                      }
@@ -387,16 +393,16 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
 
 bool WinToast::isCompatible() {
 	DllImporter::initialize();
-	return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
-		|| (DllImporter::PropVariantToString == nullptr)
-		|| (DllImporter::RoGetActivationFactory == nullptr)
-		|| (DllImporter::WindowsCreateStringReference == nullptr)
-		|| (DllImporter::WindowsDeleteString == nullptr));
+    return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
+        || (DllImporter::PropVariantToString == nullptr)
+        || (DllImporter::RoGetActivationFactory == nullptr)
+        || (DllImporter::WindowsCreateStringReference == nullptr)
+        || (DllImporter::WindowsDeleteString == nullptr));
 }
 
 bool WinToastLib::WinToast::isSupportingModernFeatures() {
-	RTL_OSVERSIONINFOW tmp = GetRealOSVersion();
-	return tmp.dwMajorVersion > 6;
+    constexpr auto MinimumSupportedVersion = 6;
+    return Util::getRealOSVersion().dwMajorVersion > MinimumSupportedVersion;
 
 }
 std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
@@ -419,6 +425,22 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
     return aumi;
 }
 
+const std::wstring& WinToast::strerror(WinToastError error) {
+    static const std::unordered_map<WinToastError, std::wstring> Labels = {
+        {WinToastError::NoError, L"No error. The process was executed correctly"},
+        {WinToastError::NotInitialized, L"The library has not been initialized"},
+        {WinToastError::SystemNotSupported, L"The OS does not support WinToast"},
+        {WinToastError::ShellLinkNotCreated, L"The library was not able to create a Shell Link for the app"},
+        {WinToastError::InvalidAppUserModelID, L"The AUMI is not a valid one"},
+        {WinToastError::InvalidParameters, L"The parameters used to configure the library are not valid normally because an invalid AUMI or App Name"},
+        {WinToastError::NotDisplayed, L"The toast was created correctly but WinToast was not able to display the toast"},
+        {WinToastError::UnknownError, L"Unknown error"}
+    };
+
+    const auto iter = Labels.find(error);
+    assert(iter != Labels.end());
+    return iter->second;
+}
 
 enum WinToast::ShortcutResult WinToast::createShortcut() {
     if (_aumi.empty() || _appName.empty()) {
@@ -432,7 +454,7 @@ enum WinToast::ShortcutResult WinToast::createShortcut() {
     }
 
     if (!_hasCoInitialized) {
-        HRESULT initHr = CoInitializeEx(NULL, COINIT::COINIT_MULTITHREADED);
+        HRESULT initHr = CoInitializeEx(nullptr, COINIT::COINIT_MULTITHREADED);
         if (initHr != RPC_E_CHANGED_MODE) {
             if (FAILED(initHr) && initHr != S_FALSE) {
                 DEBUG_MSG(L"Error on COM library initialization!");
@@ -609,7 +631,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
     }
     if (!handler) {
         setError(error, WinToastError::InvalidHandler);
-        DEBUG_MSG("Error when launching the toast. Handler cannot be null.");
+        DEBUG_MSG("Error when launching the toast. Handler cannot be nullptr.");
         return id;
     }
 
@@ -625,8 +647,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
 				ComPtr<IXmlDocument> xmlDocument;
 				HRESULT hr = notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &xmlDocument);
                 if (SUCCEEDED(hr)) {
-                    const int fieldsCount = toast.textFieldsCount();
-                    for (int i = 0; i < fieldsCount && SUCCEEDED(hr); i++) {
+                    for (auto i = 0u, fieldsCount = toast.textFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) {
                         hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), i);
                     }
 
@@ -640,11 +661,10 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                             hr = setAttributionTextFieldHelper(xmlDocument.Get(), toast.attributionText());
                         }
 
-                        const int actionsCount = toast.actionsCount();
-                        WCHAR buf[12];
-                        for (int i = 0; i < actionsCount && SUCCEEDED(hr); i++) {
-                            _snwprintf_s(buf, sizeof(buf) / sizeof(*buf), _TRUNCATE, L"%d", i);
-                            hr = addActionHelper(xmlDocument.Get(), toast.actionLabel(i), buf);
+                        std::array<WCHAR, 12> buf;
+                        for (auto i = 0u, actionsCount = toast.actionsCount(); i < actionsCount && SUCCEEDED(hr); i++) {
+                            _snwprintf_s(buf.data(), buf.size(), _TRUNCATE, L"%d", i);
+                            hr = addActionHelper(xmlDocument.Get(), toast.actionLabel(i), buf.data());
                         }
 
                         if (SUCCEEDED(hr)) {
@@ -669,7 +689,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                             if (SUCCEEDED(hr)) {
                                 INT64 expiration = 0, relativeExpiration = toast.expiration();
                                 if (relativeExpiration > 0) {
-                                    MyDateTime expirationDateTime(relativeExpiration);
+                                    InternalDateTime expirationDateTime(relativeExpiration);
                                     expiration = expirationDateTime;
                                     hr = notification->put_ExpirationTime(&expirationDateTime);
                                 }
@@ -720,28 +740,29 @@ bool WinToast::hideToast(_In_ INT64 id) {
         DEBUG_MSG("Error when hiding the toast. WinToast is not initialized.");
         return false;
     }
-    const bool find = _buffer.find(id) != _buffer.end();
-	if (find) {
-		bool succeded = false;
-		ComPtr<IToastNotifier> notify = notifier(&succeded);
+
+    if (_buffer.find(id) != _buffer.end()) {
+        auto succeded = false;
+        auto notify = notifier(&succeded);
 		if (succeded) {
-			notify->Hide(_buffer[id].Get());
+            auto result = notify->Hide(_buffer[id].Get());
+            _buffer.erase(id);
+            return SUCCEEDED(result);
 		}
-		_buffer.erase(id);
 	}
-    return find;
+    return false;
 }
 
 void WinToast::clear() {
-	bool succeded = false;
-	ComPtr<IToastNotifier> notify = notifier(&succeded);
+    auto succeded = false;
+    auto notify = notifier(&succeded);
 	if (succeded) {
 		auto end = _buffer.end();
 		for (auto it = _buffer.begin(); it != end; ++it) {
 			notify->Hide(it->second.Get());
 		}
+        _buffer.clear();
 	}
-    _buffer.clear();
 }
 
 //
@@ -807,7 +828,7 @@ HRESULT WinToast::addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstr
     return hr;
 }
 
-HRESULT WinToast::setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ int pos) {
+HRESULT WinToast::setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ UINT32 pos) {
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
@@ -822,6 +843,8 @@ HRESULT WinToast::setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wst
 
 
 HRESULT WinToast::setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path)  {
+    assert(path.size() < MAX_PATH);
+
     wchar_t imagePath[MAX_PATH] = L"file:///";
     HRESULT hr = StringCchCatW(imagePath, MAX_PATH, path.c_str());
     if (SUCCEEDED(hr)) {
@@ -962,7 +985,7 @@ void WinToast::setError(_Out_ WinToastError* error, _In_ WinToastError value) {
 }
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
-    static const std::size_t TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
+    static constexpr std::size_t TextFieldsCount[] = { 1, 2, 2, 3, 1, 2, 2, 3};
     _textFields = std::vector<std::wstring>(TextFieldsCount[type], L"");
 }
 
@@ -971,7 +994,9 @@ WinToastTemplate::~WinToastTemplate() {
 }
 
 void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastTemplate::TextField pos) {
-    _textFields[pos] = txt;
+    const auto position = static_cast<std::size_t>(pos);
+    assert(position < _textFields.size());
+    _textFields[position] = txt;
 }
 
 void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath) {
@@ -982,8 +1007,54 @@ void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) {
     _audioPath = audioPath;
 }
 
+void WinToastTemplate::setAudioPath(_In_ AudioSystemFile file) {
+    static const std::unordered_map<AudioSystemFile, std::wstring> Files = {
+        {AudioSystemFile::DefaultSound, L"ms-winsoundevent:Notification.Default"},
+        {AudioSystemFile::IM, L"ms-winsoundevent:Notification.IM"},
+        {AudioSystemFile::Mail, L"ms-winsoundevent:Notification.Mail"},
+        {AudioSystemFile::Reminder, L"ms-winsoundevent:Notification.Reminder"},
+        {AudioSystemFile::SMS, L"ms-winsoundevent:Notification.SMS"},
+        {AudioSystemFile::Alarm, L"ms-winsoundevent:Notification.Looping.Alarm"},
+        {AudioSystemFile::Alarm2, L"ms-winsoundevent:Notification.Looping.Alarm2"},
+        {AudioSystemFile::Alarm3, L"ms-winsoundevent:Notification.Looping.Alarm3"},
+        {AudioSystemFile::Alarm4, L"ms-winsoundevent:Notification.Looping.Alarm4"},
+        {AudioSystemFile::Alarm5, L"ms-winsoundevent:Notification.Looping.Alarm5"},
+        {AudioSystemFile::Alarm6, L"ms-winsoundevent:Notification.Looping.Alarm6"},
+        {AudioSystemFile::Alarm7, L"ms-winsoundevent:Notification.Looping.Alarm7"},
+        {AudioSystemFile::Alarm8, L"ms-winsoundevent:Notification.Looping.Alarm8"},
+        {AudioSystemFile::Alarm9, L"ms-winsoundevent:Notification.Looping.Alarm9"},
+        {AudioSystemFile::Alarm10, L"ms-winsoundevent:Notification.Looping.Alarm10"},
+        {AudioSystemFile::Call, L"ms-winsoundevent:Notification.Looping.Call"},
+        {AudioSystemFile::Call1, L"ms-winsoundevent:Notification.Looping.Call1"},
+        {AudioSystemFile::Call2, L"ms-winsoundevent:Notification.Looping.Call2"},
+        {AudioSystemFile::Call3, L"ms-winsoundevent:Notification.Looping.Call3"},
+        {AudioSystemFile::Call4, L"ms-winsoundevent:Notification.Looping.Call4"},
+        {AudioSystemFile::Call5, L"ms-winsoundevent:Notification.Looping.Call5"},
+        {AudioSystemFile::Call6, L"ms-winsoundevent:Notification.Looping.Call6"},
+        {AudioSystemFile::Call7, L"ms-winsoundevent:Notification.Looping.Call7"},
+        {AudioSystemFile::Call8, L"ms-winsoundevent:Notification.Looping.Call8"},
+        {AudioSystemFile::Call9, L"ms-winsoundevent:Notification.Looping.Call9"},
+        {AudioSystemFile::Call10, L"ms-winsoundevent:Notification.Looping.Call10"},
+    };
+    const auto iter = Files.find(file);
+    assert(iter != Files.end());
+    _audioPath = iter->second;
+}
+
 void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOption) {
     _audioOption = audioOption;
+}
+
+void WinToastTemplate::setFirstLine(const std::wstring &text) {
+    setTextField(text, WinToastTemplate::FirstLine);
+}
+
+void WinToastTemplate::setSecondLine(const std::wstring &text) {
+    setTextField(text, WinToastTemplate::SecondLine);
+}
+
+void WinToastTemplate::setThirdLine(const std::wstring &text) {
+    setTextField(text, WinToastTemplate::ThirdLine);
 }
 
 void WinToastTemplate::setDuration(_In_ Duration duration) {
@@ -998,8 +1069,7 @@ void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionTe
     _attributionText = attributionText;
 }
 
-void WinToastTemplate::addAction(_In_ const std::wstring & label)
-{
+void WinToastTemplate::addAction(_In_ const std::wstring & label) {
 	_actions.push_back(label);
 }
 
@@ -1020,11 +1090,14 @@ const std::vector<std::wstring>& WinToastTemplate::textFields() const {
 }
 
 const std::wstring& WinToastTemplate::textField(_In_ TextField pos) const {
-    return _textFields[pos];
+    const auto position = static_cast<std::size_t>(pos);
+    assert(position < _textFields.size());
+    return _textFields[position];
 }
 
-const std::wstring& WinToastTemplate::actionLabel(_In_ int pos) const {
-    return _actions[pos];
+const std::wstring& WinToastTemplate::actionLabel(_In_ std::size_t position) const {
+    assert(position < _actions.size());
+    return _actions[position];
 }
 
 const std::wstring& WinToastTemplate::imagePath() const {
