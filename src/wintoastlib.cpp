@@ -348,7 +348,7 @@ namespace Util {
                             ComPtr<IXmlNamedNodeMap> attributes;
                             hr = audioNode->get_Attributes(&attributes);
                             if (SUCCEEDED(hr)) {
-                                for (auto it : attribute_names) {
+                                for (const auto& it : attribute_names) {
                                     hr = addAttribute(xml, it, attributes.Get());
                                 }
                             }
@@ -647,7 +647,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
 				ComPtr<IXmlDocument> xmlDocument;
 				HRESULT hr = notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &xmlDocument);
                 if (SUCCEEDED(hr)) {
-                    for (auto i = 0u, fieldsCount = toast.textFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) {
+                    for (std::size_t i = 0, fieldsCount = toast.textFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) {
                         hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), i);
                     }
 
@@ -662,7 +662,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                         }
 
                         std::array<WCHAR, 12> buf;
-                        for (auto i = 0u, actionsCount = toast.actionsCount(); i < actionsCount && SUCCEEDED(hr); i++) {
+                        for (std::size_t i = 0, actionsCount = toast.actionsCount(); i < actionsCount && SUCCEEDED(hr); i++) {
                             _snwprintf_s(buf.data(), buf.size(), _TRUNCATE, L"%d", i);
                             hr = addActionHelper(xmlDocument.Get(), toast.actionLabel(i), buf.data());
                         }
