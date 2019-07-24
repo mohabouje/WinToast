@@ -31,6 +31,10 @@ target_include_directories(qt-gui-example PRIVATE  ${PROJECT_SOURCE_DIR}/qt-gui-
 target_link_libraries(qt-gui-example Qt4::QtCore Qt4::QtGui   WinToast)
 add_dependencies(qt-gui-example  WinToast)
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/bin)
 
 
 
