@@ -6,15 +6,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt4 4.8.7)
-#[[
 
-
-set(Boost_USE_STATIC_LIBS ON) 
-set(Boost_USE_MULTITHREADED ON)  
-#set(Boost_USE_STATIC_RUNTIME ON) 
-
-
-find_package(Boost  COMPONENTS date_time filesystem thread  regex REQUIRED)]]
 include_directories(${PROJECT_SOURCE_DIR}/src/ )
 file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
