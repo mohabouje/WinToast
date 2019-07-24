@@ -84,9 +84,9 @@ void MainWindow::on_showToast_clicked()
     templ.setExpiration(ui->spinBox->value() * 1000);
     
     const auto audioSystemFileindex = ui->audioSystemFile->currentIndex();
-    const auto audioMode=ui->audioMode->currentIndex();
+    const auto audioModeindex=ui->audioMode->currentIndex();
 
-    const auto audioModedata = ui->audioMode->itemData(audioMode);
+    const auto audioModedata = ui->audioMode->itemData(audioModeindex);
     const auto audioSystemFiledata = ui->audioSystemFile->itemData(audioSystemFileindex);
     
     templ.setAudioPath(static_cast<WinToastTemplate::AudioSystemFile>(audioSystemFiledata.toInt()));
