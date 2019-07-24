@@ -5,7 +5,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-find_package(Qt4 4.8.7 REQUIRED QtGui)
+find_package(Qt4 4.8.7)
 #[[
 
 
@@ -26,11 +26,15 @@ add_dependencies(console-example  WinToast)
 
 file(GLOB QT_GUI_SRC_FILES ${PROJECT_SOURCE_DIR}/example//qt-gui-example/WinToastExample/*.cpp)
 
-add_executable(qt-gui-example ${QT_GUI_SRC_FILES})
-target_include_directories(qt-gui-example PRIVATE  ${PROJECT_SOURCE_DIR}/qt-gui-example/)
-target_link_libraries(qt-gui-example Qt4::QtCore Qt4::QtGui   WinToast)
-add_dependencies(qt-gui-example  WinToast)
-
+if(Qt4_FOUND)
+    message("QT Found! building qt-gui-example ")
+    add_executable(qt-gui-example ${QT_GUI_SRC_FILES})
+    target_include_directories(qt-gui-example PRIVATE  ${PROJECT_SOURCE_DIR}/qt-gui-example/)
+    target_link_libraries(qt-gui-example Qt4::QtCore Qt4::QtGui   WinToast)
+    add_dependencies(qt-gui-example  WinToast)
+else()
+    message("QT Not Found! not building qt-gui-example ")
+endif()
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
