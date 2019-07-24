@@ -82,8 +82,16 @@ void MainWindow::on_showToast_clicked()
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::ThirdLine);
     templ.setExpiration(ui->spinBox->value() * 1000);
-    templ.setAudioPath(static_cast<WinToastTemplate::AudioSystemFile>(ui->audioSystemFile->currentText().toInt()));
-    templ.setAudioOption(static_cast<WinToastTemplate::AudioOption>(ui->audioMode->currentText().toInt()));
+    
+    const auto audioSystemFileindex = ui->audioSystemFile->currentIndex();
+    const auto audioMode=ui->audioMode->currentIndex();
+
+    const auto audioModedata = ui->audioMode->itemData(audioMode);
+    const auto audioSystemFiledata = ui->audioSystemFile->itemData(audioSystemFileindex);
+    
+    templ.setAudioPath(static_cast<WinToastTemplate::AudioSystemFile>(audioSystemFiledata.toInt()));
+    templ.setAudioOption(static_cast<WinToastTemplate::AudioOption>(audioModedata.toInt()));
+
     if (ui->addYes->isChecked()) templ.addAction(L"Yes");
     if (ui->addNo->isChecked()) templ.addAction(L"No");
 
