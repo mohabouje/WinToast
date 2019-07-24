@@ -24,9 +24,9 @@ add_executable(console-example  ${PROJECT_SOURCE_DIR}/example/console-example/ma
 target_link_libraries(console-example WinToast)
 add_dependencies(console-example  WinToast)
 
-file(GLOB QT_GUI_SRC_FILES ${PROJECT_SOURCE_DIR}/qt-gui-example/*.cpp)
+file(GLOB QT_GUI_SRC_FILES ${PROJECT_SOURCE_DIR}/example//qt-gui-example/WinToastExample/*.cpp)
 
-add_executable(qt-gui-example  ${PROJECT_SOURCE_DIR}/example/console-example/main.cpp)
+add_executable(qt-gui-example ${QT_GUI_SRC_FILES})
 target_include_directories(qt-gui-example PRIVATE  ${PROJECT_SOURCE_DIR}/qt-gui-example/)
 target_link_libraries(qt-gui-example Qt4::QtCore Qt4::QtGui   WinToast)
 add_dependencies(qt-gui-example  WinToast)
