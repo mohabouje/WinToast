@@ -20,6 +20,7 @@ add_library(WinToast ${SRC_FILES} )
 
 add_executable(console-example  ${PROJECT_SOURCE_DIR}/example/console-example/main.cpp)
 target_link_libraries(console-example WinToast)
+target_link_libraries(WinToast psapi)
 add_dependencies(console-example  WinToast)
 
 file(GLOB QT_GUI_SRC_FILES ${PROJECT_SOURCE_DIR}/example//qt-gui-example/WinToastExample/*.cpp)
