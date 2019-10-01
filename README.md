@@ -218,6 +218,10 @@ if (!WinToast::instance()->showToast(templ, handler)) {
  ```   
 <div id='id7' />
 
+## Instalation
+
+If you are using a package manager, there is a port for [vcpkg](https://github.com/microsoft/vcpkg/). Otherwise, the easiest way is to copy the source files as external dependencies.
+
 ## Toast configuration on Windows 10
 
 Windows allows the configuration of the default behavior of a toast notification. This can be done in the *Ease of Access* configuration by modifying the *Other options* tab. 
