@@ -38,6 +38,7 @@
 #include <string.h>
 #include <vector>
 #include <map>
+#include <memory>
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::Foundation;
@@ -186,7 +187,7 @@ namespace WinToastLib {
         virtual bool initialize(_Out_ WinToastError* error = nullptr);
         virtual bool isInitialized() const;
         virtual bool hideToast(_In_ INT64 id);
-        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler, _Out_ WinToastError* error = nullptr);
+        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ std::unique_ptr<IWinToastHandler> handler, _Out_ WinToastError* error = nullptr);
         virtual void clear();
         virtual enum ShortcutResult createShortcut();
 
