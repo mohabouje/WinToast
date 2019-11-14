@@ -218,7 +218,7 @@ if (!WinToast::instance()->showToast(templ, handler)) {
  ```   
 <div id='id7' />
 
-## Instalation
+## Installation
 
 If you are using a package manager, there is a port for [vcpkg](https://github.com/microsoft/vcpkg/). Otherwise, the easiest way is to copy the source files as external dependencies.
 
