@@ -24,6 +24,7 @@
 #include <sdkddkver.h>
 #include <WinUser.h>
 #include <ShObjIdl.h>
+#include <atlbase.h>
 #include <wrl/implements.h>
 #include <wrl/event.h>
 #include <windows.ui.notifications.h>
@@ -200,7 +201,7 @@ namespace WinToastLib {
         bool                                            _hasCoInitialized{false};
         std::wstring                                    _appName{};
         std::wstring                                    _aumi{};
-        std::map<INT64, ComPtr<IToastNotification>>     _buffer{};
+        std::map<INT64, CComPtr<IToastNotification>>     _buffer{};
 
         HRESULT validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT createShellLinkHelper();
@@ -210,7 +211,7 @@ namespace WinToastLib {
         HRESULT setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text);
         HRESULT addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
         HRESULT addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& duration);
-        ComPtr<IToastNotifier> notifier(_In_ bool* succeded) const;
+        CComPtr<IToastNotifier> notifier(_In_ bool* succeded) const;
         void setError(_Out_ WinToastError* error, _In_ WinToastError value);
     };
 }
