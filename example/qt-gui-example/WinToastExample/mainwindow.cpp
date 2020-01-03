@@ -88,7 +88,7 @@ void MainWindow::on_showToast_clicked()
     if (ui->addNo->isChecked()) templ.addAction(L"No");
 
 
-    if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
+    if (WinToast::instance()->showToast(templ, std::make_unique<CustomHandler>()) < 0) {
         QMessageBox::warning(this, "Error", "Could not launch your toast notification!");
     }
 }
