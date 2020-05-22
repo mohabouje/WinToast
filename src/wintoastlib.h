@@ -194,6 +194,7 @@ namespace WinToastLib {
         const std::wstring& appUserModelId() const;
         void setAppUserModelId(_In_ const std::wstring& aumi);
         void setAppName(_In_ const std::wstring& appName);
+        void setCustomShellLinkPath(_In_ const std::wstring& customShellLinkPath);
 
     protected:
         bool											_isInitialized{false};
@@ -201,6 +202,7 @@ namespace WinToastLib {
         std::wstring                                    _appName{};
         std::wstring                                    _aumi{};
         std::map<INT64, ComPtr<IToastNotification>>     _buffer{};
+        std::wstring                                    _customShellLinkPath;
 
         HRESULT validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT createShellLinkHelper();

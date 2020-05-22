@@ -140,6 +140,7 @@ int wmain(int argc, LPWSTR *argv)
 
     WinToast::instance()->setAppName(appName);
     WinToast::instance()->setAppUserModelId(appUserModelID);
+    WinToast::instance()->setCustomShellLinkPath(L"d:\\temp\\");
 
     if (onlyCreateShortcut) {
         if (imagePath || text || actions.size() > 0 || expiration) {

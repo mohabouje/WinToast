@@ -224,17 +224,40 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT defaultShellLinkPath(const std::wstring& appname, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
-        HRESULT hr = defaultShellLinksDirectory(path, nSize);
-        if (SUCCEEDED(hr)) {
-            const std::wstring appLink(appname + DEFAULT_LINK_FORMAT);
-            errno_t result = wcscat_s(path, nSize, appLink.c_str());
-            hr = (result == 0) ? S_OK : E_INVALIDARG;
-            DEBUG_MSG("Default shell link file path: " << path);
-        }
+    inline HRESULT createAppLink(const std::wstring& appname, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
+        const std::wstring appLink(appname + DEFAULT_LINK_FORMAT);
+        errno_t result = wcscat_s(path, nSize, appLink.c_str());
+        HRESULT hr = (result == 0) ? S_OK : E_INVALIDARG;
+        DEBUG_MSG("Shell link file path: " << path);
         return hr;
     }
 
+    inline HRESULT customShellLinkPath(const std::wstring& appname, const std::wstring& customShellLinkPath, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
+        if (customShellLinkPath.empty()) {
+            DEBUG_MSG("no customShellLinkPath given");
+            return E_INVALIDARG;
+        }
+
+        errno_t result = wcscat_s(path, nSize, customShellLinkPath.c_str());
+        HRESULT hr = (result == 0) ? S_OK : E_INVALIDARG;
+        if (FAILED(hr)) {
+            DEBUG_MSG("Can't append: " << customShellLinkPath.c_str());
+            return hr;
+        }
+
+        hr = createAppLink(appname, path, nSize);
+        DEBUG_MSG("custom shell link file path: " << path);
+
+        return hr;
+    }
+
+    inline HRESULT defaultShellLinkPath(const std::wstring& appname, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
+        HRESULT hr = defaultShellLinksDirectory(path, nSize);
+        if (SUCCEEDED(hr)) {
+            hr = createAppLink(appname, path, nSize);
+        }
+        return hr;
+    }
 
     inline PCWSTR AsString(ComPtr<IXmlDocument> &xmlDocument) {
         HSTRING xml;
@@ -385,6 +408,10 @@ void WinToast::setAppName(_In_ const std::wstring& appName) {
     _appName = appName;
 }
 
+void WinToast::setCustomShellLinkPath(_In_ const std::wstring& customShellLinkPath) {
+    _customShellLinkPath = customShellLinkPath;
+}
+
 
 void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
     _aumi = aumi;
@@ -520,104 +547,187 @@ const std::wstring& WinToast::appUserModelId() const {
     return _aumi;
 }
 
-
 HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
-	WCHAR	path[MAX_PATH] = { L'\0' };
-    Util::defaultShellLinkPath(_appName, path);
+    WCHAR path[MAX_PATH] = { L'\0' };
+
+    Util::customShellLinkPath(_appName, _customShellLinkPath, path);
+    if (wcslen(path) == 0) {
+        Util::defaultShellLinkPath(_appName, path);
+    }
+
+
     // Check if the file exist
     DWORD attr = GetFileAttributesW(path);
     if (attr >= 0xFFFFFFF) {
-        DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << path);
+        DEBUG_MSG("Error, shell link not found. " << path);
         return E_FAIL;
     }
 
     // Let's load the file as shell link to validate.
+
     // - Create a shell link
-    // - Create a persistant file
-    // - Load the path as data for the persistant file
-    // - Read the property AUMI and validate with the current
-    // - Review if AUMI is equal.
     ComPtr<IShellLink> shellLink;
     HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
-    if (SUCCEEDED(hr)) {
-        ComPtr<IPersistFile> persistFile;
-        hr = shellLink.As(&persistFile);
-        if (SUCCEEDED(hr)) {
-            hr = persistFile->Load(path, STGM_READWRITE);
-            if (SUCCEEDED(hr)) {
-                ComPtr<IPropertyStore> propertyStore;
-                hr = shellLink.As(&propertyStore);
-                if (SUCCEEDED(hr)) {
-                    PROPVARIANT appIdPropVar;
-                    hr = propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar);
-                    if (SUCCEEDED(hr)) {
-                        WCHAR AUMI[MAX_PATH];
-                        hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
-                        wasChanged = false;
-                        if (FAILED(hr) || _aumi != AUMI) {
-                            // AUMI Changed for the same app, let's update the current value! =)
-                            wasChanged = true;
-                            PropVariantClear(&appIdPropVar);
-                            hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
-                            if (SUCCEEDED(hr)) {
-                                hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
-                                if (SUCCEEDED(hr)) {
-                                    hr = propertyStore->Commit();
-                                    if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
-                                        hr = persistFile->Save(path, TRUE);
-                                    }
-                                }
-                            }
-                        }
-                        PropVariantClear(&appIdPropVar);
-                    }
-                }
-            }
-        }
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't create shell link instance for: " << path);
+        return hr;
     }
+
+    // - Create a persistent file
+    ComPtr<IPersistFile> persistFile;
+    hr = shellLink.As(&persistFile);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't create a persistent file for the shell link: " << path);
+        return hr;
+    }
+
+    // - Load the path as data for the persistant file
+    hr = persistFile->Load(path, STGM_READWRITE);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't load link: " << path);
+        return hr;
+    }
+
+    // - Read the property AUMI and validate with the current
+    ComPtr<IPropertyStore> propertyStore;
+    hr = shellLink.As(&propertyStore);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't create a property store object for the shell link: " << path);
+        return hr;
+    }
+
+    PROPVARIANT appIdPropVar;
+    hr = propertyStore->GetValue(PKEY_AppUserModel_ID, &appIdPropVar);
+    if (FAILED(hr)) {
+        PropVariantClear(&appIdPropVar);
+        DEBUG_MSG("Can't read AUMI from: " << path);
+        return hr;
+    }
+
+    WCHAR AUMI[MAX_PATH];
+    hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
+    wasChanged = false;
+    // - Review if AUMI is equal.
+    if (SUCCEEDED(hr) && _aumi == AUMI) {
+        PropVariantClear(&appIdPropVar);
+        return hr;
+    }
+
+    DEBUG_MSG("AUMI has changed: Old: " << AUMI << " - New: " << _aumi.c_str());
+
+    // AUMI Changed for the same app, let's update the current value! =)
+    wasChanged = true;
+    PropVariantClear(&appIdPropVar);
+
+    hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
+    if (FAILED(hr)) {
+        PropVariantClear(&appIdPropVar);
+        DEBUG_MSG("Can't initialize a propvariant for new AUMI: " << _aumi.c_str());
+        return hr;
+    }
+
+    hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+    if (FAILED(hr)) {
+        PropVariantClear(&appIdPropVar);
+        DEBUG_MSG("Can't set new AUMI");
+        return hr;
+    }
+
+    hr = propertyStore->Commit();
+    if (FAILED(hr) || FAILED(persistFile->IsDirty())) {
+        PropVariantClear(&appIdPropVar);
+        DEBUG_MSG("Can't commit new AUMI");
+        return hr;
+    }
+
+    hr = persistFile->Save(path, TRUE);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't save link: " << path);
+    }
+
+    PropVariantClear(&appIdPropVar);
     return hr;
 }
-
-
 
 HRESULT	WinToast::createShellLinkHelper() {
 	WCHAR   exePath[MAX_PATH]{L'\0'};
 	WCHAR	slPath[MAX_PATH]{L'\0'};
-    Util::defaultShellLinkPath(_appName, slPath);
+
+    Util::customShellLinkPath(_appName, _customShellLinkPath, slPath);
+    if (wcslen(slPath) == 0) {
+        DEBUG_MSG("No custom shell link path set, use default shell link path.");
+
+        Util::defaultShellLinkPath(_appName, slPath);
+    }
+
     Util::defaultExecutablePath(exePath);
     ComPtr<IShellLinkW> shellLink;
     HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
-    if (SUCCEEDED(hr)) {
-        hr = shellLink->SetPath(exePath);
-        if (SUCCEEDED(hr)) {
-            hr = shellLink->SetArguments(L"");
-            if (SUCCEEDED(hr)) {
-                hr = shellLink->SetWorkingDirectory(exePath);
-                if (SUCCEEDED(hr)) {
-                    ComPtr<IPropertyStore> propertyStore;
-                    hr = shellLink.As(&propertyStore);
-                    if (SUCCEEDED(hr)) {
-                        PROPVARIANT appIdPropVar;
-                        hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
-                        if (SUCCEEDED(hr)) {
-                            hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
-                            if (SUCCEEDED(hr)) {
-                                hr = propertyStore->Commit();
-                                if (SUCCEEDED(hr)) {
-                                    ComPtr<IPersistFile> persistFile;
-                                    hr = shellLink.As(&persistFile);
-                                    if (SUCCEEDED(hr)) {
-                                        hr = persistFile->Save(slPath, TRUE);
-                                    }
-                                }
-                            }
-                            PropVariantClear(&appIdPropVar);
-                        }
-                    }
-                }
-            }
-        }
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't create link instance");
+        return hr;
     }
+
+    hr = shellLink->SetPath(exePath);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't set path to exe");
+        return hr;
+    }
+
+    hr = shellLink->SetArguments(L"");
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't set arguments");
+        return hr;
+    }
+
+    hr = shellLink->SetWorkingDirectory(exePath);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't set working directory: " << exePath);
+        return hr;
+    }
+
+    ComPtr<IPropertyStore> propertyStore;
+    hr = shellLink.As(&propertyStore);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't create property store.");
+        return hr;
+    }
+
+    PROPVARIANT appIdPropVar;
+    hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't init aumi as new property: ");
+        return hr;
+    }
+
+    hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+    if (FAILED(hr)) {
+        PropVariantClear(&appIdPropVar);
+        DEBUG_MSG("Can't set aumi.");
+        return hr;
+    }
+
+    hr = propertyStore->Commit();
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't commit property store.");
+        PropVariantClear(&appIdPropVar);
+        return hr;
+    }
+
+    ComPtr<IPersistFile> persistFile;
+    hr = shellLink.As(&persistFile);
+    if (FAILED(hr)) {
+        DEBUG_MSG("Can't create persitFile from link");
+        PropVariantClear(&appIdPropVar);
+        return hr;
+    }
+
+    hr = persistFile->Save(slPath, TRUE);
+	if (FAILED(hr))
+	{
+        DEBUG_MSG("Can't save link to: " << slPath);
+	}
+    PropVariantClear(&appIdPropVar);
     return hr;
 }
 
