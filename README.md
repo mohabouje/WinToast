@@ -239,7 +239,7 @@ The system configuration helps you to define how long you want notifications to 
  - [QGIS](https://github.com/qgis/QGIS): QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)
  - [MEGAsync](https://github.com/meganz/MEGAsync): Easy automated syncing between your computers and your MEGA Cloud Drive
  - [chatterino2](https://github.com/Chatterino/chatterino2): Chat client for twitch.tv
- - [nheko](https://github.com/mujx/nheko): Desktop client for the Matrix protocol.
+ - [nheko](https://github.com/Nheko-Reborn/nheko): Desktop client for the Matrix protocol.
  - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
  - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
  - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
