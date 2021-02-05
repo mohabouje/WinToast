@@ -172,7 +172,7 @@ int wmain(int argc, LPWSTR *argv)
         templ.setImagePath(imagePath);
 
 
-    if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
+    if (WinToast::instance()->showToast(templ, std::make_unique<CustomHandler>()) < 0) {
         std::wcerr << L"Could not launch your toast notification!";
 		return Results::ToastFailed;
     }
