@@ -79,10 +79,10 @@ namespace WinToastLib {
 
         enum AudioSystemFile {
             DefaultSound,
-            IM, 
+            IM,
             Mail,
-            Reminder, 
-            SMS, 
+            Reminder,
+            SMS,
             Alarm,
             Alarm2,
             Alarm3,
@@ -137,7 +137,7 @@ namespace WinToastLib {
         WinToastTemplate::AudioOption audioOption() const;
         Duration duration() const;
     private:
-        std::vector<std::wstring>			_textFields{};
+        std::vector<std::wstring>           _textFields{};
         std::vector<std::wstring>           _actions{};
         std::wstring                        _imagePath{};
         std::wstring                        _audioPath{};
@@ -177,16 +177,16 @@ namespace WinToastLib {
         virtual ~WinToast();
         static WinToast* instance();
         static bool isCompatible();
-		static bool	isSupportingModernFeatures();
-		static std::wstring configureAUMI(_In_ const std::wstring& companyName,
+        static bool isSupportingModernFeatures();
+        static std::wstring configureAUMI(_In_ const std::wstring& companyName,
                                           _In_ const std::wstring& productName,
                                           _In_ const std::wstring& subProduct = std::wstring(),
                                           _In_ const std::wstring& versionInformation = std::wstring());
         static const std::wstring& strerror(_In_ WinToastError error);
-        virtual bool initialize(_Out_ WinToastError* error = nullptr);
+        virtual bool initialize(_Out_opt_ WinToastError* error = nullptr);
         virtual bool isInitialized() const;
         virtual bool hideToast(_In_ INT64 id);
-        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler, _Out_ WinToastError* error = nullptr);
+        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler, _Out_opt_ WinToastError* error = nullptr);
         virtual void clear();
         virtual enum ShortcutResult createShortcut();
 
@@ -196,7 +196,7 @@ namespace WinToastLib {
         void setAppName(_In_ const std::wstring& appName);
 
     protected:
-        bool											_isInitialized{false};
+        bool                                            _isInitialized{false};
         bool                                            _hasCoInitialized{false};
         std::wstring                                    _appName{};
         std::wstring                                    _aumi{};
@@ -211,7 +211,7 @@ namespace WinToastLib {
         HRESULT addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
         HRESULT addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& duration);
         ComPtr<IToastNotifier> notifier(_In_ bool* succeded) const;
-        void setError(_Out_ WinToastError* error, _In_ WinToastError value);
+        void setError(_Out_opt_ WinToastError* error, _In_ WinToastError value);
     };
 }
 #endif // WINTOASTLIB_H

@@ -57,7 +57,7 @@ namespace DllImporter {
     typedef HRESULT(FAR STDAPICALLTYPE *f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
     typedef HRESULT(FAR STDAPICALLTYPE *f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid, _COM_Outptr_ void ** factory);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsCreateStringReference)(_In_reads_opt_(length + 1) PCWSTR sourceString, UINT32 length, _Out_ HSTRING_HEADER * hstringHeader, _Outptr_result_maybenull_ _Result_nullonfailure_ HSTRING * string);
-    typedef PCWSTR(FAR STDAPICALLTYPE *f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_ UINT32 *length);
+    typedef PCWSTR(FAR STDAPICALLTYPE *f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_opt_ UINT32 *length);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsDeleteString)(_In_opt_ HSTRING string);
 
     static f_SetCurrentProcessExplicitAppUserModelID    SetCurrentProcessExplicitAppUserModelID;
@@ -475,7 +475,7 @@ enum WinToast::ShortcutResult WinToast::createShortcut() {
     return SUCCEEDED(hr) ? SHORTCUT_WAS_CREATED : SHORTCUT_CREATE_FAILED;
 }
 
-bool WinToast::initialize(_Out_ WinToastError* error) {
+bool WinToast::initialize(_Out_opt_ WinToastError* error) {
     _isInitialized = false;
     setError(error, WinToastError::NoError);
 
@@ -647,7 +647,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
 				ComPtr<IXmlDocument> xmlDocument;
 				HRESULT hr = notificationManager->GetTemplateContent(ToastTemplateType(toast.type()), &xmlDocument);
                 if (SUCCEEDED(hr)) {
-                    for (std::size_t i = 0, fieldsCount = toast.textFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) {
+                    for (UINT32 i = 0, fieldsCount = static_cast<UINT32>(toast.textFieldsCount()); i < fieldsCount && SUCCEEDED(hr); i++) {
                         hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), i);
                     }
 
@@ -978,10 +978,10 @@ HRESULT WinToast::addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstrin
     return hr;
 }
 
-void WinToast::setError(_Out_ WinToastError* error, _In_ WinToastError value) {
+void WinToast::setError(_Out_opt_ WinToastError* error, _In_ WinToastError value) {
     if (error) {
         *error = value;
-    } 
+    }
 }
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
@@ -1045,15 +1045,15 @@ void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOp
     _audioOption = audioOption;
 }
 
-void WinToastTemplate::setFirstLine(const std::wstring &text) {
+void WinToastTemplate::setFirstLine(_In_ const std::wstring &text) {
     setTextField(text, WinToastTemplate::FirstLine);
 }
 
-void WinToastTemplate::setSecondLine(const std::wstring &text) {
+void WinToastTemplate::setSecondLine(_In_ const std::wstring &text) {
     setTextField(text, WinToastTemplate::SecondLine);
 }
 
-void WinToastTemplate::setThirdLine(const std::wstring &text) {
+void WinToastTemplate::setThirdLine(_In_ const std::wstring &text) {
     setTextField(text, WinToastTemplate::ThirdLine);
 }
 
