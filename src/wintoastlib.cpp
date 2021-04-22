@@ -391,6 +391,10 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
     DEBUG_MSG(L"Default App User Model Id: " << _aumi.c_str());
 }
 
+void WinToast::setShortcutPolicy(_In_ ShortcutPolicy shortcutPolicy) {
+    _shortcutPolicy = shortcutPolicy;
+}
+
 bool WinToast::isCompatible() {
 	DllImporter::initialize();
     return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
@@ -492,10 +496,12 @@ bool WinToast::initialize(_Out_opt_ WinToastError* error) {
         return false;
     }
 
-    if (createShortcut() < 0) {
-        setError(error, WinToastError::ShellLinkNotCreated);
-        DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
-        return false;
+    if (_shortcutPolicy != SHORTCUT_POLICY_IGNORE) {
+        if (createShortcut() < 0) {
+            setError(error, WinToastError::ShellLinkNotCreated);
+            DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
+            return false;
+        }
     }
 
     if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
@@ -555,18 +561,23 @@ HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
                         hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
                         wasChanged = false;
                         if (FAILED(hr) || _aumi != AUMI) {
-                            // AUMI Changed for the same app, let's update the current value! =)
-                            wasChanged = true;
-                            PropVariantClear(&appIdPropVar);
-                            hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
-                            if (SUCCEEDED(hr)) {
-                                hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                            if (_shortcutPolicy == SHORTCUT_POLICY_REQUIRE_CREATE) {
+                                // AUMI Changed for the same app, let's update the current value! =)
+                                wasChanged = true;
+                                PropVariantClear(&appIdPropVar);
+                                hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
                                 if (SUCCEEDED(hr)) {
-                                    hr = propertyStore->Commit();
-                                    if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
-                                        hr = persistFile->Save(path, TRUE);
+                                    hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                                    if (SUCCEEDED(hr)) {
+                                        hr = propertyStore->Commit();
+                                        if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
+                                            hr = persistFile->Save(path, TRUE);
+                                        }
                                     }
                                 }
+                            } else {
+                                // Not allowed to touch the shortcut to fix the AUMI
+                                hr = E_FAIL;
                             }
                         }
                         PropVariantClear(&appIdPropVar);
@@ -581,6 +592,10 @@ HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
 
 
 HRESULT	WinToast::createShellLinkHelper() {
+    if (_shortcutPolicy != SHORTCUT_POLICY_REQUIRE_CREATE) {
+      return E_FAIL;
+    }
+
 	WCHAR   exePath[MAX_PATH]{L'\0'};
 	WCHAR	slPath[MAX_PATH]{L'\0'};
     Util::defaultShellLinkPath(_appName, slPath);
