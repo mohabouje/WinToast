@@ -39,3 +39,4 @@ Debug/
 Release/
 enc_temp_folder/
 /example/qt-gui-example/build-WinToastExample-Desktop_Qt_5_9_2_MSVC2015_32bit-Debug
+build/
