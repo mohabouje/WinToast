@@ -115,7 +115,7 @@ namespace WinToastLib {
         void setSecondLine(_In_ const std::wstring& text);
         void setThirdLine(_In_ const std::wstring& text);
         void setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
-        void setAttributionText(_In_ const std::wstring & attributionText);
+        void setAttributionText(_In_ const std::wstring& attributionText);
         void setImagePath(_In_ const std::wstring& imgPath);
         void setAudioPath(_In_ WinToastTemplate::AudioSystemFile audio);
         void setAudioPath(_In_ const std::wstring& audioPath);
@@ -145,7 +145,7 @@ namespace WinToastLib {
         std::wstring                        _imagePath{};
         std::wstring                        _audioPath{};
         std::wstring                        _attributionText{};
-        std::wstring                        _scenario = L"Default";
+        std::wstring                        _scenario{L"Default"};
         INT64                               _expiration{0};
         AudioOption                         _audioOption{WinToastTemplate::AudioOption::Default};
         WinToastTemplateType                _type{WinToastTemplateType::Text01};
@@ -214,7 +214,7 @@ namespace WinToastLib {
         HRESULT setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text);
         HRESULT addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& action, _In_ const std::wstring& arguments);
         HRESULT addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& duration);
-        HRESULT addScenarioHelper(_In_ IXmlDocument* xml, _In_ const std::wstring& scenario);
+        HRESULT addScenarioHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& scenario);
         ComPtr<IToastNotifier> notifier(_In_ bool* succeded) const;
         void setError(_Out_opt_ WinToastError* error, _In_ WinToastError value);
     };

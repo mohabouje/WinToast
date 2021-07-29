@@ -1091,8 +1091,7 @@ void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) {
     _expiration = millisecondsFromNow;
 }
 
-void WinToastLib::WinToastTemplate::setScenario(Scenario scenario)
-{
+void WinToastLib::WinToastTemplate::setScenario(Scenario scenario) {
     switch (scenario) {
     case Scenario::Default: _scenario = L"Default"; break;
     case Scenario::Alarm: _scenario = L"Alarm"; break;
@@ -1148,8 +1147,7 @@ const std::wstring& WinToastTemplate::attributionText() const {
     return _attributionText;
 }
 
-const std::wstring& WinToastLib::WinToastTemplate::scenario() const
-{
+const std::wstring& WinToastLib::WinToastTemplate::scenario() const {
     return _scenario;
 }
 
