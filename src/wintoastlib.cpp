@@ -58,7 +58,7 @@ namespace DllImporter {
     typedef HRESULT(FAR STDAPICALLTYPE *f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
     typedef HRESULT(FAR STDAPICALLTYPE *f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid, _COM_Outptr_ void ** factory);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsCreateStringReference)(_In_reads_opt_(length + 1) PCWSTR sourceString, UINT32 length, _Out_ HSTRING_HEADER * hstringHeader, _Outptr_result_maybenull_ _Result_nullonfailure_ HSTRING * string);
-    typedef PCWSTR(FAR STDAPICALLTYPE *f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_ UINT32 *length);
+    typedef PCWSTR(FAR STDAPICALLTYPE *f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_opt_ UINT32 *length);
     typedef HRESULT(FAR STDAPICALLTYPE *f_WindowsDeleteString)(_In_opt_ HSTRING string);
 
     static f_SetCurrentProcessExplicitAppUserModelID    SetCurrentProcessExplicitAppUserModelID;
@@ -401,6 +401,10 @@ void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) {
     DEBUG_MSG(L"Default App User Model Id: " << _aumi.c_str());
 }
 
+void WinToast::setShortcutPolicy(_In_ ShortcutPolicy shortcutPolicy) {
+    _shortcutPolicy = shortcutPolicy;
+}
+
 bool WinToast::isCompatible() {
     DllImporter::initialize();
     return !((DllImporter::SetCurrentProcessExplicitAppUserModelID == nullptr)
@@ -490,7 +494,7 @@ enum WinToast::ShortcutResult WinToast::createShortcut() {
     return SUCCEEDED(hr) ? SHORTCUT_WAS_CREATED : SHORTCUT_CREATE_FAILED;
 }
 
-bool WinToast::initialize(_Out_ WinToastError* error) {
+bool WinToast::initialize(_Out_opt_ WinToastError* error) {
     _isInitialized = false;
     setError(error, WinToastError::NoError);
 
@@ -507,10 +511,12 @@ bool WinToast::initialize(_Out_ WinToastError* error) {
         return false;
     }
 
-    if (createShortcut() < 0) {
-        setError(error, WinToastError::ShellLinkNotCreated);
-        DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
-        return false;
+    if (_shortcutPolicy != SHORTCUT_POLICY_IGNORE) {
+        if (createShortcut() < 0) {
+            setError(error, WinToastError::ShellLinkNotCreated);
+            DEBUG_MSG(L"Error while attaching the AUMI to the current proccess =(");
+            return false;
+        }
     }
 
     if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) {
@@ -570,18 +576,23 @@ HRESULT    WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
                         hr = DllImporter::PropVariantToString(appIdPropVar, AUMI, MAX_PATH);
                         wasChanged = false;
                         if (FAILED(hr) || _aumi != AUMI) {
-                            // AUMI Changed for the same app, let's update the current value! =)
-                            wasChanged = true;
-                            PropVariantClear(&appIdPropVar);
-                            hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
-                            if (SUCCEEDED(hr)) {
-                                hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                            if (_shortcutPolicy == SHORTCUT_POLICY_REQUIRE_CREATE) {
+                                // AUMI Changed for the same app, let's update the current value! =)
+                                wasChanged = true;
+                                PropVariantClear(&appIdPropVar);
+                                hr = InitPropVariantFromString(_aumi.c_str(), &appIdPropVar);
                                 if (SUCCEEDED(hr)) {
-                                    hr = propertyStore->Commit();
-                                    if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
-                                        hr = persistFile->Save(path, TRUE);
+                                    hr = propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar);
+                                    if (SUCCEEDED(hr)) {
+                                        hr = propertyStore->Commit();
+                                        if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
+                                            hr = persistFile->Save(path, TRUE);
+                                        }
                                     }
                                 }
+                            } else {
+                                // Not allowed to touch the shortcut to fix the AUMI
+                                hr = E_FAIL;
                             }
                         }
                         PropVariantClear(&appIdPropVar);
@@ -595,9 +606,13 @@ HRESULT    WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
 
 
 
-HRESULT    WinToast::createShellLinkHelper() {
-    WCHAR   exePath[MAX_PATH]{L'\0'};
-    WCHAR    slPath[MAX_PATH]{L'\0'};
+HRESULT	WinToast::createShellLinkHelper() {
+    if (_shortcutPolicy != SHORTCUT_POLICY_REQUIRE_CREATE) {
+      return E_FAIL;
+    }
+
+	WCHAR   exePath[MAX_PATH]{L'\0'};
+	WCHAR	slPath[MAX_PATH]{L'\0'};
     Util::defaultShellLinkPath(_appName, slPath);
     Util::defaultExecutablePath(exePath);
     ComPtr<IShellLinkW> shellLink;
@@ -701,8 +716,8 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  std::shared_
                 if (SUCCEEDED(hr) && toast.isToastGeneric())
                     hr = setBindToastGenericHelper(xmlDocument.Get());
                 if (SUCCEEDED(hr)) {
-                    for (std::size_t i = 0, fieldsCount = toast.textFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) {
-                        hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), (UINT32)i);
+                    for (UINT32 i = 0, fieldsCount = static_cast<UINT32>(toast.textFieldsCount()); i < fieldsCount && SUCCEEDED(hr); i++) {
+                        hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), i);
                     }
 
                     // Modern feature are supported Windows > Windows 10
@@ -729,6 +744,10 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  std::shared_
                         if (SUCCEEDED(hr) && toast.duration() != WinToastTemplate::Duration::System) {
                             hr = addDurationHelper(xmlDocument.Get(),
                                 (toast.duration() == WinToastTemplate::Duration::Short) ? L"short" : L"long");
+                        }
+
+                        if (SUCCEEDED(hr)) {
+                            hr = addScenarioHelper(xmlDocument.Get(), toast.scenario());
                         }
 
                     } else {
@@ -916,6 +935,28 @@ HRESULT WinToast::addDurationHelper(_In_ IXmlDocument *xml, _In_ const std::wstr
                 if (SUCCEEDED(hr)) {
                     hr = toastElement->SetAttribute(WinToastStringWrapper(L"duration").Get(),
                                                     WinToastStringWrapper(duration).Get());
+                }
+            }
+        }
+    }
+    return hr;
+}
+
+HRESULT WinToast::addScenarioHelper(_In_ IXmlDocument* xml, _In_ const std::wstring& scenario) {
+    ComPtr<IXmlNodeList> nodeList;
+    HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"toast").Get(), &nodeList);
+    if (SUCCEEDED(hr)) {
+        UINT32 length;
+        hr = nodeList->get_Length(&length);
+        if (SUCCEEDED(hr)) {
+            ComPtr<IXmlNode> toastNode;
+            hr = nodeList->Item(0, &toastNode);
+            if (SUCCEEDED(hr)) {
+                ComPtr<IXmlElement> toastElement;
+                hr = toastNode.As(&toastElement);
+                if (SUCCEEDED(hr)) {
+                    hr = toastElement->SetAttribute(WinToastStringWrapper(L"scenario").Get(),
+                        WinToastStringWrapper(scenario).Get());
                 }
             }
         }
@@ -1135,10 +1176,10 @@ HRESULT WinToast::setHeroImageHelper(_In_ IXmlDocument* xml, _In_ const std::wst
     return hr;
 }
 
-void WinToast::setError(_Out_ WinToastError* error, _In_ WinToastError value) {
+void WinToast::setError(_Out_opt_ WinToastError* error, _In_ WinToastError value) {
     if (error) {
         *error = value;
-    } 
+    }
 }
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
@@ -1208,15 +1249,15 @@ void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOp
     _audioOption = audioOption;
 }
 
-void WinToastTemplate::setFirstLine(const std::wstring &text) {
+void WinToastTemplate::setFirstLine(_In_ const std::wstring &text) {
     setTextField(text, WinToastTemplate::FirstLine);
 }
 
-void WinToastTemplate::setSecondLine(const std::wstring &text) {
+void WinToastTemplate::setSecondLine(_In_ const std::wstring &text) {
     setTextField(text, WinToastTemplate::SecondLine);
 }
 
-void WinToastTemplate::setThirdLine(const std::wstring &text) {
+void WinToastTemplate::setThirdLine(_In_ const std::wstring &text) {
     setTextField(text, WinToastTemplate::ThirdLine);
 }
 
@@ -1226,6 +1267,15 @@ void WinToastTemplate::setDuration(_In_ Duration duration) {
 
 void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) {
     _expiration = millisecondsFromNow;
+}
+
+void WinToastLib::WinToastTemplate::setScenario(Scenario scenario) {
+    switch (scenario) {
+    case Scenario::Default: _scenario = L"Default"; break;
+    case Scenario::Alarm: _scenario = L"Alarm"; break;
+    case Scenario::IncomingCall: _scenario = L"IncomingCall"; break;
+    case Scenario::Reminder: _scenario = L"Reminder"; break;
+    }
 }
 
 void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionText) {
@@ -1292,6 +1342,10 @@ const std::wstring& WinToastTemplate::audioPath() const {
 
 const std::wstring& WinToastTemplate::attributionText() const {
     return _attributionText;
+}
+
+const std::wstring& WinToastLib::WinToastTemplate::scenario() const {
+    return _scenario;
 }
 
 INT64 WinToastTemplate::expiration() const {

@@ -18,14 +18,16 @@ WinToast is a lightly library written in C++ which brings a complete integration
 
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
-1. [Toast Templates](#id1)
-2. [Event Handler](#id3)
-3. [Expiration Time](#id4)
-4. [Additional features available on Windows 10](#id5)
-5. [Error Handling](#id2)
-6. [Example of usage](#id6)
-7. [Toast configuration on Windows 10](#id7)
-8. [Projects using WinToast](#id8)
+- [WinToast](#wintoast)
+- [Toast Templates](#toast-templates)
+- [Event Handler](#event-handler)
+- [Expiration Time](#expiration-time)
+- [Additional features available on Windows 10](#additional-features-available-on-windows-10)
+- [Error Handling](#error-handling)
+- [Example of Usage](#example-of-usage)
+- [Installation](#installation)
+- [Toast configuration on Windows 10](#toast-configuration-on-windows-10)
+- [Projects using WinToast](#projects-using-wintoast)
 
 
 <div id='id1' />
@@ -36,14 +38,14 @@ WinToast integrates all standard templates available in the [ToastTemplateType e
 
 | Template     | Description | Example   |
 | :------- | ----: | :---: |
-| `ImageAndText01` | A large image and a single string wrapped across three lines of text. |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601606.png)   |
-| `ImageAndText02`   | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![12](https://i-msdn.sec.s-msft.com/dynimg/IC601607.png)   |
-| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601608.png) |
-| `ImageAndText04` |    A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601609.png)  |
-| `Text01` | Single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601602.png)|
-| `Text02`  | One string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601603.png) |
-| `Text03` | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601604.png)|
-| `Text04` |   One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601605.png) |
+| `ImageAndText01` | A large image and a single string wrapped across three lines of text. |  ![enter image description here](assets/images/Toast_6.png)   |
+| `ImageAndText02`   | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![12](assets/images/Toast_7.png)   |
+| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](assets/images/Toast_8.png) |
+| `ImageAndText04` |    A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](assets/images/ToastImageAndText04.png)  |
+| `Text01` | Single string wrapped across three lines of text. | ![enter image description here](assets/images/Toast_1.png)|
+| `Text02`  | One string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![enter image description here](assets/images/Toast_2.png) |
+| `Text03` | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](assets/images/Toast_4.png)|
+| `Text04` |   One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](assets/images/Toast_5.png) |
 
 Example of a `ImageAndText02` template:
 
@@ -52,9 +54,9 @@ WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
 templ.setImagePath(L"C:/example.png"); 
- ```  
+```
 **Note:** The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
- 
+
 <div id='id3' />
 
 ## Event Handler
@@ -79,13 +81,13 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastDismissed(WinToastDismissalReason state) const override;
 	void toastFailed() const override;
  };
- ``` 
+```
 <div id='id4' />
 
 ## Expiration Time
 
 Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attempts to raise toast notifications immediately after you call Show, so this property is rarely used. 
- 
+
 > For Windows 8.x app, this property also causes the toast notification to be removed from the
 > Action Center once the specified data and time is reached.
 
@@ -111,7 +113,7 @@ actions.push_back(L"No");
 for (auto const &action : actions)	
     templ.addAction(action);
 WinToast::instance()->showToast(templ, handler) 
- ```  
+```
 
 !["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
  - **Attribution text**: you can add/remove the attribution text, by default is empty.  Use `WinToastTemplate::setAttributionText` to modify it.
@@ -163,7 +165,7 @@ if (!launched) {
     std::wcout << L"Error: Could not launch your toast notification. Error: "
      << error << std::endl;
 }
- ```  
+```
 
 <div id='id6' />
 
@@ -188,7 +190,7 @@ if (!WinToast::isCompatible()) {
 WinToast::instance()->setAppName(L"WinToastExample");
 const auto aumi = WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006");
 WinToast::instance()->setAppUserModelId(aumi);	
-```	
+```
 
 Initialize all the dependencies and check if WinToast has been initialized successfully in your system:
 
@@ -197,7 +199,7 @@ if (!WinToast::instance()->initialize()) {
   std::wcout << L"Error, could not initialize the lib!" << std::endl;
 }
 ```
-    
+
 Implement your own action handler by subclassing the interface `IWinToastHandler` and custom your template:
 
 ```cpp
@@ -206,7 +208,7 @@ WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
 templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
- ```   
+```
 
 Finally show the results:
 
@@ -215,7 +217,7 @@ Finally show the results:
 if (!WinToast::instance()->showToast(templ, handler)) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
- ```   
+```
 <div id='id7' />
 
 ## Installation
@@ -237,7 +239,7 @@ The system configuration helps you to define how long you want notifications to 
  - [QGIS](https://github.com/qgis/QGIS): QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)
  - [MEGAsync](https://github.com/meganz/MEGAsync): Easy automated syncing between your computers and your MEGA Cloud Drive
  - [chatterino2](https://github.com/Chatterino/chatterino2): Chat client for twitch.tv
- - [nheko](https://github.com/mujx/nheko): Desktop client for the Matrix protocol.
+ - [nheko](https://github.com/Nheko-Reborn/nheko): Desktop client for the Matrix protocol.
  - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
  - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
  - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
