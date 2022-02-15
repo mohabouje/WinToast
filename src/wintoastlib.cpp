@@ -17,7 +17,6 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 #include "wintoastlib.h"
 #include <memory>
 #include <assert.h>
@@ -606,13 +605,13 @@ HRESULT    WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
 
 
 
-HRESULT	WinToast::createShellLinkHelper() {
+HRESULT    WinToast::createShellLinkHelper() {
     if (_shortcutPolicy != SHORTCUT_POLICY_REQUIRE_CREATE) {
       return E_FAIL;
     }
 
-	WCHAR   exePath[MAX_PATH]{L'\0'};
-	WCHAR	slPath[MAX_PATH]{L'\0'};
+    WCHAR   exePath[MAX_PATH]{L'\0'};
+    WCHAR    slPath[MAX_PATH]{L'\0'};
     Util::defaultShellLinkPath(_appName, slPath);
     Util::defaultExecutablePath(exePath);
     ComPtr<IShellLinkW> shellLink;
@@ -712,7 +711,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  std::shared_
                 {
                     toast_type = ToastTemplateType(toast.type());
                 }
-                HRESULT hr = notificationManager->GetTemplateContent(toast_type, &xmlDocument);
+                hr = notificationManager->GetTemplateContent(toast_type, &xmlDocument);
                 if (SUCCEEDED(hr) && toast.isToastGeneric())
                     hr = setBindToastGenericHelper(xmlDocument.Get());
                 if (SUCCEEDED(hr)) {
@@ -773,10 +772,10 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  std::shared_
 
                                 EventRegistrationToken activatedToken, dismissedToken, failedToken;
 
-								GUID guid;
-								hr = CoCreateGuid(&guid);
-								id = guid.Data1;
-                                if (SUCCEEDED(hr)) {
+                                GUID guid;
+                                HRESULT hrGuid = CoCreateGuid(&guid);
+                                id = guid.Data1;
+                                if (SUCCEEDED(hr) && SUCCEEDED(hrGuid)) {
                                     std::function<void()> processForDeletionFunc = [this, id]()-> void { processForDeletion(id); };
                                     hr = Util::setEventHandlers(notification.Get(), handler, expiration, 
                                                                 activatedToken, dismissedToken, failedToken, processForDeletionFunc);
@@ -835,7 +834,7 @@ void WinToast::deletePreviousNotify()
     bool found = false;
     do 
     {
-        auto& it = std::find_if(_buffer.begin(), _buffer.end(), [](const std::pair<const INT64, WinToastLib::WinToast::NotifyData>& data) 
+        auto it = std::find_if(_buffer.begin(), _buffer.end(), [](const std::pair<const INT64, WinToastLib::WinToast::NotifyData>& data) 
             -> bool { return data.second.setForDeletion; });
         if (it != _buffer.end())
         {
@@ -1012,8 +1011,8 @@ HRESULT WinToast::setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::ws
             hr = nodeList->Item(0, &node);
 
             ComPtr<IXmlElement> imageElement;
-            hr = node.As(&imageElement);
-            if (SUCCEEDED(hr) && isToastGeneric)
+            HRESULT hrImage = node.As(&imageElement);
+            if (SUCCEEDED(hr) && SUCCEEDED(hrImage) && isToastGeneric)
             {
                 hr = imageElement->SetAttribute(WinToastStringWrapper(L"placement").Get(), WinToastStringWrapper(L"appLogoOverride").Get());
                 if (SUCCEEDED(hr) && isCropHintCircle)
