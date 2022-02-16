@@ -224,7 +224,7 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT defaultShellLinkPath(const std::wstring& appname, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
+    inline HRESULT defaultShellLinkPath(_In_ const std::wstring& appname, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
         HRESULT hr = defaultShellLinksDirectory(path, nSize);
         if (SUCCEEDED(hr)) {
             const std::wstring appLink(appname + DEFAULT_LINK_FORMAT);
@@ -236,7 +236,7 @@ namespace Util {
     }
 
 
-    inline PCWSTR AsString(ComPtr<IXmlDocument> &xmlDocument) {
+    inline PCWSTR AsString(_In_ ComPtr<IXmlDocument> &xmlDocument) {
         HSTRING xml;
         ComPtr<IXmlNodeSerializer> ser;
         HRESULT hr = xmlDocument.As<IXmlNodeSerializer>(&ser);
@@ -246,11 +246,11 @@ namespace Util {
         return nullptr;
     }
 
-    inline PCWSTR AsString(HSTRING hstring) {
+    inline PCWSTR AsString(_In_ HSTRING hstring) {
         return DllImporter::WindowsGetStringRawBuffer(hstring, nullptr);
     }
 
-    inline HRESULT setNodeStringValue(const std::wstring& string, IXmlNode *node, IXmlDocument *xml) {
+    inline HRESULT setNodeStringValue(_In_ const std::wstring& string, _Out_opt_ IXmlNode *node, _Out_ IXmlDocument *xml) {
         ComPtr<IXmlText> textNode;
         HRESULT hr = xml->CreateTextNode( WinToastStringWrapper(string).Get(), &textNode);
         if (SUCCEEDED(hr)) {
@@ -650,7 +650,8 @@ HRESULT    WinToast::createShellLinkHelper() {
     return hr;
 }
 
-INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  std::shared_ptr<IWinToastHandler> handler, _Out_ WinToastError* error) {
+INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* eventHandler, _Out_ WinToastError* error) {
+    std::shared_ptr<IWinToastHandler> handler(eventHandler);
     setError(error, WinToastError::NoError);
     INT64 id = -1;
     if (!isInitialized()) {
@@ -786,7 +787,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  std::shared_
 
                                 if (SUCCEEDED(hr)) {
                                     if (SUCCEEDED(hr)) {
-                                        _buffer.emplace(id, NotifyData(handler, notification, activatedToken, dismissedToken, failedToken));
+                                        _buffer.emplace(id, NotifyData(notification, activatedToken, dismissedToken, failedToken));
                                         DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
                                         hr = notifier->Show(notification.Get());
                                         if (FAILED(hr)) {
@@ -815,7 +816,7 @@ ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const  {
     return notifier;
 }
 
-void WinToast::processForDeletion(INT64 id)
+void WinToast::processForDeletion(_In_ INT64 id)
 {
     // delete previous NotifyData which has been setForDeletion = true 
     deletePreviousNotify();
@@ -824,9 +825,9 @@ void WinToast::processForDeletion(INT64 id)
     setForDeletion(id);
 }
 
-void WinToast::setForDeletion(INT64 id)
+void WinToast::setForDeletion(_In_ INT64 id)
 {
-    _buffer[id].setForDeletion = true;
+    _buffer[id]._setForDeletion = true;
 }
 
 void WinToast::deletePreviousNotify()
@@ -835,11 +836,11 @@ void WinToast::deletePreviousNotify()
     do 
     {
         auto it = std::find_if(_buffer.begin(), _buffer.end(), [](const std::pair<const INT64, WinToastLib::WinToast::NotifyData>& data) 
-            -> bool { return data.second.setForDeletion; });
+            -> bool { return data.second._setForDeletion; });
         if (it != _buffer.end())
         {
             found = true;
-            it->second.DestroyEventHandlers();
+            it->second.RemoveTokens();
             _buffer.erase(it);
         }
         else
@@ -857,7 +858,8 @@ bool WinToast::hideToast(_In_ INT64 id) {
         auto succeded = false;
         auto notify = notifier(&succeded);
         if (succeded) {
-            auto result = notify->Hide(_buffer[id].notify.Get());
+            auto result = notify->Hide(_buffer[id]._notify.Get());
+            _buffer[id].RemoveTokens();
             _buffer.erase(id);
             return SUCCEEDED(result);
         }
@@ -871,8 +873,8 @@ void WinToast::clear() {
     if (succeded) {
         auto end = _buffer.end();
         for (auto it = _buffer.begin(); it != end; ++it) {
-            notify->Hide(it->second.notify.Get());
-            it->second.DestroyEventHandlers();
+            notify->Hide(it->second._notify.Get());
+            it->second.RemoveTokens();
         }
         _buffer.clear();
     }
@@ -998,7 +1000,7 @@ HRESULT WinToast::setBindToastGenericHelper(_In_ IXmlDocument* xml) {
     return hr;
 }
 
-HRESULT WinToast::setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_ bool isToastGeneric, bool isCropHintCircle)  {
+HRESULT WinToast::setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_ bool isToastGeneric, _In_ bool isCropHintCircle)  {
     assert(path.size() < MAX_PATH);
 
     wchar_t imagePath[MAX_PATH] = L"file:///";
@@ -1143,7 +1145,7 @@ HRESULT WinToast::addActionHelper(_In_ IXmlDocument *xml, _In_ const std::wstrin
     return hr;
 }
 
-HRESULT WinToast::setHeroImageHelper(_In_ IXmlDocument* xml, _In_ const std::wstring& path, bool isInlineImage) {
+HRESULT WinToast::setHeroImageHelper(_In_ IXmlDocument* xml, _In_ const std::wstring& path, _In_ bool isInlineImage) {
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"binding").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
@@ -1201,7 +1203,7 @@ void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath, _In_ CropH
     _cropHint = cropHint;
 }
 
-void WinToastTemplate::setHeroImagePath(_In_ const std::wstring& imgPath, bool inlineImage) {
+void WinToastTemplate::setHeroImagePath(_In_ const std::wstring& imgPath, _In_ bool inlineImage) {
     _heroImagePath = imgPath;
     _inlineHeroImage = inlineImage;
 }
@@ -1268,7 +1270,7 @@ void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) {
     _expiration = millisecondsFromNow;
 }
 
-void WinToastLib::WinToastTemplate::setScenario(Scenario scenario) {
+void WinToastLib::WinToastTemplate::setScenario(_In_ Scenario scenario) {
     switch (scenario) {
     case Scenario::Default: _scenario = L"Default"; break;
     case Scenario::Alarm: _scenario = L"Alarm"; break;

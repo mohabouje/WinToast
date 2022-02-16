@@ -223,7 +223,7 @@ namespace WinToastLib {
         virtual bool initialize(_Out_opt_ WinToastError* error = nullptr);
         virtual bool isInitialized() const;
         virtual bool hideToast(_In_ INT64 id);
-        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ std::shared_ptr<IWinToastHandler> handler, _Out_ WinToastError* error = nullptr);
+        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* eventHandler, _Out_ WinToastError* error = nullptr);
         virtual void clear();
         virtual enum ShortcutResult createShortcut();
 
@@ -236,40 +236,37 @@ namespace WinToastLib {
     protected:
         struct NotifyData
         {
-            NotifyData() : setForDeletion(false), destroyed(false), handler(nullptr){}
-            NotifyData(std::shared_ptr<IWinToastHandler> handler_,
-                ComPtr<IToastNotification> notify_,
-                EventRegistrationToken activatedToken_, 
-                EventRegistrationToken dismissedToken_, 
-                EventRegistrationToken failedToken_) 
-                : handler(handler_)
-                , notify(notify_)
-                , activatedToken(activatedToken_)
-                , dismissedToken(dismissedToken_)
-                , failedToken(failedToken_)
-                , setForDeletion(false)
-                , destroyed(false)
+            NotifyData() : _setForDeletion(false), _destroyed(false) {}
+            NotifyData(_In_ ComPtr<IToastNotification> notify_,
+                _In_ EventRegistrationToken activatedToken_,
+                _In_ EventRegistrationToken dismissedToken_,
+                _In_ EventRegistrationToken failedToken_)
+                : _notify(notify_)
+                , _activatedToken(activatedToken_)
+                , _dismissedToken(dismissedToken_)
+                , _failedToken(failedToken_)
+                , _setForDeletion(false)
+                , _destroyed(false)
             {}
-            // Never call DestroyEventHandlers() in NotifyData's destructor! 
+            // Never call RemoveTokens() in NotifyData's destructor! 
             // Because it will remove tokens before the notification happens.
-            void DestroyEventHandlers()
+            void RemoveTokens()
             {
-                if (destroyed == false && notify.Get())
+                if (_destroyed == false && _notify.Get())
                 {
-                    notify->remove_Activated(activatedToken);
-                    notify->remove_Dismissed(dismissedToken);
-                    notify->remove_Failed(failedToken);
-                    destroyed = true;
+                    _notify->remove_Activated(_activatedToken);
+                    _notify->remove_Dismissed(_dismissedToken);
+                    _notify->remove_Failed(_failedToken);
+                    _destroyed = true;
                 }
             }
-            std::shared_ptr<IWinToastHandler> handler;
-            ComPtr<IToastNotification> notify;
-            EventRegistrationToken activatedToken;
-            EventRegistrationToken dismissedToken;
-            EventRegistrationToken failedToken;
-            bool setForDeletion;
+            ComPtr<IToastNotification> _notify;
+            bool _setForDeletion;
         private:
-            bool destroyed;
+            EventRegistrationToken _activatedToken;
+            EventRegistrationToken _dismissedToken;
+            EventRegistrationToken _failedToken;
+            bool _destroyed;
         };
         bool                                            _isInitialized{false};
         bool                                            _hasCoInitialized{false};
@@ -278,8 +275,8 @@ namespace WinToastLib {
         std::wstring                                    _aumi{};
         std::map<INT64, NotifyData>     _buffer{};
 
-        void processForDeletion(INT64 id);
-        void setForDeletion(INT64 id);
+        void processForDeletion(_In_ INT64 id);
+        void setForDeletion(_In_ INT64 id);
         void deletePreviousNotify();
         HRESULT validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT createShellLinkHelper();
