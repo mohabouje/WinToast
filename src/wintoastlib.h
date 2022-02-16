@@ -237,14 +237,14 @@ namespace WinToastLib {
         struct NotifyData
         {
             NotifyData() : _setForDeletion(false), _destroyed(false) {}
-            NotifyData(_In_ ComPtr<IToastNotification> notify_,
-                _In_ EventRegistrationToken activatedToken_,
-                _In_ EventRegistrationToken dismissedToken_,
-                _In_ EventRegistrationToken failedToken_)
-                : _notify(notify_)
-                , _activatedToken(activatedToken_)
-                , _dismissedToken(dismissedToken_)
-                , _failedToken(failedToken_)
+            NotifyData(_In_ ComPtr<IToastNotification> notify,
+                _In_ EventRegistrationToken activatedToken,
+                _In_ EventRegistrationToken dismissedToken,
+                _In_ EventRegistrationToken failedToken)
+                : _notify(notify)
+                , _activatedToken(activatedToken)
+                , _dismissedToken(dismissedToken)
+                , _failedToken(failedToken)
                 , _setForDeletion(false)
                 , _destroyed(false)
             {}
