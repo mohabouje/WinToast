@@ -118,7 +118,7 @@ WinToast::instance()->showToast(templ, handler)
 !["Toast with some actions"](https://learn.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/images/toast-content-structure.png)
  - **Attribution text**: you can add/remove the attribution text, by default is empty.  Use `WinToastTemplate::setAttributionText` to modify it.
  - **Duration**: The amount of time the toast should display. This attribute can have one of the following values:
-     - *System*: default system configuration.
+	 - *System*: default system configuration.
 	 - *Short*: default system short time configuration.
 	 - *Long*: default system long time configuration.
  - **Audio Properties**: you can modify the different behaviors of the sound:
