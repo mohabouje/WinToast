@@ -64,14 +64,14 @@ WinToast integrates all standard templates available in the [ToastTemplateType e
 
 | Template         |                                                  Description |                           Example                            |
 | :--------------- | -----------------------------------------------------------: | :----------------------------------------------------------: |
-| `ImageAndText01` | A large image and a single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601606.png) |
-| `ImageAndText02` | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines. |   ![12](https://i-msdn.sec.s-msft.com/dynimg/IC601607.png)   |
-| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601608.png) |
-| `ImageAndText04` | A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601609.png) |
-| `Text01`         |            Single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601602.png) |
-| `Text02`         | One string of bold text on the first line, one string of regular text wrapped across the second and third lines. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601603.png) |
-| `Text03`         | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601604.png) |
-| `Text04`         | One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601605.png) |
+| `ImageAndText01` | A large image and a single string wrapped across three lines of text. | ![enter image description here](../assets/images/Toast_6.png) |
+| `ImageAndText02` | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines. |   ![12](../assets/images/Toast_7.png)   |
+| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](../assets/images/Toast_8.png) |
+| `ImageAndText04` | A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line. | ![enter image description here](../assets/images/ToastImageAndText04.png) |
+| `Text01`         |            Single string wrapped across three lines of text. | ![enter image description here](../assets/images/Toast_1.png) |
+| `Text02`         | One string of bold text on the first line, one string of regular text wrapped across the second and third lines. | ![enter image description here](../assets/images/Toast_2.png) |
+| `Text03`         | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](../assets/images/Toast_4.png) |
+| `Text04`         | One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line. | ![enter image description here](../assets/images/Toast_5.png) |
 
 Example of a `ImageAndText02` template:
 
@@ -114,7 +114,7 @@ WinToast::instance()->showToast(templ, handler)
 
 This code will display something like this:
 
-!["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
+!["Toast with some actions"](https://learn.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/images/toast-content-structure.png)
 
 ### Atribution Text
 
@@ -129,9 +129,9 @@ WinToast::instance()->showToast(templ, handler)
 
 ### Duration
 
-Users can change the amount of time the toast should be displayed. This attribute can have one of the following values: 
+Users can change the amount of time the toast should be displayed. This attribute can have one of the following values:
 
-   - *System*: default system configuration.
+ - *System*: default system configuration.
  - *Short*: default system short time configuration.
  - *Long*: default system long time configuration.
 
@@ -146,7 +146,7 @@ WinToast::instance()->showToast(templ, handler)
 
 Users can modify the different behaviors of the sound. For instance, users can specify the default play mode:
 
-- *Default*: plays the audio file just one time.
+ - *Default*: plays the audio file just one time.
  - *Silent*: turn off the sound.
  - *Loop*: plays the given sound in a loop during the toast existence.
 

@@ -19,15 +19,15 @@ WinToast is a lightly library written in C++ which brings a complete integration
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
 - [WinToast](#wintoast)
-- [Toast Templates](#toast-templates)
-- [Event Handler](#event-handler)
-- [Expiration Time](#expiration-time)
-- [Additional features available on Windows 10](#additional-features-available-on-windows-10)
-- [Error Handling](#error-handling)
-- [Example of Usage](#example-of-usage)
-- [Installation](#installation)
-- [Toast configuration on Windows 10](#toast-configuration-on-windows-10)
-- [Projects using WinToast](#projects-using-wintoast)
+	- [Toast Templates](#toast-templates)
+	- [Event Handler](#event-handler)
+	- [Expiration Time](#expiration-time)
+	- [Additional features available on Windows 10](#additional-features-available-on-windows-10)
+	- [Error Handling](#error-handling)
+	- [Example of Usage](#example-of-usage)
+	- [Installation](#installation)
+	- [Toast configuration on Windows 10](#toast-configuration-on-windows-10)
+	- [Projects using WinToast](#projects-using-wintoast)
 
 
 <div id='id1' />
@@ -115,10 +115,10 @@ for (auto const &action : actions)
 WinToast::instance()->showToast(templ, handler) 
 ```
 
-!["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
+!["Toast with some actions"](https://learn.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/images/toast-content-structure.png)
  - **Attribution text**: you can add/remove the attribution text, by default is empty.  Use `WinToastTemplate::setAttributionText` to modify it.
- - **Duration**: The amount of time the toast should display. This attribute can have one of the following values: 
-         - *System*: default system configuration.
+ - **Duration**: The amount of time the toast should display. This attribute can have one of the following values:
+     - *System*: default system configuration.
 	 - *Short*: default system short time configuration.
 	 - *Long*: default system long time configuration.
  - **Audio Properties**: you can modify the different behaviors of the sound:
