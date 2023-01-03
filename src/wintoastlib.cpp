@@ -429,7 +429,7 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
     return aumi;
 }
 
-const std::wstring& WinToast::strerror(WinToastError error) {
+const std::wstring& WinToast::strerror(_In_ WinToastError error) {
     static const std::unordered_map<WinToastError, std::wstring> Labels = {
         {WinToastError::NoError, L"No error. The process was executed correctly"},
         {WinToastError::NotInitialized, L"The library has not been initialized"},
@@ -636,7 +636,7 @@ HRESULT	WinToast::createShellLinkHelper() {
     return hr;
 }
 
-INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler, _Out_ WinToastError* error)  {
+INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler, _Out_opt_ WinToastError* error)  {
     setError(error, WinToastError::NoError);
     INT64 id = -1;
     if (!isInitialized()) {
@@ -1106,7 +1106,7 @@ void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) {
     _expiration = millisecondsFromNow;
 }
 
-void WinToastLib::WinToastTemplate::setScenario(Scenario scenario) {
+void WinToastLib::WinToastTemplate::setScenario(_In_ Scenario scenario) {
     switch (scenario) {
     case Scenario::Default: _scenario = L"Default"; break;
     case Scenario::Alarm: _scenario = L"Alarm"; break;
