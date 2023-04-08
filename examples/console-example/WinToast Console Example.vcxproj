@@ -89,7 +89,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\wintoastlib.h" />
+    <ClInclude Include="..\..\include\wintoastlib.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="if_terminal_298878.png" />

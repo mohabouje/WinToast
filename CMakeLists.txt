@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(WINTOASTLIB_BUILD_EXAMPLES   "Compile the examples" ON)
-option(WINTOASTLIB_QT_ENABLED       "Enable Qt support to build the GUI examples" ON)
+option(WINTOASTLIB_QT_ENABLED       "Enable Qt support to build the GUI examples" OFF)
 
 set(WINTOASTLIB_LIBNAME WinToast)
 set(WINTOASTLIB_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/wintoastlib.h)
