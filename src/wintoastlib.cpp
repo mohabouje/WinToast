@@ -274,13 +274,14 @@ namespace Util {
         return hr;
     }
 
+    template<typename FunctorT>
     inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler,
                                     _In_ INT64 expirationTime, _Out_ EventRegistrationToken& activatedToken,
                                     _Out_ EventRegistrationToken& dismissedToken, _Out_ EventRegistrationToken& failedToken,
-                                    std::function<void()> processForDeletionFunc) {
+                                    _In_ FunctorT&& markAsReadyForDeletionFunc) {
         HRESULT hr = notification->add_Activated(
             Callback<Implements<RuntimeClassFlags<ClassicCom>, ITypedEventHandler<ToastNotification*, IInspectable*>>>(
-                [eventHandler, processForDeletionFunc](IToastNotification* notify, IInspectable* inspectable) {
+                [eventHandler, markAsReadyForDeletionFunc](IToastNotification* notify, IInspectable* inspectable) {
                     ComPtr<IToastActivatedEventArgs> activatedEventArgs;
                     HRESULT hr = inspectable->QueryInterface(activatedEventArgs.GetAddressOf());
                     if (SUCCEEDED(hr)) {
@@ -291,14 +292,14 @@ namespace Util {
                             if (arguments && *arguments) {
                                 eventHandler->toastActivated(static_cast<int>(wcstol(arguments, nullptr, 10)));
                                 DllImporter::WindowsDeleteString(argumentsHandle);
-                                processForDeletionFunc();
+                                markAsReadyForDeletionFunc();
                                 return S_OK;
                             }
                             DllImporter::WindowsDeleteString(argumentsHandle);
                         }
                     }
                     eventHandler->toastActivated();
-                    processForDeletionFunc();
+                    markAsReadyForDeletionFunc();
                     return S_OK;
                 })
                 .Get(),
@@ -307,7 +308,7 @@ namespace Util {
         if (SUCCEEDED(hr)) {
             hr = notification->add_Dismissed(
                 Callback<Implements<RuntimeClassFlags<ClassicCom>, ITypedEventHandler<ToastNotification*, ToastDismissedEventArgs*>>>(
-                    [eventHandler, expirationTime, processForDeletionFunc](IToastNotification* notify, IToastDismissedEventArgs* e) {
+                    [eventHandler, expirationTime, markAsReadyForDeletionFunc](IToastNotification* notify, IToastDismissedEventArgs* e) {
                         ToastDismissalReason reason;
                         if (SUCCEEDED(e->get_Reason(&reason))) {
                             if (reason == ToastDismissalReason_UserCanceled && expirationTime &&
@@ -316,7 +317,7 @@ namespace Util {
                             }
                             eventHandler->toastDismissed(static_cast<IWinToastHandler::WinToastDismissalReason>(reason));
                         }
-                        processForDeletionFunc();
+                        markAsReadyForDeletionFunc();
                         return S_OK;
                     })
                     .Get(),
@@ -324,9 +325,9 @@ namespace Util {
             if (SUCCEEDED(hr)) {
                 hr = notification->add_Failed(
                     Callback<Implements<RuntimeClassFlags<ClassicCom>, ITypedEventHandler<ToastNotification*, ToastFailedEventArgs*>>>(
-                        [eventHandler, processForDeletionFunc](IToastNotification* notify, IToastFailedEventArgs* e) {
+                        [eventHandler, markAsReadyForDeletionFunc](IToastNotification* notify, IToastFailedEventArgs* e) {
                             eventHandler->toastFailed();
-                            processForDeletionFunc();
+                            markAsReadyForDeletionFunc();
                             return S_OK;
                         })
                         .Get(),
