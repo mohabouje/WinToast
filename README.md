@@ -1,15 +1,11 @@
-![releases](https://img.shields.io/github/tag/mohabouje/WinToast.svg)
-![issues](https://img.shields.io/github/issues/mohabouje/WinToast.svg)
-![license](https://img.shields.io/github/license/mohabouje/WinToast.svg)
-![GitHub contributors](https://img.shields.io/github/contributors/mohabouje/WinToast.svg)
-![built](https://img.shields.io/badge/built%20with-MVSC-6f62ba.svg)
-![dowloads](https://img.shields.io/github/downloads/mohabouje/WinToast/total.svg)
+![license](https://img.shields.io/github/license/mohabouje/WinToast?style=flat-square)
+![GitHub contributors](https://img.shields.io/github/contributors/mohabouje/WinToast?style=flat-square)
+![releases](https://img.shields.io/github/v/release/mohabouje/WinToast?style=flat-square)
+[![GitHub stars](https://img.shields.io/github/stars/mohabouje/WinToast?style=flat-square)]()
+[![GitHub forks](https://img.shields.io/github/forks/mohabouje/WinToast?style=flat-square)]()
+[![GitHub watchers](https://img.shields.io/github/watchers/mohabouje/WinToast?style=flat-square)]()
+![issues](https://img.shields.io/github/issues/mohabouje/WinToast?style=flat-square)
 
-[![GitHub forks](https://img.shields.io/github/forks/mohabouje/WinToast.svg?style=social&label=Fork)]()
-[![GitHub stars](https://img.shields.io/github/stars/mohabouje/WinToast.svg?style=social&label=Star)]()
-[![GitHub watchers](https://img.shields.io/github/watchers/mohabouje/WinToast.svg?style=social&label=Watch)]()
-
-***
 
 WinToast
 ===================
