@@ -38,6 +38,7 @@
 #include <string.h>
 #include <vector>
 #include <map>
+#include <memory>
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::Foundation;
@@ -76,6 +77,14 @@ namespace WinToastLib {
             Text02 = ToastTemplateType::ToastTemplateType_ToastText02,
             Text03 = ToastTemplateType::ToastTemplateType_ToastText03,
             Text04 = ToastTemplateType::ToastTemplateType_ToastText04,
+            HeroImageAndImageAndText01,
+            HeroImageAndImageAndText02,
+            HeroImageAndImageAndText03,
+            HeroImageAndImageAndText04,
+            HeroImageAndText01,
+            HeroImageAndText02,
+            HeroImageAndText03,
+            HeroImageAndText04,
         };
 
         enum AudioSystemFile {
@@ -106,7 +115,11 @@ namespace WinToastLib {
             Call9,
             Call10,
         };
-
+        enum CropHint
+        {
+            Square,
+            Circle,
+        };
 
         WinToastTemplate(_In_ WinToastTemplateType type = WinToastTemplateType::ImageAndText02);
         ~WinToastTemplate();
@@ -115,8 +128,9 @@ namespace WinToastLib {
         void setSecondLine(_In_ const std::wstring& text);
         void setThirdLine(_In_ const std::wstring& text);
         void setTextField(_In_ const std::wstring& txt, _In_ TextField pos);
-        void setAttributionText(_In_ const std::wstring& attributionText);
-        void setImagePath(_In_ const std::wstring& imgPath);
+        void setAttributionText(_In_ const std::wstring & attributionText);
+        void setImagePath(_In_ const std::wstring& imgPath, _In_ CropHint cropHint = CropHint::Square);
+        void setHeroImagePath(_In_ const std::wstring& imgPath, bool inlineImage);
         void setAudioPath(_In_ WinToastTemplate::AudioSystemFile audio);
         void setAudioPath(_In_ const std::wstring& audioPath);
         void setAudioOption(_In_ WinToastTemplate::AudioOption audioOption);
@@ -128,10 +142,12 @@ namespace WinToastLib {
         std::size_t textFieldsCount() const;
         std::size_t actionsCount() const;
         bool hasImage() const;
+        bool hasHeroImage() const;
         const std::vector<std::wstring>& textFields() const;
         const std::wstring& textField(_In_ TextField pos) const;
         const std::wstring& actionLabel(_In_ std::size_t pos) const;
         const std::wstring& imagePath() const;
+        const std::wstring& heroImagePath() const;
         const std::wstring& audioPath() const;
         const std::wstring& attributionText() const;
         const std::wstring& scenario() const;
@@ -139,10 +155,15 @@ namespace WinToastLib {
         WinToastTemplateType type() const;
         WinToastTemplate::AudioOption audioOption() const;
         Duration duration() const;
+        bool isToastGeneric() const;
+        bool isInlineHeroImage() const;
+        bool isCropHintCircle() const;
     private:
         std::vector<std::wstring>           _textFields{};
         std::vector<std::wstring>           _actions{};
         std::wstring                        _imagePath{};
+        std::wstring                        _heroImagePath{};
+        bool                                _inlineHeroImage{ false };
         std::wstring                        _audioPath{};
         std::wstring                        _attributionText{};
         std::wstring                        _scenario{L"Default"};
@@ -150,6 +171,7 @@ namespace WinToastLib {
         AudioOption                         _audioOption{WinToastTemplate::AudioOption::Default};
         WinToastTemplateType                _type{WinToastTemplateType::Text01};
         Duration                            _duration{Duration::System};
+        CropHint                            _cropHint{CropHint::Square};
     };
 
     class WinToast {
@@ -191,7 +213,8 @@ namespace WinToastLib {
         virtual ~WinToast();
         static WinToast* instance();
         static bool isCompatible();
-        static bool isSupportingModernFeatures();
+        static bool    isSupportingModernFeatures();
+        static bool    isWin10AnniversaryOrHigher();
         static std::wstring configureAUMI(_In_ const std::wstring& companyName,
                                           _In_ const std::wstring& productName,
                                           _In_ const std::wstring& subProduct = std::wstring(),
@@ -200,7 +223,7 @@ namespace WinToastLib {
         virtual bool initialize(_Out_opt_ WinToastError* error = nullptr);
         virtual bool isInitialized() const;
         virtual bool hideToast(_In_ INT64 id);
-        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler, _Out_opt_ WinToastError* error = nullptr);
+        virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* eventHandler, _Out_ WinToastError* error = nullptr);
         virtual void clear();
         virtual enum ShortcutResult createShortcut();
 
@@ -211,16 +234,55 @@ namespace WinToastLib {
         void setShortcutPolicy(_In_ ShortcutPolicy policy);
 
     protected:
+        struct NotifyData
+        {
+            NotifyData() : _setForDeletion(false), _destroyed(false) {}
+            NotifyData(_In_ ComPtr<IToastNotification> notify,
+                _In_ EventRegistrationToken activatedToken,
+                _In_ EventRegistrationToken dismissedToken,
+                _In_ EventRegistrationToken failedToken)
+                : _notify(notify)
+                , _activatedToken(activatedToken)
+                , _dismissedToken(dismissedToken)
+                , _failedToken(failedToken)
+                , _setForDeletion(false)
+                , _destroyed(false)
+            {}
+            // Never call RemoveTokens() in NotifyData's destructor! 
+            // Because it will remove tokens before the notification happens.
+            void RemoveTokens()
+            {
+                if (_destroyed == false && _notify.Get())
+                {
+                    _notify->remove_Activated(_activatedToken);
+                    _notify->remove_Dismissed(_dismissedToken);
+                    _notify->remove_Failed(_failedToken);
+                    _destroyed = true;
+                }
+            }
+            ComPtr<IToastNotification> _notify;
+            bool _setForDeletion;
+        private:
+            EventRegistrationToken _activatedToken;
+            EventRegistrationToken _dismissedToken;
+            EventRegistrationToken _failedToken;
+            bool _destroyed;
+        };
         bool                                            _isInitialized{false};
         bool                                            _hasCoInitialized{false};
         ShortcutPolicy                                  _shortcutPolicy{SHORTCUT_POLICY_REQUIRE_CREATE};
         std::wstring                                    _appName{};
         std::wstring                                    _aumi{};
-        std::map<INT64, ComPtr<IToastNotification>>     _buffer{};
+        std::map<INT64, NotifyData>     _buffer{};
 
+        void processForDeletion(_In_ INT64 id);
+        void setForDeletion(_In_ INT64 id);
+        void deletePreviousNotify();
         HRESULT validateShellLinkHelper(_Out_ bool& wasChanged);
         HRESULT createShellLinkHelper();
-        HRESULT setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path);
+        HRESULT setImageFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_ bool isToastGeneric, bool isCropHintCircle);
+        HRESULT setHeroImageHelper(_In_ IXmlDocument* xml, _In_ const std::wstring& path, _In_ bool isInlineImage);
+        HRESULT setBindToastGenericHelper(_In_ IXmlDocument* xml);
         HRESULT setAudioFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& path, _In_opt_ WinToastTemplate::AudioOption option = WinToastTemplate::AudioOption::Default);
         HRESULT setTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text, _In_ UINT32 pos);
         HRESULT setAttributionTextFieldHelper(_In_ IXmlDocument *xml, _In_ const std::wstring& text);
