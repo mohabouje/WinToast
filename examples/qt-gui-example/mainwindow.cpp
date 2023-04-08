@@ -51,6 +51,14 @@ void MainWindow::on_imagePathSelector_clicked() {
     ui->imagePath->setText(QDir::toNativeSeparators(fileName));
 }
 
+void MainWindow::on_heroPathSelector_clicked() {
+    const QString fileName = QFileDialog::getOpenFileName(this, "Select an image", QDir::currentPath(), "*.png");
+    if (fileName.isEmpty()) {
+        return;
+    }
+    ui->heroPath->setText(QDir::toNativeSeparators(fileName));
+}
+
 class CustomHandler : public IWinToastHandler {
 public:
     void toastActivated() const {
@@ -86,6 +94,7 @@ void MainWindow::on_showToast_clicked() {
     auto const type        = static_cast<WinToastTemplate::WinToastTemplateType>(ui->toastType->currentData().toInt());
     WinToastTemplate templ = WinToastTemplate(type);
     templ.setImagePath(ui->imagePath->text().toStdWString(), static_cast<WinToastTemplate::CropHint>(ui->cropHint->currentData().toInt()));
+    templ.setHeroImagePath(ui->heroPath->text().toStdWString(), ui->inlineHeroImage->isChecked());
     templ.setTextField(ui->firstLine->text().toStdWString(), WinToastTemplate::FirstLine);
     templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
     templ.setTextField(ui->thirdLine->text().toStdWString(), WinToastTemplate::ThirdLine);

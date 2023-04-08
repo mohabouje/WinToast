@@ -16,8 +16,8 @@ public:
 
 private slots:
     void on_imagePathSelector_clicked();
-
     void on_showToast_clicked();
+    void on_heroPathSelector_clicked();
 
 private:
     Ui::MainWindow* ui;

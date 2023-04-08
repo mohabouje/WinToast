@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>670</width>
-    <height>228</height>
+    <height>353</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,13 +15,20 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="10" column="0">
+    <item row="11" column="0">
      <widget class="QSpinBox" name="spinBox">
       <property name="maximum">
        <number>10</number>
       </property>
       <property name="singleStep">
        <number>2</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string>Toast Type</string>
       </property>
      </widget>
     </item>
@@ -32,10 +39,17 @@
       </property>
      </widget>
     </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>Hero Path</string>
+      </property>
+     </widget>
+    </item>
     <item row="4" column="2">
      <widget class="QLineEdit" name="thirdLine"/>
     </item>
-    <item row="8" column="2">
+    <item row="9" column="2">
      <widget class="QComboBox" name="audioMode"/>
     </item>
     <item row="5" column="2">
@@ -82,28 +96,28 @@
       </layout>
      </widget>
     </item>
-    <item row="8" column="0">
+    <item row="9" column="0">
      <widget class="QLabel" name="label_6">
       <property name="text">
        <string>Audio Mode</string>
       </property>
      </widget>
     </item>
-    <item row="13" column="0">
+    <item row="14" column="0">
      <widget class="QCheckBox" name="addNo">
       <property name="text">
        <string>Add No Action</string>
       </property>
      </widget>
     </item>
-    <item row="10" column="1">
+    <item row="11" column="1">
      <widget class="QLabel" name="label_4">
       <property name="text">
        <string>Expiration time (secs)</string>
       </property>
      </widget>
     </item>
-    <item row="14" column="2">
+    <item row="15" column="2">
      <widget class="QWidget" name="widget_2" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <property name="leftMargin">
@@ -147,7 +161,7 @@
       </layout>
      </widget>
     </item>
-    <item row="7" column="2">
+    <item row="8" column="2">
      <widget class="QComboBox" name="audioSystemFile"/>
     </item>
     <item row="3" column="0">
@@ -160,14 +174,14 @@
     <item row="3" column="2">
      <widget class="QLineEdit" name="secondLine"/>
     </item>
-    <item row="12" column="0">
+    <item row="13" column="0">
      <widget class="QCheckBox" name="addYes">
       <property name="text">
        <string>Add Yes Action</string>
       </property>
      </widget>
     </item>
-    <item row="7" column="0">
+    <item row="8" column="0">
      <widget class="QLabel" name="label_5">
       <property name="text">
        <string>Audio System File</string>
@@ -184,7 +198,7 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="2">
+    <item row="7" column="2">
      <widget class="QComboBox" name="cropHint"/>
     </item>
     <item row="4" column="0">
@@ -194,22 +208,40 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="0">
+    <item row="1" column="2">
+     <widget class="QComboBox" name="toastType"/>
+    </item>
+    <item row="7" column="0">
      <widget class="QLabel" name="label_7">
       <property name="text">
        <string>Crop Hint</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_9">
+    <item row="6" column="2">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="heroPath">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="heroPathSelector">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="12" column="0">
+     <widget class="QCheckBox" name="inlineHeroImage">
       <property name="text">
-       <string>Toast Type</string>
+       <string>Inline Hero Image</string>
       </property>
      </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QComboBox" name="toastType"/>
     </item>
    </layout>
   </widget>
