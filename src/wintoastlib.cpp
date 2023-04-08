@@ -1159,7 +1159,7 @@ void WinToast::setError(_Out_opt_ WinToastError* error, _In_ WinToastError value
 }
 
 WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
-    constexpr static std::size_t TextFieldsCount[] = {1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3, 1, 2, 2, 3};
+    constexpr static std::size_t TextFieldsCount[] = {1, 2, 2, 3, 1, 2, 2, 3};
     _textFields                                    = std::vector<std::wstring>(TextFieldsCount[type], L"");
 }
 
@@ -1169,7 +1169,10 @@ WinToastTemplate::~WinToastTemplate() {
 
 void WinToastTemplate::setTextField(_In_ std::wstring const& txt, _In_ WinToastTemplate::TextField pos) {
     auto const position = static_cast<std::size_t>(pos);
-    assert(position < _textFields.size());
+    if (position >= _textFields.size()) {
+        DEBUG_MSG("The selected template type supports only " << _textFields.size() << " text lines");
+        return;
+    }
     _textFields[position] = txt;
 }
 
