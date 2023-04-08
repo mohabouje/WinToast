@@ -1,12 +1,50 @@
-# WinToast
+WinToast
+===================
 
-WinToast is a lightly library written in C++ which brings a complete integration of the modern **toast notifications** of **Windows 8** &  **Windows 10**. 
+WinToast is a lightly library written in C++ which brings a complete integration of the modern **toast notifications** of **Windows 8**,   **Windows 10** and **Windows 11**. 
 
 Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
+- [WinToast](#wintoast)
+- [Toast Templates](#toast-templates)
+- [Event Handler](#event-handler)
+- [Notification Content](#notification-content)
+- [Error Handling](#error-handling)
+- [Example of Usage](#example-of-usage)
+- [Installation](#installation)
+- [Toast configuration on Windows 10](#toast-configuration-on-windows-10)
+- [Projects using WinToast](#projects-using-wintoast)
+
+
+## Toast Templates
+
+WinToast integrates all standard templates available in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
+
+| Template     | Description | Example   |
+| :------- | ----: | :---: |
+| `ImageAndText01` | A large image and a single string wrapped across three lines of text. |  ![enter image description here](assets/images/Toast_6.png)   |
+| `ImageAndText02`   | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![12](assets/images/Toast_7.png)   |
+| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](assets/images/Toast_8.png) |
+| `ImageAndText04` |    A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](assets/images/ToastImageAndText04.png)  |
+| `Text01` | Single string wrapped across three lines of text. | ![enter image description here](assets/images/Toast_1.png)|
+| `Text02`  | One string of bold text on the first line, one string of regular text wrapped across the second and third lines.   |  ![enter image description here](assets/images/Toast_2.png) |
+| `Text03` | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](assets/images/Toast_4.png)|
+| `Text04` |   One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line.     | ![enter image description here](assets/images/Toast_5.png) |
+
+Example of a `ImageAndText02` template:
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
+templ.setTextField(L"title", WinToastTemplate::FirstLine);
+templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
+templ.setImagePath(L"C:/example.png"); 
+```
+**Note:** The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.*
+
+
 ## Event Handler
 
-WinToast implements a common interface `IWinToastHandler` to handle events:
+WinToast handle different events:
 
  - **Activated**: Occurs when user activates a toast notification through a click or touch. Apps that are running subscribe to this event
  - **Dismissed**: Occurs when a toast notification leaves the screen, either by expiring or being explicitly dismissed by the user. 
@@ -15,7 +53,7 @@ WinToast implements a common interface `IWinToastHandler` to handle events:
 	* Timed Out: The toast has expired
  - **Failed**: Occurs when an error is caused when Windows attempts to raise a toast notification.
 
-Users can creates their own custom handler to interact with the user actions. For example:
+Create your custom handler to interact with the user actions by subclassing the interface `IWinToastHandler`:
 
 ```cpp
 class WinToastHandlerExample : public IWinToastHandler {
@@ -26,22 +64,136 @@ class WinToastHandlerExample : public IWinToastHandler {
 	void toastDismissed(WinToastDismissalReason state) const override;
 	void toastFailed() const override;
  };
-
 ```
+
+## Notification Content
+
+The full documentation of the notification content [here](https://learn.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/adaptive-interactive-toasts?tabs=appsdk).
+
+### Expiration Time
+
+Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attempts to raise toast notifications immediately after you call Show, so this property is rarely used. 
+
+> For Windows 8.x app, this property also causes the toast notification to be removed from the
+> Action Center once the specified data and time is reached.
+
+**Note:** Default Windows behavior is to hide notification automatically after time set in Windows Ease of Access Settings.
+If you need to preserve notification in Windows Action Center for longer period of time, you have to call `WinToastTemplate::setExpiration` method. 
+
+### Hint Crop
+
+Microsoft style guidelines recommend representing profile pictures with a circular image to provide a consistent representation of people across apps and the shell. Set the HintCrop property to Circle to render the image with a circular crop.
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
+templ.setTextField(L"Matt sent you a friend request", WinToastTemplate::FirstLine);
+templ.setTextField(L"Hey, wanna dress up as wizards and ride around on hoverboards?", WinToastTemplate::SecondLine);
+templ.setImagePath(L"C:/example.png");
+templ.setHintCrop(WinToastTemplate::Circle);
+```
+
+!["Toast with hero image"](assets/images/hint-crop.png)
+
+
+### Hero Image
+
+The hero image is a large image that appears at the top of a toast notification. The hero image is optional and can be used to provide additional context to the user.
+
+**Note:** The hero image is not supported on Windows 8.1 and Windows Phone 8.1.
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
+templ.setTextField(L"Mary Anne", WinToastTemplate::FirstLine);
+templ.setTextField(L"Check out where we camped last night!", WinToastTemplate::SecondLine);
+templ.setHeroImagePath(L"C:/example.png");
+```
+
+!["Toast with hero image"](assets/images/hero-image.png)
+
+The hero image is specified by calling the `WinToastTemplate::setHeroImagePath` method. The image path can be a local file path or a URI. 
+
+
+### Inline Image
+
+The second parameter of the method `WinToastTemplate::setHeroImagePath` is a boolean value that specifies whether the image should be inlined in the toast notification. 
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText01);
+templ.setTextField(L"Feature image of the day", WinToastTemplate::FirstLine);
+templ.setHeroImagePath(L"C:/example.png", true);
+```
+
+!["Toast with inlined hero image"](assets/images/inline-image.png)
+
+### Actions
+
+You can add your own actions, this fact allow you to interact with user in a different way:
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText01);
+templ.setTextField(L"New product in stock", WinToastTemplate::FirstLine);
+
+std::vector<std::wstring> actions;
+actions.push_back(L"See more details");
+actions.push_back(L"Remind me later");
+// ...
+
+for (auto const &action : actions) {
+    templ.addAction(action);
+}
+WinToast::instance()->showToast(templ, handler) 
+```
+
+!["Toast with some actions"](assets/images/image-actions.png)
+
+
+### Attribution text
+
+New in Anniversary Update: If you need to reference the source of your content, you can use attribution text. This text is always displayed below any text elements, but above inline images. The text uses a slightly smaller size than standard text elements to help to distinguish from regular text elements.
+
+```cpp
+WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text02);
+templ.setTextField(L"Mary Anne", WinToastTemplate::FirstLine);
+templ.setTextField(L"Check out where we camped last night!", WinToastTemplate::SecondLine);
+templ.setHeroImagePath(L"C:/example.png");
+templ.setAttributionText(L"Via SMS");
+```
+
+!["Toast with some actions"](assets/images/attribution-text.png)
+
+### Duration
+
+The amount of time the toast should display. This attribute can have one of the following values: 
+     - *System*: default system configuration.
+	 - *Short*: default system short time configuration.
+	 - *Long*: default system long time configuration.
+
+### Audio Properties
+
+You can modify the different behaviors of the sound:
+	 - *Default*: plays the audio file just one time.
+	 - *Silent*: turn off the sound.
+	 - *Loop*: plays the given sound in a loop during the toast existence.
+
+> WinToast allows the modification of the default audio file. Add 
+> the given file in to your projects resources (*must be ms-appx:// or
+> ms-appdata:// path*) and define it by calling: `WinToastTemplate::setAudioPath`
+
+***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
+
 ## Error Handling
+There are several reasons WinToast can fail that's why the library notifies caller about fail reason. Those are the code for each failure:
 
-There are several reasons WinToast can fail that's why the library notifies the caller about any possible failure reason. Those are the code for each failure:
-
-| WinToastError           | Error Code | Error message                                                |
-| ----------------------- | ---------- | ------------------------------------------------------------ |
-| `NoError`               | 0x00       | No error. The process was executed correctly                 |
-| `NotInitialized`        | 0x01       | The library has not been initialized                         |
-| `SystemNotSupported`    | 0x02       | The OS does not support WinToast                             |
-| `ShellLinkNotCreated`   | 0x03       | The library was not able to create a Shell Link for the app  |
-| `InvalidAppUserModelID` | 0x04       | The AUMI is not a valid one                                  |
-| `InvalidParameters`     | 0x05       | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
-| `NotDisplayed`          | 0x06       | The toast was created correctly but WinToast was not able to display the toast |
-| `UnknownError`          | 0x07       | Unknown error                                                |
+| WinToastError | Error Code | Error message |
+|--|--|--|
+| `NoError` | 0x00 | No error. The process was executed correctly |
+| `NotInitialized` | 0x01 | The library has not been initialized |
+| `SystemNotSupported` | 0x02 | The OS does not support WinToast |
+| `ShellLinkNotCreated` | 0x03 | The library was not able to create a Shell Link for the app |
+| `InvalidAppUserModelID` | 0x04 | The AUMI is not a valid one |
+| `InvalidParameters` | 0x05 | The parameters used to configure the library are not valid normally because an invalid AUMI or App Name |
+| `NotDisplayed` | 0x06 | The toast was created correctly but WinToast was not able to display the toast |
+| `UnknownError` | 0x07 | Unknown error |
 
 A common example of usage is to check while initializing the library or showing a toast notification the possible failure code:
 
@@ -49,119 +201,75 @@ A common example of usage is to check while initializing the library or showing 
 WinToast::WinToastError error;
 const bool succedded = WinToast::instance()->initialize(&error);
 if (!succedded) {  
-    std::wcout << L"Error, could not initialize the lib. Error: " 
-    << WinToast::strerror(error) << std::endl;
+    std::wcout << L"Error, could not initialize the lib. Error number: " 
+    << error << std::endl;
+}
+...
+// Configure the template
+...
+const bool launched = WinToast::instance()->showToast(templ, handler, &error);
+if (!launched) {
+    std::wcout << L"Error: Could not launch your toast notification. Error: "
+     << error << std::endl;
 }
 ```
 
-## Properties
 
-### Templates
+## Example of Usage
 
-WinToast integrates all standard templates available in the [ToastTemplateType enumeration](https://msdn.microsoft.com/en-us/library/windows/apps/br208660.aspx).
+*For an easy usage,  you can just use the available singleton instance.* 
 
-
-
-| Template         |                                                  Description |                           Example                            |
-| :--------------- | -----------------------------------------------------------: | :----------------------------------------------------------: |
-| `ImageAndText01` | A large image and a single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601606.png) |
-| `ImageAndText02` | A large image, one string of bold text on the first line, one string of regular text wrapped across the second and third lines. |   ![12](https://i-msdn.sec.s-msft.com/dynimg/IC601607.png)   |
-| `ImageAndText03` | A large image, one string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601608.png) |
-| `ImageAndText04` | A large image, one string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601609.png) |
-| `Text01`         |            Single string wrapped across three lines of text. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601602.png) |
-| `Text02`         | One string of bold text on the first line, one string of regular text wrapped across the second and third lines. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601603.png) |
-| `Text03`         | One string of bold text wrapped across the first two lines, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601604.png) |
-| `Text04`         | One string of bold text on the first line, one string of regular text on the second line, one string of regular text on the third line. | ![enter image description here](https://i-msdn.sec.s-msft.com/dynimg/IC601605.png) |
-
-Example of a `ImageAndText02` template:
+First step, Import the header file wintoastlib.h to your project. You should check if your Windows Version is supported by the library.
 
 ```cpp
+using namespace WinToastLib;
+....
+if (!WinToast::isCompatible()) {
+    std::wcout << L"Error, your system in not supported!" << std::endl;
+}
+```
+
+ Configure your [App User Model Id](https://msdn.microsoft.com/en-us/library/windows/desktop/dd378459%28v=vs.85%29.aspx), this can be done by using the existing helper:
+
+```cpp        
+
+WinToast::instance()->setAppName(L"WinToastExample");
+const auto aumi = WinToast::configureAUMI(L"mohabouje", L"wintoast", L"wintoastexample", L"20161006");
+WinToast::instance()->setAppUserModelId(aumi);	
+```
+
+Initialize all the dependencies and check if WinToast has been initialized successfully in your system:
+
+```cpp		
+if (!WinToast::instance()->initialize()) {
+  std::wcout << L"Error, could not initialize the lib!" << std::endl;
+}
+```
+
+Implement your own action handler by subclassing the interface `IWinToastHandler` and custom your template:
+
+```cpp
+WinToastHandlerExample* handler = new WinToastHandlerExample;
 WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
+templ.setImagePath(L"C:/example.png");
 templ.setTextField(L"title", WinToastTemplate::FirstLine);
 templ.setTextField(L"subtitle", WinToastTemplate::SecondLine);
-templ.setImagePath(L"C:/example.png"); 
 ```
 
-**Note:** The user can use the default system sound or specify a sound to play when a toast notification is displayed. Same behavior for the toast notification image, by default Windows try to use the app icon.
-
-### Expiration Time
-
-This property sets the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attempts to raise toast notifications immediately after you call Show, so this property is rarely used. 
-
-> For Windows 8.x app, this property also causes the toast notification to be removed from the
-> Action Center once the specified data and time is reached.
-
-> Not: Default Windows behavior is to hide notification automatically after time set in Windows Ease of Access Settings.
-
-If you need to preserve notification in Windows Action Center for longer period of time, you have to call `WinToastTemplate::setExpiration` method. 
-
-### Actions 
-
-WinToast provides an easy interface to add actions (buttons) to a toast notification. This feature allows the interaction with user in a different way:
+Finally show the results:
 
 ```cpp
-WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text02);
-templ.setTextField(L"Do you think this feature is cool?", WinToastTemplate::FirstLine);
-templ.setTextField(L"Ofc,it is!", WinToastTemplate::SecondLine);
 
-std::vector<std::wstring> actions;
-actions.push_back(L"Yes");
-actions.push_back(L"No");
-for (auto const &action : actions)	
-    templ.addAction(action);
-WinToast::instance()->showToast(templ, handler)
+if (!WinToast::instance()->showToast(templ, handler)) {
+    std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
+}
 ```
 
-This code will display something like this:
+Shao Voon Wong wrote an excellent article about the usage of WinToast. You can find it [here](https://www.codeproject.com/Articles/1151733/WinToast-Toast-Notification-Library-for-Windows-10).
 
-!["Toast with some actions"](https://lh3.googleusercontent.com/uJE_H0aBisOZ-9GynEWgA7Hha8tHEI-i0aHrFuOFDBsPSD-IJ-qEN0Y7XY4VI5hp_5MQ9xjWbFcm)
+## Installation
 
-### Atribution Text
-
-In the latest versions of Windows, users can add/remove an attribution text (empty by default).  WinToast integrates a simple interface to change this property `WinToastTemplate::setAttributionText`:
-
-```c++
-WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text01);
-templ.setTextField(L"Do you think this feature is cool?", WinToastTemplate::FirstLine);
-templ.setAttributionText(L"This is an attribution text");
-WinToast::instance()->showToast(templ, handler)
-```
-
-### Duration
-
-Users can change the amount of time the toast should be displayed. This attribute can have one of the following values: 
-
-   - *System*: default system configuration.
- - *Short*: default system short time configuration.
- - *Long*: default system long time configuration.
-
-```c++
-WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text01);
-templ.setFirstLine(L"I will be displayed for a long time");
-templ.setDuration(WinToastTemplate::Duration::Long);
-WinToast::instance()->showToast(templ, handler)
-```
-
-### Audio
-
-Users can modify the different behaviors of the sound. For instance, users can specify the default play mode:
-
-- *Default*: plays the audio file just one time.
- - *Silent*: turn off the sound.
- - *Loop*: plays the given sound in a loop during the toast existence.
-
-> WinToast allows the modification of the default audio file. There are different audio files installed by default in the system that can be used via the `WinToastTemplate::AudioSystemFile` enumeration. See more details in this [link](https://docs.microsoft.com/en-us/uwp/schemas/tiles/toastschema/element-audio).
->
-> For instance, to display an alarm that will play the same sound in a loop we could do something like this:
->
-> ```c++
-> WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text01);
-> templ.setFirstLine(L"I am an alarm");
-> templ.setDuration(WinToastTemplate::Duration::Long);
-> templ.setAudioMode(WinToastTemplate::AudioOption::Loop);
-> templ.setAudioPath(WinToastTemplate::AudioSystemFile::Alarm);
-> WinToast::instance()->showToast(templ, handler)
-> ```
+If you are using a package manager, there is a port for [vcpkg](https://github.com/microsoft/vcpkg/). Otherwise, the easiest way is to copy the source files as external dependencies.
 
 ## Toast configuration on Windows 10
 
@@ -171,13 +279,19 @@ The system configuration helps you to define how long you want notifications to 
 
 ![Ease of Access configuration](https://camo.githubusercontent.com/56c8edd1a7a4a43be07ba211d9d828478fdbad39/68747470733a2f2f7777772e686f77746f6765656b2e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031362f30332f656173655f6f665f6163636573732e706e67)
 
-<div id='id8' />
 
 ## Projects using WinToast
  - [Git for Windows](https://github.com/git-for-windows/git): A fork of Git containing Windows-specific patches.
+ - [Firefox](https://hg.mozilla.org/mozilla-central/file/tip/third_party/WinToast/wintoastlib.cpp): A free and open source web browser.
  - [QGIS](https://github.com/qgis/QGIS): QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)
- - [nheko](https://github.com/mujx/nheko): Desktop client for the Matrix protocol.
+ - [Synergy Core](https://github.com/symless/synergy-core): Share one mouse and keyboard between multiple computers
+ - [Siv3D](https://github.com/Siv3D/OpenSiv3D): A C++20 cross-platform library for creative coding
+ - [MEGAsync](https://github.com/meganz/MEGAsync): Easy automated syncing between your computers and your MEGA Cloud Drive
+ - [chatterino2](https://github.com/Chatterino/chatterino2): Chat client for twitch.tv
+ - [nheko](https://github.com/Nheko-Reborn/nheko): Desktop client for the Matrix protocol.
  - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
+ - [IW6X-Client](https://github.com/XLabsProject/iw6x-client): IW6x is a free, open-source, community-driven project aiming to recreate the multiplayer experience of Call of Duty: Modern Warfare 3.
+ - [H1-Mod](https://github.com/h1-mod/h1-mod): A client for Call of Duty: Modern Warfare Remastered.
  - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
  - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
  - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): Windows Toast Notification Plugin for Pidgin. 

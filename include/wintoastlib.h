@@ -125,7 +125,7 @@ namespace WinToastLib {
         void setTextField(_In_ std::wstring const& txt, _In_ TextField pos);
         void setAttributionText(_In_ std::wstring const& attributionText);
         void setImagePath(_In_ std::wstring const& imgPath, _In_ CropHint cropHint = CropHint::Square);
-        void setHeroImagePath(_In_ std::wstring const& imgPath, _In_ bool inlineImage);
+        void setHeroImagePath(_In_ std::wstring const& imgPath, _In_ bool inlineImage = false);
         void setAudioPath(_In_ WinToastTemplate::AudioSystemFile audio);
         void setAudioPath(_In_ std::wstring const& audioPath);
         void setAudioOption(_In_ WinToastTemplate::AudioOption audioOption);

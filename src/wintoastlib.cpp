@@ -822,6 +822,11 @@ bool WinToast::hideToast(_In_ INT64 id) {
 
     auto& notifyData = iter->second;
     auto result = notify->Hide(notifyData.notification());
+    if (FAILED(result)) {
+        DEBUG_MSG("Error when hiding the toast. Error code: " << result);
+        return false;
+    }
+
     notifyData.RemoveTokens();
     _buffer.erase(iter);
     return SUCCEEDED(result);
