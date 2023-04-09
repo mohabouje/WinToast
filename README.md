@@ -283,7 +283,7 @@ if (!WinToast::instance()->showToast(templ, handler)) {
 }
 ```
 
-Shao Voon Wong wrote an excellent article about the usage of WinToast. You can find it [here](https://www.codeproject.com/Articles/1151733/WinToast-Toast-Notification-Library-for-Windows-10).
+Shao Voon Wong wrote an excellent article about the usage of WinToast. You can find it [here](https://www.codeproject.com/Articles/5286393/Cplusplus-Windows-Toast-Notification).
 
 ## Installation
 
