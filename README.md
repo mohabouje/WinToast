@@ -79,6 +79,15 @@ class WinToastHandlerExample : public IWinToastHandler {
 
 The full documentation of the notification content [here](https://learn.microsoft.com/en-us/windows/apps/design/shell/tiles-and-notifications/adaptive-interactive-toasts?tabs=appsdk).
 
+### Scenario
+
+To create important notifications, alarms, reminders, and incoming call notifications, you simply use a normal app notification with a Scenario value assigned to it. The scenario adjusts a few behaviors to create a consistent and unified user experience. There are four possible Scenario values:
+
+- Reminder
+- Alarm
+- IncomingCall
+- Urgent
+
 ### Expiration Time
 
 Set the time after which a toast notification is no longer considered current or valid and should not be displayed. Windows attempts to raise toast notifications immediately after you call Show, so this property is rarely used. 
