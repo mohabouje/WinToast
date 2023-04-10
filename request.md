@@ -4,6 +4,7 @@ Planned features for each specific version
 
 ## Version 1.4.0
 
+- Adding the ability to reuse the AUMID of the current process [#80](https://github.com/mohabouje/WinToast/issues/80)
 - Change the arguments of specific actions (Buttons) [#72](https://github.com/mohabouje/WinToast/issues/72)
 - Support for Input Text (LineEdit) [#42](https://github.com/mohabouje/WinToast/issues/42)
 - Support for Input Selection (Combobox) 
