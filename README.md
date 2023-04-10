@@ -217,7 +217,7 @@ A common example of usage is to check while initializing the library or showing 
 
 ```cpp
 WinToast::WinToastError error;
-const bool succedded = WinToast::instance()->initialize(&error);
+const auto succedded = WinToast::instance()->initialize(&error);
 if (!succedded) {  
     std::wcout << L"Error, could not initialize the lib. Error number: " 
     << error << std::endl;
@@ -225,8 +225,8 @@ if (!succedded) {
 ...
 // Configure the template
 ...
-const bool launched = WinToast::instance()->showToast(templ, handler, &error);
-if (!launched) {
+const auto toast_id = WinToast::instance()->showToast(templ, handler, &error);
+if (toast_id < 0) {
     std::wcout << L"Error: Could not launch your toast notification. Error: "
      << error << std::endl;
 }
@@ -278,7 +278,8 @@ Finally show the results:
 
 ```cpp
 
-if (!WinToast::instance()->showToast(templ, handler)) {
+const auto toast_id = WinToast::instance()->showToast(templ, handler, &error);
+if (toast_id < 0) {
     std::wcout << L"Error: Could not launch your toast notification!" << std::endl;
 }
 ```
