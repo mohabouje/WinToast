@@ -302,6 +302,7 @@ The system configuration helps you to define how long you want notifications to 
 ## Projects using WinToast
  - [Git for Windows](https://github.com/git-for-windows/git): A fork of Git containing Windows-specific patches.
  - [Firefox](https://hg.mozilla.org/mozilla-central/file/tip/third_party/WinToast/wintoastlib.cpp): A free and open source web browser.
+ - [Waterfox](https://github.com/WaterfoxCo/Waterfox): Fast and Private Web Browser
  - [QGIS](https://github.com/qgis/QGIS): QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)
  - [Synergy Core](https://github.com/symless/synergy-core): Share one mouse and keyboard between multiple computers
  - [Siv3D](https://github.com/Siv3D/OpenSiv3D): A C++20 cross-platform library for creative coding
