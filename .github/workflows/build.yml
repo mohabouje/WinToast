@@ -1,0 +1,56 @@
+name: Build with CMake
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  BUILD_TYPE: Release
+  QT_VERSION: 6.6.0
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # With Qt examples
+          - with-qt: true
+            with-examples: true
+          # Examples without Qt
+          - with-qt: false
+            with-examples: true
+          # No examples
+          - with-qt: false
+            with-examples: false
+
+    name: 'Examples: ${{ matrix.with-examples }}, Qt: ${{ matrix.with-qt }}'
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Enable Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1.12.1
+
+      - name: Install Qt
+        if: matrix.with-qt
+        uses: jurplel/install-qt-action@v3.3.0
+        with:
+          cache: true
+          cache-key-prefix: QtCache-${{ env.QT_VERSION }}
+          version: ${{ env.QT_VERSION }}
+
+      - name: Configure CMake
+        run: >
+          cmake 
+          -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          -DWINTOASTLIB_BUILD_EXAMPLES=${{ matrix.with-examples && 'On' || 'Off' }}
+          -DWINTOASTLIB_QT_ENABLED=${{ matrix.with-qt && 'On' || 'Off' }}
+
+      - name: Build
+        working-directory: build
+        run: ninja all
