@@ -388,7 +388,7 @@ namespace Util {
 } // namespace Util
 
 WinToast* WinToast::instance() {
-    static WinToast instance;
+    thread_local static WinToast instance;
     return &instance;
 }
 
