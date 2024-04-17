@@ -70,6 +70,7 @@ class WinToastHandlerExample : public IWinToastHandler {
 	WinToastHandlerExample(); 
 	// Public interfaces
 	void toastActivated() const override;
+	void toastActivated(int actionIndex) const override;
 	void toastDismissed(WinToastDismissalReason state) const override;
 	void toastFailed() const override;
  };
