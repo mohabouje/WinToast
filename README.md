@@ -107,8 +107,7 @@ Microsoft style guidelines recommend representing profile pictures with a circul
 WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText02);
 templ.setTextField(L"Matt sent you a friend request", WinToastTemplate::FirstLine);
 templ.setTextField(L"Hey, wanna dress up as wizards and ride around on hoverboards?", WinToastTemplate::SecondLine);
-templ.setImagePath(L"C:/example.png");
-templ.setHintCrop(WinToastTemplate::Circle);
+templ.setImagePath(L"C:/example.png", WinToastTemplate::CropHint::Circle);
 ```
 
 !["Toast with hero image"](assets/images/hint-crop.png)
