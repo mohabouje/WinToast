@@ -1,4 +1,4 @@
-/** 
+/**
  * MIT License
  *
  * Copyright (C) 2016-2023 WinToast v1.3.0 - Mohammed Boujemaoui <mohabouje@gmail.com>
@@ -63,6 +63,7 @@ namespace WinToastLib {
         virtual ~IWinToastHandler()                                      = default;
         virtual void toastActivated() const                              = 0;
         virtual void toastActivated(int actionIndex) const               = 0;
+        virtual void toastActivated(const char* response) const          = 0;
         virtual void toastDismissed(WinToastDismissalReason state) const = 0;
         virtual void toastFailed() const                                 = 0;
     };
@@ -136,6 +137,7 @@ namespace WinToastLib {
         void setExpiration(_In_ INT64 millisecondsFromNow);
         void setScenario(_In_ Scenario scenario);
         void addAction(_In_ std::wstring const& label);
+        void addInput();
 
         std::size_t textFieldsCount() const;
         std::size_t actionsCount() const;
@@ -156,8 +158,11 @@ namespace WinToastLib {
         bool isToastGeneric() const;
         bool isInlineHeroImage() const;
         bool isCropHintCircle() const;
+        bool isInput() const;
 
     private:
+        bool _hasInput;
+
         std::vector<std::wstring> _textFields{};
         std::vector<std::wstring> _actions{};
         std::wstring _imagePath{};
@@ -303,6 +308,7 @@ namespace WinToastLib {
         HRESULT addActionHelper(_In_ IXmlDocument* xml, _In_ std::wstring const& action, _In_ std::wstring const& arguments);
         HRESULT addDurationHelper(_In_ IXmlDocument* xml, _In_ std::wstring const& duration);
         HRESULT addScenarioHelper(_In_ IXmlDocument* xml, _In_ std::wstring const& scenario);
+        HRESULT addInputHelper(_In_ IXmlDocument* xml);
         ComPtr<IToastNotifier> notifier(_In_ bool* succeded) const;
         void setError(_Out_opt_ WinToastError* error, _In_ WinToastError value);
     };

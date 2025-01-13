@@ -1,4 +1,4 @@
-/** 
+/**
  * MIT License
  *
  * Copyright (C) 2016-2023 WinToast v1.3.0 - Mohammed Boujemaoui <mohabouje@gmail.com>
@@ -19,7 +19,7 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 #include "wintoastlib.h"
 
@@ -284,7 +284,8 @@ namespace Util {
                                     _In_ FunctorT&& markAsReadyForDeletionFunc) {
         HRESULT hr = notification->add_Activated(
             Callback<Implements<RuntimeClassFlags<ClassicCom>, ITypedEventHandler<ToastNotification*, IInspectable*>>>(
-                [eventHandler, markAsReadyForDeletionFunc](IToastNotification* notify, IInspectable* inspectable) {
+                [eventHandler, markAsReadyForDeletionFunc](IToastNotification* notify, IInspectable* inspectable)
+                {
                     ComPtr<IToastActivatedEventArgs> activatedEventArgs;
                     HRESULT hr = inspectable->QueryInterface(activatedEventArgs.GetAddressOf());
                     if (SUCCEEDED(hr)) {
@@ -292,6 +293,55 @@ namespace Util {
                         hr = activatedEventArgs->get_Arguments(&argumentsHandle);
                         if (SUCCEEDED(hr)) {
                             PCWSTR arguments = Util::AsString(argumentsHandle);
+
+                            if(wcscmp(arguments, L"action=reply") == 0)
+                            {
+                                ComPtr<IToastActivatedEventArgs2> inputBoxActivatedEventArgs;
+                                HRESULT hr2 = inspectable->QueryInterface(inputBoxActivatedEventArgs.GetAddressOf());
+
+                                if(SUCCEEDED(hr2))
+                                {
+                                    ComPtr<Collections::IPropertySet> replyHandle;
+                                    inputBoxActivatedEventArgs->get_UserInput(&replyHandle);
+
+                                    ComPtr<__FIMap_2_HSTRING_IInspectable> replyMap;
+                                    hr = replyHandle.As(&replyMap);
+
+                                    if(SUCCEEDED(hr))
+                                    {
+                                        IInspectable* propertySet;
+                                        hr = replyMap.Get()->Lookup(WinToastStringWrapper(L"textBox").Get(), &propertySet);
+                                        if (SUCCEEDED(hr))
+                                        {
+                                            ComPtr<IPropertyValue> propertyValue;
+                                            hr = propertySet->QueryInterface(IID_PPV_ARGS(&propertyValue));
+
+                                            if (SUCCEEDED(hr))
+                                            {
+                                                // Successfully queried IPropertyValue, now extract the value
+                                                HSTRING userInput;
+                                                hr = propertyValue->GetString(&userInput);
+
+                                                // Convert the HSTRING to a wide string
+                                                PCWSTR strValueW = AsString(userInput);
+
+                                                // Convert the wide string to a STL std::string to pass it as parameter
+                                                // into the event.
+                                                std::wstring ogWstr(strValueW);
+                                                std::string str(ogWstr.length(), ' ');
+                                                std::copy(ogWstr.begin(), ogWstr.end(), str.begin());
+
+                                                if (SUCCEEDED(hr))
+                                                {
+                                                    eventHandler->toastActivated(str.c_str());
+                                                    return S_OK;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                             if (arguments && *arguments) {
                                 eventHandler->toastActivated(static_cast<int>(wcstol(arguments, nullptr, 10)));
                                 DllImporter::WindowsDeleteString(argumentsHandle);
@@ -716,6 +766,12 @@ INT64 WinToast::showToast(_In_ WinToastTemplate const& toast, _In_ IWinToastHand
                                                    (toast.duration() == WinToastTemplate::Duration::Short) ? L"short" : L"long");
                         }
 
+                        if(SUCCEEDED(hr) && toast.isInput())
+                        {
+                            std::wcout << "Adding input" << '\n';
+                            hr = addInputHelper(xmlDocument.Get());
+                        }
+
                         if (SUCCEEDED(hr)) {
                             hr = addScenarioHelper(xmlDocument.Get(), toast.scenario());
                         }
@@ -928,6 +984,60 @@ HRESULT WinToast::addScenarioHelper(_In_ IXmlDocument* xml, _In_ std::wstring co
                 if (SUCCEEDED(hr)) {
                     hr = toastElement->SetAttribute(WinToastStringWrapper(L"scenario").Get(), WinToastStringWrapper(scenario).Get());
                 }
+            }
+        }
+    }
+    return hr;
+}
+
+HRESULT WinToast::addInputHelper(_In_ IXmlDocument* xml)
+{
+    std::vector<std::wstring> attrbs;
+    attrbs.push_back(L"id");
+    attrbs.push_back(L"type");
+    attrbs.push_back(L"placeHolderContent");
+
+    std::vector<std::wstring> attrbs2;
+    attrbs2.push_back(L"content");
+    attrbs2.push_back(L"arguments");
+
+    Util::createElement(xml, L"toast", L"actions", {});
+
+    Util::createElement(xml, L"actions", L"input",attrbs);
+    Util::createElement(xml, L"actions", L"action",attrbs2);
+
+    ComPtr<IXmlNodeList> nodeList;
+    HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"input").Get(), &nodeList);
+    if (SUCCEEDED(hr))
+    {
+        ComPtr<IXmlNode> inputNode;
+        hr = nodeList->Item(0, &inputNode);
+        if (SUCCEEDED(hr))
+        {
+            ComPtr<IXmlElement> toastElement;
+            hr = inputNode.As(&toastElement);
+            if(SUCCEEDED(hr)){
+                toastElement->SetAttribute(WinToastStringWrapper(L"id").Get(), WinToastStringWrapper(L"textBox").Get());
+                toastElement->SetAttribute(WinToastStringWrapper(L"type").Get(), WinToastStringWrapper(L"text").Get());
+                hr = toastElement->SetAttribute(WinToastStringWrapper(L"placeHolderContent").Get(), WinToastStringWrapper(L"...").Get());
+            }
+        }
+    }
+
+    ComPtr<IXmlNodeList> nodeList2;
+    hr = xml->GetElementsByTagName(WinToastStringWrapper(L"action").Get(), &nodeList2);
+    if (SUCCEEDED(hr))
+    {
+        ComPtr<IXmlNode> actionNode;
+        hr = nodeList2->Item(0, &actionNode);
+        if (SUCCEEDED(hr))
+        {
+            ComPtr<IXmlElement> actionElement;
+            hr = actionNode.As(&actionElement);
+            if(SUCCEEDED(hr)){
+                actionElement->SetAttribute(WinToastStringWrapper(L"content").Get(), WinToastStringWrapper(L"Reply").Get());
+                actionElement->SetAttribute(WinToastStringWrapper(L"arguments").Get(), WinToastStringWrapper(L"action=reply").Get());
+                actionElement->SetAttribute(WinToastStringWrapper(L"hint-inputId").Get(), WinToastStringWrapper(L"textBox").Get());
             }
         }
     }
@@ -1282,6 +1392,11 @@ void WinToastTemplate::addAction(_In_ std::wstring const& label) {
     _actions.push_back(label);
 }
 
+void WinToastTemplate::addInput()
+{
+    _hasInput = true;
+}
+
 std::size_t WinToastTemplate::textFieldsCount() const {
     return _textFields.size();
 }
@@ -1359,4 +1474,8 @@ bool WinToastTemplate::isInlineHeroImage() const {
 
 bool WinToastTemplate::isCropHintCircle() const {
     return _cropHint == CropHint::Circle;
+}
+
+bool WinToastTemplate::isInput() const{
+    return _hasInput;
 }
