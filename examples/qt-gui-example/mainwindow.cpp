@@ -69,9 +69,14 @@ public:
         std::wcout << L"The user clicked on button #" << actionIndex << L" in this toast" << std::endl;
     }
 
+    void toastActivated(const char* response) const {
+        std::wcout << L"The user clicked on action #" << response << std::endl;
+    }
+
     void toastFailed() const {
         std::wcout << L"Error showing current toast" << std::endl;
     }
+
     void toastDismissed(WinToastDismissalReason state) const {
         switch (state) {
             case UserCanceled:
