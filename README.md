@@ -311,8 +311,8 @@ The system configuration helps you to define how long you want notifications to 
  - [chatterino2](https://github.com/Chatterino/chatterino2): Chat client for twitch.tv
  - [nheko](https://github.com/Nheko-Reborn/nheko): Desktop client for the Matrix protocol.
  - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
- - [IW6X-Client](https://github.com/XLabsProject/iw6x-client): IW6x is a free, open-source, community-driven project aiming to recreate the multiplayer experience of Call of Duty: Modern Warfare 3.
- - [H1-Mod](https://github.com/h1-mod/h1-mod): A client for Call of Duty: Modern Warfare Remastered.
+ - [IW6-mod]([https://github.com/XLabsProject/iw6x-client](https://git.alterware.dev/alterware/iw6-mod)): Formerly known as IW6x, IW6-mod is a open-source & community-driven project aiming to recreate the multiplayer experience of Call of Duty: Ghosts.
+ - [H1-Mod](https://github.com/auroramod/h1-mod): A client for Call of Duty: Modern Warfare Remastered.
  - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
  - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
  - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): Windows Toast Notification Plugin for Pidgin. 
