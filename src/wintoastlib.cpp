@@ -766,9 +766,7 @@ INT64 WinToast::showToast(_In_ WinToastTemplate const& toast, _In_ IWinToastHand
                                                    (toast.duration() == WinToastTemplate::Duration::Short) ? L"short" : L"long");
                         }
 
-                        if(SUCCEEDED(hr) && toast.isInput())
-                        {
-                            std::wcout << "Adding input" << '\n';
+                        if(SUCCEEDED(hr) && toast.isInput()) {
                             hr = addInputHelper(xmlDocument.Get());
                         }
 
