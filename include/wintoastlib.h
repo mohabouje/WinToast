@@ -161,7 +161,7 @@ namespace WinToastLib {
         bool isInput() const;
 
     private:
-        bool _hasInput;
+        bool _hasInput{false};
 
         std::vector<std::wstring> _textFields{};
         std::vector<std::wstring> _actions{};
