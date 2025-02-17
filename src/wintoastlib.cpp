@@ -248,6 +248,16 @@ namespace Util {
         return hr;
     }
 
+    inline std::wstring parentDirectory(WCHAR* path, DWORD size) {
+        size_t lastSeparator = 0;
+        for (size_t i = 0; i < size; i++) {
+            if (path[i] == L'\\' || path[i] == L'/') {
+                lastSeparator = i;
+            }
+        }
+        return {path, lastSeparator};
+    }
+
     inline PCWSTR AsString(_In_ ComPtr<IXmlDocument>& xmlDocument) {
         HSTRING xml;
         ComPtr<IXmlNodeSerializer> ser;
@@ -669,6 +679,7 @@ HRESULT WinToast::createShellLinkHelper() {
     WCHAR slPath[MAX_PATH]{L'\0'};
     Util::defaultShellLinkPath(_appName, slPath);
     Util::defaultExecutablePath(exePath);
+    std::wstring exeDir = Util::parentDirectory(exePath, sizeof(exePath) / sizeof(exePath[0]));
     ComPtr<IShellLinkW> shellLink;
     HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
     if (SUCCEEDED(hr)) {
@@ -676,7 +687,7 @@ HRESULT WinToast::createShellLinkHelper() {
         if (SUCCEEDED(hr)) {
             hr = shellLink->SetArguments(L"");
             if (SUCCEEDED(hr)) {
-                hr = shellLink->SetWorkingDirectory(exePath);
+                hr = shellLink->SetWorkingDirectory(exeDir.c_str());
                 if (SUCCEEDED(hr)) {
                     ComPtr<IPropertyStore> propertyStore;
                     hr = shellLink.As(&propertyStore);
