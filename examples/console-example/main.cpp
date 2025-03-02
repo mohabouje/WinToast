@@ -16,8 +16,9 @@ public:
         exit(16 + actionIndex);
     }
 
-    void toastActivated(const char* response) const {
-        std::wcout << L"The user clicked on action #" << response << std::endl;
+    void toastActivated(std::wstring response) const {
+        std::wcout << L"The user replied with: " << response << std::endl;
+        exit(0);
     }
 
     void toastDismissed(WinToastDismissalReason state) const {
@@ -72,6 +73,7 @@ enum Results {
 #define COMMAND_SHORTCUT   L"--only-create-shortcut"
 #define COMMAND_AUDIOSTATE L"--audio-state"
 #define COMMAND_ATTRIBUTE  L"--attribute"
+#define COMMAND_INPUT      L"--input"
 
 void print_help() {
     std::wcout << "WinToast Console Example [OPTIONS]" << std::endl;
@@ -85,6 +87,7 @@ void print_help() {
     std::wcout << "\t" << COMMAND_ATTRIBUTE << L" : set the attribute for the notification" << std::endl;
     std::wcout << "\t" << COMMAND_SHORTCUT << L" : create the shortcut for the app" << std::endl;
     std::wcout << "\t" << COMMAND_AUDIOSTATE << L" : set the audio state: Default = 0, Silent = 1, Loop = 2" << std::endl;
+    std::wcout << "\t" << COMMAND_INPUT << L" : add an input to the toast" << std::endl;
     std::wcout << "\t" << COMMAND_HELP << L" : Print the help description" << std::endl;
 }
 
@@ -106,6 +109,7 @@ int wmain(int argc, LPWSTR* argv) {
     std::wstring attribute      = L"default";
     std::vector<std::wstring> actions;
     INT64 expiration = 0;
+    bool input       = false;
 
     bool onlyCreateShortcut                   = false;
     WinToastTemplate::AudioOption audioOption = WinToastTemplate::AudioOption::Default;
@@ -130,6 +134,8 @@ int wmain(int argc, LPWSTR* argv) {
             onlyCreateShortcut = true;
         } else if (!wcscmp(COMMAND_AUDIOSTATE, argv[i])) {
             audioOption = static_cast<WinToastTemplate::AudioOption>(std::stoi(argv[++i]));
+        } else if (!wcscmp(COMMAND_INPUT, argv[i])) {
+            input = true;
         } else if (!wcscmp(COMMAND_HELP, argv[i])) {
             print_help();
             return 0;
@@ -165,6 +171,9 @@ int wmain(int argc, LPWSTR* argv) {
     templ.setAudioOption(audioOption);
     templ.setAttributionText(attribute);
     templ.setImagePath(imagePath);
+    if (input) {
+        templ.addInput();
+    }
 
     for (auto const& action : actions) {
         templ.addAction(action);
