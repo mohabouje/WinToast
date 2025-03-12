@@ -908,7 +908,8 @@ void WinToast::clear() {
         return;
     }
 
-    for (auto& data : _buffer) {
+    auto safeCopy = _buffer;
+    for (auto& data : safeCopy) {
         auto& notifyData = data.second;
         notify->Hide(notifyData.notification());
         notifyData.RemoveTokens();
