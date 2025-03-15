@@ -69,8 +69,8 @@ public:
         std::wcout << L"The user clicked on button #" << actionIndex << L" in this toast" << std::endl;
     }
 
-    void toastActivated(const char* response) const {
-        std::wcout << L"The user clicked on action #" << response << std::endl;
+    void toastActivated(std::wstring response) const {
+        std::wcout << L"The user replied with: " << response << std::endl;
     }
 
     void toastFailed() const {
@@ -113,6 +113,10 @@ void MainWindow::on_showToast_clicked() {
 
     if (ui->addNo->isChecked()) {
         templ.addAction(L"No");
+    }
+
+    if (ui->addInput->isChecked()) {
+        templ.addInput();
     }
 
     if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {

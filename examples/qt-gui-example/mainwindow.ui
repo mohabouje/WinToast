@@ -110,6 +110,13 @@
       </property>
      </widget>
     </item>
+    <item row="15" column="0">
+     <widget class="QCheckBox" name="addInput">
+      <property name="text">
+       <string>Add Input</string>
+      </property>
+     </widget>
+    </item>
     <item row="11" column="1">
      <widget class="QLabel" name="label_4">
       <property name="text">
@@ -117,7 +124,7 @@
       </property>
      </widget>
     </item>
-    <item row="15" column="2">
+    <item row="16" column="2">
      <widget class="QWidget" name="widget_2" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <property name="leftMargin">

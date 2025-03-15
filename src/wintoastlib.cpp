@@ -333,17 +333,11 @@ namespace Util {
                                                 hr = propertyValue->GetString(&userInput);
 
                                                 // Convert the HSTRING to a wide string
-                                                PCWSTR strValueW = AsString(userInput);
-
-                                                // Convert the wide string to a STL std::string to pass it as parameter
-                                                // into the event.
-                                                std::wstring ogWstr(strValueW);
-                                                std::string str(ogWstr.length(), ' ');
-                                                std::copy(ogWstr.begin(), ogWstr.end(), str.begin());
+                                                PCWSTR strValue = AsString(userInput);
 
                                                 if (SUCCEEDED(hr))
                                                 {
-                                                    eventHandler->toastActivated(str.c_str());
+                                                    eventHandler->toastActivated(std::wstring(strValue));
                                                     return S_OK;
                                                 }
                                             }
