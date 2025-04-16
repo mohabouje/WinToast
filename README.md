@@ -319,3 +319,4 @@ The system configuration helps you to define how long you want notifications to 
  - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): Windows Toast Notification Plugin for Pidgin. 
  - [Dnai-Editor](https://github.com/Nicolas-Constanty/Dnai.Editor): Visual Scripting, node editor.
  - [Spectral](https://gitlab.com/b0/spectral): A glossy client for Matrix, written in QtQuick Controls 2 and C++.
+ - [Sysnotify](https://github.com/karmakrafts/WinToast): Cross-platform system notifications for Kotlin Multiplatform.
