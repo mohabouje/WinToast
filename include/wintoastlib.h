@@ -52,6 +52,8 @@ using namespace Windows::Foundation;
 
 namespace WinToastLib {
 
+    void setDebugOutputEnabled(bool enabled);
+
     class IWinToastHandler {
     public:
         enum WinToastDismissalReason {
