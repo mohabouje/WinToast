@@ -10,9 +10,9 @@
 WinToast
 ===================
 
-WinToast is a lightly library written in C++ which brings a complete integration of the modern **toast notifications** of **Windows 8**,   **Windows 10** and **Windows 11**. 
+WinToast is a lightweight library written in C++ which brings a complete integration of the modern **toast notifications** of **Windows 8**,   **Windows 10** and **Windows 11**. 
 
-Toast notifications allows your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
+Toast notifications allow your app to inform the users about relevant information and timely events that they should see and take action upon inside your app, such as a new instant message, a new friend request, breaking news, or a calendar event. 
 
 - [WinToast](#wintoast)
 - [Toast Templates](#toast-templates)
@@ -53,7 +53,7 @@ templ.setImagePath(L"C:/example.png");
 
 ## Event Handler
 
-WinToast handle different events:
+WinToast handles different events:
 
  - **Activated**: Occurs when user activates a toast notification through a click or touch. Apps that are running subscribe to this event
  - **Dismissed**: Occurs when a toast notification leaves the screen, either by expiring or being explicitly dismissed by the user. 
@@ -146,7 +146,7 @@ templ.setHeroImagePath(L"C:/example.png", true);
 
 ### Actions
 
-You can add your own actions, this fact allow you to interact with user in a different way:
+You can add your own actions, this fact allows you to interact with users in a different way:
 
 ```cpp
 WinToastTemplate templ = WinToastTemplate(WinToastTemplate::ImageAndText01);
@@ -168,7 +168,7 @@ WinToast::instance()->showToast(templ, handler)
 
 ### Attribution text
 
-New in Anniversary Update: If you need to reference the source of your content, you can use attribution text. This text is always displayed below any text elements, but above inline images. The text uses a slightly smaller size than standard text elements to help to distinguish from regular text elements.
+New in Anniversary Update: If you need to reference the source of your content, you can use attribution text. This text is always displayed below any text elements, but above inline images. The text uses a slightly smaller size than standard text elements to help distinguish from regular text elements.
 
 ```cpp
 WinToastTemplate templ = WinToastTemplate(WinToastTemplate::Text02);
@@ -195,13 +195,13 @@ You can modify the different behaviors of the sound:
 	 - *Loop*: plays the given sound in a loop during the toast existence.
 
 > WinToast allows the modification of the default audio file. Add 
-> the given file in to your projects resources (*must be ms-appx:// or
+> the given file to your project's resources (*must be ms-appx:// or
 > ms-appdata:// path*) and define it by calling: `WinToastTemplate::setAudioPath`
 
 ***By default, WinToast checks if your systems support the features, ignoring the not supported ones.***
 
 ## Error Handling
-There are several reasons WinToast can fail that's why the library notifies caller about fail reason. Those are the code for each failure:
+There are several reasons WinToast can fail, which is why the library notifies the caller about the failure reason. Those are the code for each failure:
 
 | WinToastError | Error Code | Error message |
 |--|--|--|
@@ -218,8 +218,8 @@ A common example of usage is to check while initializing the library or showing 
 
 ```cpp
 WinToast::WinToastError error;
-const auto succedded = WinToast::instance()->initialize(&error);
-if (!succedded) {  
+const auto succeeded = WinToast::instance()->initialize(&error);
+if (!succeeded) {  
     std::wcout << L"Error, could not initialize the lib. Error number: " 
     << error << std::endl;
 }
@@ -236,7 +236,7 @@ if (toast_id < 0) {
 
 ## Example of Usage
 
-*For an easy usage,  you can just use the available singleton instance.* 
+*For easy usage, you can just use the available singleton instance.* 
 
 First step, Import the header file wintoastlib.h to your project. You should check if your Windows Version is supported by the library.
 
@@ -244,7 +244,7 @@ First step, Import the header file wintoastlib.h to your project. You should che
 using namespace WinToastLib;
 ....
 if (!WinToast::isCompatible()) {
-    std::wcout << L"Error, your system in not supported!" << std::endl;
+    std::wcout << L"Error, your system is not supported!" << std::endl;
 }
 ```
 
@@ -265,7 +265,7 @@ if (!WinToast::instance()->initialize()) {
 }
 ```
 
-Implement your own action handler by subclassing the interface `IWinToastHandler` and custom your template:
+Implement your own action handler by subclassing the interface `IWinToastHandler` and customize your template:
 
 ```cpp
 WinToastHandlerExample* handler = new WinToastHandlerExample;
@@ -295,7 +295,7 @@ If you are using a package manager, there is a port for [vcpkg](https://github.c
 
 Windows allows the configuration of the default behavior of a toast notification. This can be done in the *Ease of Access* configuration by modifying the *Other options* tab. 
 
-The system configuration helps you to define how long you want notifications to appear for (5 seconds to 5 minutes) as turning on visual notifications for sound.
+The system configuration helps you to define how long you want notifications to appear for (5 seconds to 5 minutes) as well as turning on visual notifications for sound.
 
 ![Ease of Access configuration](https://camo.githubusercontent.com/56c8edd1a7a4a43be07ba211d9d828478fdbad39/68747470733a2f2f7777772e686f77746f6765656b2e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031362f30332f656173655f6f665f6163636573732e706e67)
 
@@ -303,7 +303,7 @@ The system configuration helps you to define how long you want notifications to 
 ## Projects using WinToast
  - [Git for Windows](https://github.com/git-for-windows/git): A fork of Git containing Windows-specific patches.
  - [Firefox](https://hg.mozilla.org/mozilla-central/file/tip/third_party/WinToast/wintoastlib.cpp): A free and open source web browser.
- - [Tor Browser](https://gitlab.torproject.org/tpo/applications/tor-browser/-/blob/tor-browser-102.2.0esr-12.0-2/third_party/WinToast/wintoastlib.h): privacy-focused web browser that enables anonymous internet browsing.
+ - [Tor Browser](https://gitlab.torproject.org/tpo/applications/tor-browser/-/blob/tor-browser-102.2.0esr-12.0-2/third_party/WinToast/wintoastlib.h): A privacy-focused web browser that enables anonymous internet browsing.
  - [Waterfox](https://github.com/WaterfoxCo/Waterfox): Fast and Private Web Browser
  - [QGIS](https://github.com/qgis/QGIS): QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)
  - [Synergy Core](https://github.com/symless/synergy-core): Share one mouse and keyboard between multiple computers
@@ -312,10 +312,10 @@ The system configuration helps you to define how long you want notifications to 
  - [chatterino2](https://github.com/Chatterino/chatterino2): Chat client for twitch.tv
  - [nheko](https://github.com/Nheko-Reborn/nheko): Desktop client for the Matrix protocol.
  - [EDPathFinder](https://github.com/neotron/EDPathFinder): A program that creates an optimal route that passes through two or more systems in Elite.
- - [IW6-mod]([https://github.com/XLabsProject/iw6x-client](https://git.alterware.dev/alterware/iw6-mod)): Formerly known as IW6x, IW6-mod is a open-source & community-driven project aiming to recreate the multiplayer experience of Call of Duty: Ghosts.
+ - [IW6-mod]([https://github.com/XLabsProject/iw6x-client](https://git.alterware.dev/alterware/iw6-mod)): Formerly known as IW6x, IW6-mod is an open-source & community-driven project aiming to recreate the multiplayer experience of Call of Duty: Ghosts.
  - [H1-Mod](https://github.com/auroramod/h1-mod): A client for Call of Duty: Modern Warfare Remastered.
- - [AntiExploit](https://github.com/Empier/Anti-Exploit): antiexploit utility for Windows.
- - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications..
+ - [AntiExploit](https://github.com/Empier/Anti-Exploit): An antiexploit utility for Windows.
+ - [Zroya](https://github.com/malja/zroya): Python extension for creating native Windows notifications.
  - [PidginWinToastNotifications](https://github.com/ChristianGalla/PidginWinToastNotifications): Windows Toast Notification Plugin for Pidgin. 
  - [Dnai-Editor](https://github.com/Nicolas-Constanty/Dnai.Editor): Visual Scripting, node editor.
  - [Spectral](https://gitlab.com/b0/spectral): A glossy client for Matrix, written in QtQuick Controls 2 and C++.
