@@ -119,14 +119,14 @@ namespace DllImporter {
 
 class WinToastStringWrapper {
 public:
-    WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) noexcept {
+    WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) {
         HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
         if (!SUCCEEDED(hr)) {
             RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
         }
     }
 
-    WinToastStringWrapper(_In_ std::wstring const& stringRef) noexcept {
+    WinToastStringWrapper(_In_ std::wstring const& stringRef) {
         HRESULT hr =
             DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
         if (FAILED(hr)) {
