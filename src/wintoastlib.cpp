@@ -37,14 +37,14 @@
 #define STATUS_SUCCESS           (0x00000000)
 
 #ifdef NDEBUG
-static bool DebugOutputEnabled = false;
+static bool debugOutputEnabled = false;
 #else
-static bool DebugOutputEnabled = true;
+static bool debugOutputEnabled = true;
 #endif
 
 #define DEBUG_MSG(str)                                                                                                                     \
     do {                                                                                                                                   \
-        if (DebugOutputEnabled) {                                                                                                          \
+        if (debugOutputEnabled) {                                                                                                          \
             std::wcout << str << std::endl;                                                                                                \
         }                                                                                                                                  \
     } while (false)
@@ -54,7 +54,7 @@ static bool DebugOutputEnabled = true;
 using namespace WinToastLib;
 
 void WinToastLib::setDebugOutputEnabled(bool enabled) {
-    DebugOutputEnabled = enabled;
+    debugOutputEnabled = enabled;
 }
 
 namespace DllImporter {
@@ -69,7 +69,7 @@ namespace DllImporter {
         return (func != nullptr) ? S_OK : E_FAIL;
     }
 
-    typedef HRESULT(FAR STDAPICALLTYPE* f_SetCurrentProcessExplicitAppUserModelID)(__in PCWSTR AppID);
+    typedef HRESULT(FAR STDAPICALLTYPE* f_SetCurrentProcessExplicitAppUserModelID)(_In_ PCWSTR AppID);
     typedef HRESULT(FAR STDAPICALLTYPE* f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
     typedef HRESULT(FAR STDAPICALLTYPE* f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid,
                                                                   _COM_Outptr_ void** factory);
@@ -172,7 +172,7 @@ public:
         return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObject) {
+    HRESULT STDMETHODCALLTYPE QueryInterface(IID const& riid, void** ppvObject) {
         if (!ppvObject) {
             return E_POINTER;
         }
@@ -397,7 +397,7 @@ namespace Util {
         return hr;
     }
 
-    inline HRESULT addAttribute(_In_ IXmlDocument* xml, std::wstring const& name, IXmlNamedNodeMap* attributeMap) {
+    inline HRESULT addAttribute(_In_ IXmlDocument* xml, _In_ std::wstring const& name, _In_ IXmlNamedNodeMap* attributeMap) {
         ComPtr<ABI::Windows::Data::Xml::Dom::IXmlAttribute> srcAttribute;
         HRESULT hr = xml->CreateAttribute(WinToastStringWrapper(name).Get(), &srcAttribute);
         if (SUCCEEDED(hr)) {
