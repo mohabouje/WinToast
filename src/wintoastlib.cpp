@@ -332,13 +332,16 @@ namespace Util {
                                                 // Successfully queried IPropertyValue, now extract the value
                                                 HSTRING userInput;
                                                 hr = propertyValue->GetString(&userInput);
-
-                                                // Convert the HSTRING to a wide string
-                                                PCWSTR strValue = AsString(userInput);
-
                                                 if (SUCCEEDED(hr)) {
+                                                    // Convert the HSTRING to a wide string
+                                                    PCWSTR strValue = Util::AsString(userInput);
                                                     eventHandler->toastActivated(std::wstring(strValue));
+                                                    DllImporter::WindowsDeleteString(userInput);
                                                     return S_OK;
+                                                }
+
+                                                if (userInput != nullptr) {
+                                                    DllImporter::WindowsDeleteString(userInput);
                                                 }
                                             }
                                         }
@@ -347,7 +350,7 @@ namespace Util {
                             }
 
                             if (arguments && *arguments) {
-                                eventHandler->toastActivated(static_cast<int>(wcstol(arguments, nullptr, 10)));
+                                eventHandler->toastActivated(static_cast<long>(wcstol(arguments, nullptr, 10)));
                                 DllImporter::WindowsDeleteString(argumentsHandle);
                                 markAsReadyForDeletionFunc();
                                 return S_OK;
