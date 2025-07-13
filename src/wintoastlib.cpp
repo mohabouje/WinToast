@@ -122,7 +122,7 @@ public:
     WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) {
         HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
         if (!SUCCEEDED(hr)) {
-            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), 0, 0, nullptr);
         }
     }
 
@@ -130,7 +130,7 @@ public:
         HRESULT hr =
             DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
         if (FAILED(hr)) {
-            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), EXCEPTION_NONCONTINUABLE, 0, nullptr);
+            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), 0, 0, nullptr);
         }
     }
 
