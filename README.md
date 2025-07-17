@@ -320,3 +320,4 @@ The system configuration helps you to define how long you want notifications to 
  - [Dnai-Editor](https://github.com/Nicolas-Constanty/Dnai.Editor): Visual Scripting, node editor.
  - [Spectral](https://gitlab.com/b0/spectral): A glossy client for Matrix, written in QtQuick Controls 2 and C++.
  - [Sysnotify](https://gitlab.com/connect2x/sysnotify): Cross-platform system notifications for Kotlin Multiplatform.
+ - [Alfacast](https://alfacast.net/): Alfacast allows you to stream and to view video from the screen of device.  
