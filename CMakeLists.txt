@@ -12,7 +12,7 @@ set(WINTOASTLIB_HEADERS ${CMAKE_CURRENT_LIST_DIR}/include/wintoastlib.h)
 set(WINTOASTLIB_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/wintoastlib.cpp)
 add_library(${WINTOASTLIB_LIBNAME} STATIC ${WINTOASTLIB_HEADERS} ${WINTOASTLIB_SOURCES})
 target_include_directories(${WINTOASTLIB_LIBNAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(${WINTOASTLIB_LIBNAME} psapi)
+target_link_libraries(${WINTOASTLIB_LIBNAME} psapi shlwapi user32)
 
 if (${WINTOASTLIB_BUILD_EXAMPLES})
     add_subdirectory(examples)

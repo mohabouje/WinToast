@@ -29,9 +29,6 @@
 #include <array>
 #include <functional>
 
-#pragma comment(lib, "shlwapi")
-#pragma comment(lib, "user32")
-
 #define DEFAULT_SHELL_LINKS_PATH L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT      L".lnk"
 #define STATUS_SUCCESS           (0x00000000)
