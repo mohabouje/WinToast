@@ -66,15 +66,15 @@ namespace DllImporter {
         return (func != nullptr) ? S_OK : E_FAIL;
     }
 
-    typedef HRESULT(FAR STDAPICALLTYPE* f_SetCurrentProcessExplicitAppUserModelID)(__in PCWSTR AppID);
-    typedef HRESULT(FAR STDAPICALLTYPE* f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
-    typedef HRESULT(FAR STDAPICALLTYPE* f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid,
+    typedef HRESULT(STDAPICALLTYPE* f_SetCurrentProcessExplicitAppUserModelID)(__in PCWSTR AppID);
+    typedef HRESULT(STDAPICALLTYPE* f_PropVariantToString)(_In_ REFPROPVARIANT propvar, _Out_writes_(cch) PWSTR psz, _In_ UINT cch);
+    typedef HRESULT(STDAPICALLTYPE* f_RoGetActivationFactory)(_In_ HSTRING activatableClassId, _In_ REFIID iid,
                                                                   _COM_Outptr_ void** factory);
-    typedef HRESULT(FAR STDAPICALLTYPE* f_WindowsCreateStringReference)(_In_reads_opt_(length + 1) PCWSTR sourceString, UINT32 length,
+    typedef HRESULT(STDAPICALLTYPE* f_WindowsCreateStringReference)(_In_reads_opt_(length + 1) PCWSTR sourceString, UINT32 length,
                                                                         _Out_ HSTRING_HEADER* hstringHeader,
                                                                         _Outptr_result_maybenull_ _Result_nullonfailure_ HSTRING* string);
-    typedef PCWSTR(FAR STDAPICALLTYPE* f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_opt_ UINT32* length);
-    typedef HRESULT(FAR STDAPICALLTYPE* f_WindowsDeleteString)(_In_opt_ HSTRING string);
+    typedef PCWSTR(STDAPICALLTYPE* f_WindowsGetStringRawBuffer)(_In_ HSTRING string, _Out_opt_ UINT32* length);
+    typedef HRESULT(STDAPICALLTYPE* f_WindowsDeleteString)(_In_opt_ HSTRING string);
 
     static f_SetCurrentProcessExplicitAppUserModelID SetCurrentProcessExplicitAppUserModelID;
     static f_PropVariantToString PropVariantToString;
