@@ -119,7 +119,7 @@ public:
     WinToastStringWrapper(_In_reads_(length) PCWSTR stringRef, _In_ UINT32 length) {
         HRESULT hr = DllImporter::WindowsCreateStringReference(stringRef, length, &_header, &_hstring);
         if (!SUCCEEDED(hr)) {
-            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), 0, 0, nullptr);
+            RaiseException(STATUS_INVALID_PARAMETER, 0, 0, nullptr);
         }
     }
 
@@ -127,7 +127,7 @@ public:
         HRESULT hr =
             DllImporter::WindowsCreateStringReference(stringRef.c_str(), static_cast<UINT32>(stringRef.length()), &_header, &_hstring);
         if (FAILED(hr)) {
-            RaiseException(static_cast<DWORD>(STATUS_INVALID_PARAMETER), 0, 0, nullptr);
+            RaiseException(STATUS_INVALID_PARAMETER, 0, 0, nullptr);
         }
     }
 
@@ -347,7 +347,7 @@ namespace Util {
                             }
 
                             if (arguments && *arguments) {
-                                eventHandler->toastActivated(static_cast<long>(wcstol(arguments, nullptr, 10)));
+                                eventHandler->toastActivated(wcstol(arguments, nullptr, 10));
                                 DllImporter::WindowsDeleteString(argumentsHandle);
                                 markAsReadyForDeletionFunc();
                                 return S_OK;
