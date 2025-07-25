@@ -44,13 +44,13 @@
 #include <map>
 #include <memory>
 
-using namespace Microsoft::WRL;
-using namespace ABI::Windows::Data::Xml::Dom;
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::UI::Notifications;
-using namespace Windows::Foundation;
-
 namespace WinToastLib {
+    using namespace Microsoft::WRL;
+    using namespace ABI::Windows::Data::Xml::Dom;
+    using namespace ABI::Windows::Foundation;
+    using namespace ABI::Windows::UI::Notifications;
+    using namespace Windows::Foundation;
+
     void setDebugOutputEnabled(bool enabled);
 
     class IWinToastHandler {
