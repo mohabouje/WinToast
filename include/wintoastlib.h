@@ -28,25 +28,14 @@
 #define WIN32_LEAN_AND_MEAN
 #endif //WIN32_LEAN_AND_MEAN
 
-#include <Windows.h>
-#include <sdkddkver.h>
-#include <WinUser.h>
-#include <ShObjIdl.h>
-#include <wrl/implements.h>
-#include <wrl/event.h>
-#include <windows.ui.notifications.h>
-#include <strsafe.h>
-#include <Psapi.h>
-#include <ShlObj.h>
-#include <roapi.h>
-#include <propvarutil.h>
-#include <functiondiscoverykeys.h>
 #include <iostream>
-#include <winstring.h>
-#include <string.h>
 #include <vector>
 #include <map>
-#include <memory>
+
+#include <Windows.h>
+#include <wrl/event.h>
+#include <windows.ui.notifications.h>
+#include <roapi.h>
 
 namespace WinToastLib {
     using namespace Microsoft::WRL;

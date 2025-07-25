@@ -24,10 +24,20 @@
 #include "wintoastlib.h"
 
 #include <memory>
-#include <assert.h>
 #include <unordered_map>
 #include <array>
 #include <functional>
+#include <cassert>
+
+#include <sdkddkver.h>
+#include <WinUser.h>
+#include <ShObjIdl.h>
+#include <wrl/implements.h>
+#include <strsafe.h>
+#include <Psapi.h>
+#include <ShlObj.h>
+#include <propvarutil.h>
+#include <functiondiscoverykeys.h>
 
 #define DEFAULT_SHELL_LINKS_PATH L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
 #define DEFAULT_LINK_FORMAT      L".lnk"
