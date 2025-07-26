@@ -28,6 +28,10 @@
 #include <array>
 #include <functional>
 #include <cassert>
+#include <string_view>
+#include <optional>
+#include <filesystem>
+#include <sstream>
 
 #include <sdkddkver.h>
 #include <WinUser.h>
@@ -39,9 +43,9 @@
 #include <propvarutil.h>
 #include <functiondiscoverykeys.h>
 
-#define DEFAULT_SHELL_LINKS_PATH L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
-#define DEFAULT_LINK_FORMAT      L".lnk"
-#define STATUS_SUCCESS           (0x00000000)
+constexpr std::wstring_view DEFAULT_SHELL_LINKS_PATH = L"\\Microsoft\\Windows\\Start Menu\\Programs\\";
+constexpr std::wstring_view DEFAULT_LINK_FORMAT = L".lnk";
+constexpr NTSTATUS STATUS_SUCCESS = 0x00000000;
 
 #ifdef NDEBUG
 static bool DebugOutputEnabled = false;
@@ -94,12 +98,12 @@ namespace DllImporter {
     static f_WindowsDeleteString WindowsDeleteString;
 
     template <class T>
-    __inline _Check_return_ HRESULT _1_GetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ T** factory) {
+    _Check_return_ HRESULT _1_GetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ T** factory) {
         return RoGetActivationFactory(activatableClassId, IID_INS_ARGS(factory));
     }
 
     template <typename T>
-    inline HRESULT Wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout_ Details::ComPtrRef<T> factory) noexcept {
+    HRESULT Wrap_GetActivationFactory(_In_ HSTRING activatableClassId, _Inout_ Details::ComPtrRef<T> factory) noexcept {
         return _1_GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
     }
 
@@ -234,42 +238,36 @@ namespace Util {
         return rovi;
     }
 
-    inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
-        DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, path, nSize);
+    inline std::optional<std::filesystem::path> defaultExecutablePath() {
+        std::array<WCHAR, MAX_PATH> buffer;
+        const auto written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, buffer.data(), MAX_PATH);
+        if (written <= 0) {
+            return std::nullopt;
+        }
+        std::wstring path{buffer.data(), written};
         DEBUG_MSG("Default executable path: " << path);
-        return (written > 0) ? S_OK : E_FAIL;
+        return std::filesystem::path{std::move(path)};
     }
 
-    inline HRESULT defaultShellLinksDirectory(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
-        DWORD written = GetEnvironmentVariableW(L"APPDATA", path, nSize);
-        HRESULT hr    = written > 0 ? S_OK : E_INVALIDARG;
-        if (SUCCEEDED(hr)) {
-            errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
-            hr             = (result == 0) ? S_OK : E_INVALIDARG;
-            DEBUG_MSG("Default shell link path: " << path);
+    inline std::optional<std::filesystem::path> defaultShellLinksDirectory() {
+        std::array<WCHAR, MAX_PATH> buffer;
+        const auto written = GetEnvironmentVariableW(L"APPDATA", buffer.data(), MAX_PATH);
+        if (written <= 0) {
+            return std::nullopt;
         }
-        return hr;
+        std::wstring path{buffer.data(), written};
+        DEBUG_MSG("Default shell link path: " << path);
+        return std::filesystem::path{std::move(path)};
     }
 
-    inline HRESULT defaultShellLinkPath(_In_ std::wstring const& appname, _In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) {
-        HRESULT hr = defaultShellLinksDirectory(path, nSize);
-        if (SUCCEEDED(hr)) {
-            std::wstring const appLink(appname + DEFAULT_LINK_FORMAT);
-            errno_t result = wcscat_s(path, nSize, appLink.c_str());
-            hr             = (result == 0) ? S_OK : E_INVALIDARG;
-            DEBUG_MSG("Default shell link file path: " << path);
+    inline std::optional<std::filesystem::path> defaultShellLinkPath(const std::wstring& appname) {
+        const auto path = defaultShellLinksDirectory();
+        if (!path) {
+            return std::nullopt;
         }
-        return hr;
-    }
-
-    inline std::wstring parentDirectory(WCHAR* path, DWORD size) {
-        size_t lastSeparator = 0;
-        for (size_t i = 0; i < size; i++) {
-            if (path[i] == L'\\' || path[i] == L'/') {
-                lastSeparator = i;
-            }
-        }
-        return {path, lastSeparator};
+        std::wstringstream appLink;
+        appLink << appname << DEFAULT_LINK_FORMAT;
+        return *path / appLink.str();
     }
 
     inline PCWSTR AsString(_In_ ComPtr<IXmlDocument>& xmlDocument) {
@@ -302,7 +300,7 @@ namespace Util {
     }
 
     template <typename FunctorT>
-    inline HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler,
+    HRESULT setEventHandlers(_In_ IToastNotification* notification, _In_ std::shared_ptr<IWinToastHandler> eventHandler,
                                     _In_ INT64 expirationTime, _Out_ EventRegistrationToken& activatedToken,
                                     _Out_ EventRegistrationToken& dismissedToken, _Out_ EventRegistrationToken& failedToken,
                                     _In_ FunctorT&& markAsReadyForDeletionFunc) {
@@ -613,12 +611,14 @@ std::wstring const& WinToast::appUserModelId() const {
 }
 
 HRESULT WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
-    WCHAR path[MAX_PATH] = {L'\0'};
-    Util::defaultShellLinkPath(_appName, path);
+    const auto path = Util::defaultShellLinkPath(_appName);
+    if (!path) {
+        return E_FAIL;
+    }
     // Check if the file exist
-    DWORD attr = GetFileAttributesW(path);
+    const auto attr = GetFileAttributesW(path->c_str());
     if (attr >= 0xFFFFFFF) {
-        DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << path);
+        DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << path->wstring());
         return E_FAIL;
     }
 
@@ -634,7 +634,7 @@ HRESULT WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
         ComPtr<IPersistFile> persistFile;
         hr = shellLink.As(&persistFile);
         if (SUCCEEDED(hr)) {
-            hr = persistFile->Load(path, STGM_READWRITE);
+            hr = persistFile->Load(path->c_str(), STGM_READWRITE);
             if (SUCCEEDED(hr)) {
                 ComPtr<IPropertyStore> propertyStore;
                 hr = shellLink.As(&propertyStore);
@@ -656,7 +656,7 @@ HRESULT WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
                                     if (SUCCEEDED(hr)) {
                                         hr = propertyStore->Commit();
                                         if (SUCCEEDED(hr) && SUCCEEDED(persistFile->IsDirty())) {
-                                            hr = persistFile->Save(path, TRUE);
+                                            hr = persistFile->Save(path->c_str(), TRUE);
                                         }
                                     }
                                 }
@@ -678,16 +678,19 @@ HRESULT WinToast::createShellLinkHelper() {
     if (_shortcutPolicy != ShortcutPolicy::SHORTCUT_POLICY_REQUIRE_CREATE) {
         return E_FAIL;
     }
-
-    WCHAR exePath[MAX_PATH]{L'\0'};
-    WCHAR slPath[MAX_PATH]{L'\0'};
-    Util::defaultShellLinkPath(_appName, slPath);
-    Util::defaultExecutablePath(exePath);
-    std::wstring exeDir = Util::parentDirectory(exePath, sizeof(exePath) / sizeof(exePath[0]));
+    const auto slPath = Util::defaultShellLinkPath(_appName);
+    if (!slPath) {
+        return E_FAIL;
+    }
+    const auto exePath = Util::defaultExecutablePath();
+    if (!exePath) {
+        return E_FAIL;
+    }
+    const auto exeDir = exePath->parent_path();
     ComPtr<IShellLinkW> shellLink;
     HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shellLink));
     if (SUCCEEDED(hr)) {
-        hr = shellLink->SetPath(exePath);
+        hr = shellLink->SetPath(exePath->c_str());
         if (SUCCEEDED(hr)) {
             hr = shellLink->SetArguments(L"");
             if (SUCCEEDED(hr)) {
@@ -706,7 +709,7 @@ HRESULT WinToast::createShellLinkHelper() {
                                     ComPtr<IPersistFile> persistFile;
                                     hr = shellLink.As(&persistFile);
                                     if (SUCCEEDED(hr)) {
-                                        hr = persistFile->Save(slPath, TRUE);
+                                        hr = persistFile->Save(slPath->c_str(), TRUE);
                                     }
                                 }
                             }
