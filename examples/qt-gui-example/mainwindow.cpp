@@ -14,14 +14,14 @@ using namespace WinToastLib;
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    ui->toastType->addItem("ImageAndText01", WinToastTemplate::WinToastTemplateType::ImageAndText01);
-    ui->toastType->addItem("ImageAndText02", WinToastTemplate::WinToastTemplateType::ImageAndText02);
-    ui->toastType->addItem("ImageAndText03", WinToastTemplate::WinToastTemplateType::ImageAndText03);
-    ui->toastType->addItem("ImageAndText04", WinToastTemplate::WinToastTemplateType::ImageAndText04);
-    ui->toastType->addItem("Text01", WinToastTemplate::WinToastTemplateType::Text01);
-    ui->toastType->addItem("Text02", WinToastTemplate::WinToastTemplateType::Text02);
-    ui->toastType->addItem("Text03", WinToastTemplate::WinToastTemplateType::Text03);
-    ui->toastType->addItem("Text04", WinToastTemplate::WinToastTemplateType::Text04);
+    ui->toastType->addItem("ImageAndText01", WinToastTemplate::Type::ImageAndText01);
+    ui->toastType->addItem("ImageAndText02", WinToastTemplate::Type::ImageAndText02);
+    ui->toastType->addItem("ImageAndText03", WinToastTemplate::Type::ImageAndText03);
+    ui->toastType->addItem("ImageAndText04", WinToastTemplate::Type::ImageAndText04);
+    ui->toastType->addItem("Text01", WinToastTemplate::Type::Text01);
+    ui->toastType->addItem("Text02", WinToastTemplate::Type::Text02);
+    ui->toastType->addItem("Text03", WinToastTemplate::Type::Text03);
+    ui->toastType->addItem("Text04", WinToastTemplate::Type::Text04);
 
     ui->audioMode->addItem("Default", WinToastTemplate::AudioOption::Default);
     ui->audioMode->addItem("Loop", WinToastTemplate::AudioOption::Loop);
@@ -99,7 +99,7 @@ public:
 };
 
 void MainWindow::on_showToast_clicked() {
-    auto const type        = static_cast<WinToastTemplate::WinToastTemplateType>(ui->toastType->currentData().toInt());
+    auto const type        = static_cast<WinToastTemplate::Type>(ui->toastType->currentData().toInt());
     WinToastTemplate templ = WinToastTemplate(type);
     templ.setImagePath(ui->imagePath->text().toStdWString(), static_cast<WinToastTemplate::CropHint>(ui->cropHint->currentData().toInt()));
     templ.setHeroImagePath(ui->heroPath->text().toStdWString(), ui->inlineHeroImage->isChecked());

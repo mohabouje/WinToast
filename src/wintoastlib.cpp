@@ -31,6 +31,7 @@
 #include <optional>
 #include <filesystem>
 #include <sstream>
+#include <iostream>
 
 #include <sdkddkver.h>
 #include <WinUser.h>
@@ -1287,7 +1288,7 @@ void WinToast::setError(_Out_opt_ WinToastError* error, _In_ WinToastError value
     }
 }
 
-WinToastTemplate::WinToastTemplate(_In_ WinToastTemplateType type) : _type(type) {
+WinToastTemplate::WinToastTemplate(_In_ Type type) : _type(type) {
     constexpr static std::size_t TextFieldsCount[] = {1, 2, 2, 3, 1, 2, 2, 3};
     _textFields                                    = std::vector<std::wstring>(TextFieldsCount[static_cast<int32_t>(type)], L"");
 }
@@ -1415,7 +1416,7 @@ std::size_t WinToastTemplate::actionsCount() const {
 }
 
 bool WinToastTemplate::hasImage() const {
-    return _type < WinToastTemplateType::Text01;
+    return _type < Type::Text01;
 }
 
 bool WinToastTemplate::hasHeroImage() const {
@@ -1461,7 +1462,7 @@ INT64 WinToastTemplate::expiration() const {
     return _expiration;
 }
 
-WinToastTemplate::WinToastTemplateType WinToastTemplate::type() const {
+WinToastTemplate::Type WinToastTemplate::type() const {
     return _type;
 }
 

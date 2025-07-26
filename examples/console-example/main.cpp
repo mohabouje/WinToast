@@ -1,6 +1,7 @@
 #include "wintoastlib.h"
+
 #include <string>
-#include <windows.h>
+#include <iostream>
 
 using namespace WinToastLib;
 
@@ -166,7 +167,7 @@ int wmain(int argc, LPWSTR* argv) {
         return Results::InitializationFailure;
     }
 
-    WinToastTemplate templ(!imagePath.empty() ? WinToastTemplate::WinToastTemplateType::ImageAndText02 : WinToastTemplate::WinToastTemplateType::Text02);
+    WinToastTemplate templ(!imagePath.empty() ? WinToastTemplate::Type::ImageAndText02 : WinToastTemplate::Type::Text02);
     templ.setTextField(text, WinToastTemplate::TextField::FirstLine);
     templ.setAudioOption(audioOption);
     templ.setAttributionText(attribute);
