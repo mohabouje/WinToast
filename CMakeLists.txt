@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4...3.27)
-project(wintoastlib VERSION 1.3.2 LANGUAGES CXX)
+project(wintoastlib VERSION 2.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
