@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "wintoastlib.h"
+#include "wintoastlib.h"
+
 #include <QDebug>
 #include <qfiledialog.h>
 #include <qmessagebox.h>
@@ -11,14 +14,14 @@ using namespace WinToastLib;
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    ui->toastType->addItem("ImageAndText01", WinToastTemplate::ImageAndText01);
-    ui->toastType->addItem("ImageAndText02", WinToastTemplate::ImageAndText02);
-    ui->toastType->addItem("ImageAndText03", WinToastTemplate::ImageAndText03);
-    ui->toastType->addItem("ImageAndText04", WinToastTemplate::ImageAndText04);
-    ui->toastType->addItem("Text01", WinToastTemplate::Text01);
-    ui->toastType->addItem("Text02", WinToastTemplate::Text02);
-    ui->toastType->addItem("Text03", WinToastTemplate::Text03);
-    ui->toastType->addItem("Text04", WinToastTemplate::Text04);
+    ui->toastType->addItem("ImageAndText01", WinToastTemplate::WinToastTemplateType::ImageAndText01);
+    ui->toastType->addItem("ImageAndText02", WinToastTemplate::WinToastTemplateType::ImageAndText02);
+    ui->toastType->addItem("ImageAndText03", WinToastTemplate::WinToastTemplateType::ImageAndText03);
+    ui->toastType->addItem("ImageAndText04", WinToastTemplate::WinToastTemplateType::ImageAndText04);
+    ui->toastType->addItem("Text01", WinToastTemplate::WinToastTemplateType::Text01);
+    ui->toastType->addItem("Text02", WinToastTemplate::WinToastTemplateType::Text02);
+    ui->toastType->addItem("Text03", WinToastTemplate::WinToastTemplateType::Text03);
+    ui->toastType->addItem("Text04", WinToastTemplate::WinToastTemplateType::Text04);
 
     ui->audioMode->addItem("Default", WinToastTemplate::AudioOption::Default);
     ui->audioMode->addItem("Loop", WinToastTemplate::AudioOption::Loop);
@@ -77,15 +80,15 @@ public:
         std::wcout << L"Error showing current toast" << std::endl;
     }
 
-    void toastDismissed(WinToastDismissalReason state) const {
+    void toastDismissed(DismissalReason state) const {
         switch (state) {
-            case UserCanceled:
+            case DismissalReason::UserCanceled:
                 std::wcout << L"The user dismissed this toast" << std::endl;
                 break;
-            case ApplicationHidden:
+            case DismissalReason::ApplicationHidden:
                 std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
                 break;
-            case TimedOut:
+            case DismissalReason::TimedOut:
                 std::wcout << L"The toast has timed out" << std::endl;
                 break;
             default:
@@ -100,9 +103,9 @@ void MainWindow::on_showToast_clicked() {
     WinToastTemplate templ = WinToastTemplate(type);
     templ.setImagePath(ui->imagePath->text().toStdWString(), static_cast<WinToastTemplate::CropHint>(ui->cropHint->currentData().toInt()));
     templ.setHeroImagePath(ui->heroPath->text().toStdWString(), ui->inlineHeroImage->isChecked());
-    templ.setTextField(ui->firstLine->text().toStdWString(), WinToastTemplate::FirstLine);
-    templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::SecondLine);
-    templ.setTextField(ui->thirdLine->text().toStdWString(), WinToastTemplate::ThirdLine);
+    templ.setTextField(ui->firstLine->text().toStdWString(), WinToastTemplate::TextField::FirstLine);
+    templ.setTextField(ui->secondLine->text().toStdWString(), WinToastTemplate::TextField::SecondLine);
+    templ.setTextField(ui->thirdLine->text().toStdWString(), WinToastTemplate::TextField::ThirdLine);
     templ.setExpiration(ui->spinBox->value() * 1000);
     templ.setAudioPath(static_cast<WinToastTemplate::AudioSystemFile>(ui->audioSystemFile->currentData().toInt()));
     templ.setAudioOption(static_cast<WinToastTemplate::AudioOption>(ui->audioMode->currentData().toInt()));

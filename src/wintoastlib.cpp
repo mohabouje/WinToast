@@ -238,7 +238,7 @@ namespace Util {
     }
 
     inline std::optional<std::filesystem::path> defaultExecutablePath() {
-        std::array<WCHAR, MAX_PATH> buffer;
+        std::array<WCHAR, MAX_PATH> buffer{};
         const auto written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, buffer.data(), MAX_PATH);
         if (written <= 0) {
             return std::nullopt;
@@ -249,7 +249,7 @@ namespace Util {
     }
 
     inline std::optional<std::filesystem::path> defaultShellLinksDirectory() {
-        std::array<WCHAR, MAX_PATH> buffer;
+        std::array<WCHAR, MAX_PATH> buffer{};
         const auto written = GetEnvironmentVariableW(L"APPDATA", buffer.data(), MAX_PATH);
         if (written <= 0) {
             return std::nullopt;
