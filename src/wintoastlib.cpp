@@ -454,7 +454,7 @@ WinToast* WinToast::instance() {
     return &instance;
 }
 
-WinToast::WinToast() : _isInitialized(false), _hasCoInitialized(false) {
+WinToast::WinToast() {
     if (!isCompatible()) {
         DEBUG_MSG(L"Warning: Your system is not compatible with this library ");
     }
@@ -462,7 +462,6 @@ WinToast::WinToast() : _isInitialized(false), _hasCoInitialized(false) {
 
 WinToast::~WinToast() {
     clear();
-
     if (_hasCoInitialized) {
         CoUninitialize();
     }
@@ -488,12 +487,12 @@ bool WinToast::isCompatible() {
              (DllImporter::WindowsDeleteString == nullptr));
 }
 
-bool WinToastLib::WinToast::isSupportingModernFeatures() {
+bool WinToast::isSupportingModernFeatures() {
     constexpr auto MinimumSupportedVersion = 6;
     return Util::getRealOSVersion().dwMajorVersion > MinimumSupportedVersion;
 }
 
-bool WinToastLib::WinToast::isWin10AnniversaryOrHigher() {
+bool WinToast::isWin10AnniversaryOrHigher() {
     return Util::getRealOSVersion().dwBuildNumber >= 14393;
 }
 
@@ -564,7 +563,7 @@ WinToast::ShortcutResult WinToast::createShortcut() {
     return SUCCEEDED(hr) ? ShortcutResult::SHORTCUT_WAS_CREATED : ShortcutResult::SHORTCUT_CREATE_FAILED;
 }
 
-bool WinToast::initialize(_Out_opt_ WinToastError* error) {
+bool WinToast::initialize(_Out_opt_ WinToastError* error, _In_opt_ ThreadingMode threadingMode) {
     _isInitialized = false;
     setError(error, WinToastError::NoError);
 

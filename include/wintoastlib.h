@@ -31,6 +31,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <atomic>
 
 #include <Windows.h>
 #include <wrl/event.h>
@@ -206,6 +207,13 @@ namespace WinToastLib {
             SHORTCUT_POLICY_REQUIRE_CREATE,
         };
 
+        enum class ThreadingMode : int32_t {
+            /* Don't synchronize the internal buffer and initialize COM for single-threaded use. */
+            SINGLE_THREADED,
+            /* Synchronize the internal buffer and initialize COM for multithreaded use. */
+            MULTI_THREADED
+        };
+
         WinToast();
         virtual ~WinToast();
         static WinToast* instance();
@@ -216,7 +224,8 @@ namespace WinToastLib {
                                           _In_ std::wstring const& subProduct         = std::wstring(),
                                           _In_ std::wstring const& versionInformation = std::wstring());
         static std::wstring const& strerror(_In_ WinToastError error);
-        virtual bool initialize(_Out_opt_ WinToastError* error = nullptr);
+        virtual bool initialize(_Out_opt_ WinToastError* error = nullptr,
+            _In_opt_ ThreadingMode threadingMode = ThreadingMode::MULTI_THREADED);
         virtual bool isInitialized() const;
         virtual bool hideToast(_In_ INT64 id);
         virtual INT64 showToast(_In_ WinToastTemplate const& toast, _In_ IWinToastHandler* eventHandler,
