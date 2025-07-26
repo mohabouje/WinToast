@@ -42,6 +42,3 @@ enc_temp_folder/
 build/
 cmake-build-*
 CMakeLists.txt.user
-
-# CLion
-.idea/
