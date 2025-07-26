@@ -24,44 +24,15 @@
 #ifndef WINTOASTLIB_H
 #define WINTOASTLIB_H
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif //WIN32_LEAN_AND_MEAN
-
 #include <iostream>
 #include <vector>
 #include <map>
-#include <atomic>
 
-#include <Windows.h>
-#include <wrl/event.h>
-#include <windows.ui.notifications.h>
-#include <roapi.h>
+#include "Platform.h"
+#include "IWinToastHandler.h"
 
 namespace WinToastLib {
-    using namespace Microsoft::WRL;
-    using namespace ABI::Windows::Data::Xml::Dom;
-    using namespace ABI::Windows::Foundation;
-    using namespace ABI::Windows::UI::Notifications;
-    using namespace Windows::Foundation;
-
     void setDebugOutputEnabled(bool enabled);
-
-    class IWinToastHandler {
-    public:
-        enum class WinToastDismissalReason : int32_t {
-            UserCanceled      = ToastDismissalReason_UserCanceled,
-            ApplicationHidden = ToastDismissalReason_ApplicationHidden,
-            TimedOut          = ToastDismissalReason_TimedOut
-        };
-
-        virtual ~IWinToastHandler()                                      = default;
-        virtual void toastActivated() const                              = 0;
-        virtual void toastActivated(int actionIndex) const               = 0;
-        virtual void toastActivated(std::wstring response) const         = 0;
-        virtual void toastDismissed(WinToastDismissalReason state) const = 0;
-        virtual void toastFailed() const                                 = 0;
-    };
 
     class WinToastTemplate {
     public:
