@@ -553,7 +553,7 @@ std::wstring WinToast::configureAUMI(_In_ std::wstring const& companyName, _In_ 
 }
 
 bool WinToast::initialize(_Out_opt_ WinToastError* error) {
-    HRESULT initHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    HRESULT initHr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (initHr != RPC_E_CHANGED_MODE) {
         if (FAILED(initHr) && initHr != S_FALSE) {
             DEBUG_MSG(L"Error on COM library initialization!");
