@@ -1,6 +1,7 @@
 #include "wintoastlib.h"
+
 #include <string>
-#include <windows.h>
+#include <iostream>
 
 using namespace WinToastLib;
 
@@ -21,17 +22,17 @@ public:
         exit(0);
     }
 
-    void toastDismissed(WinToastDismissalReason state) const {
+    void toastDismissed(DismissalReason state) const {
         switch (state) {
-            case UserCanceled:
+            case DismissalReason::UserCanceled:
                 std::wcout << L"The user dismissed this toast" << std::endl;
                 exit(1);
                 break;
-            case TimedOut:
+            case DismissalReason::TimedOut:
                 std::wcout << L"The toast has timed out" << std::endl;
                 exit(2);
                 break;
-            case ApplicationHidden:
+            case DismissalReason::ApplicationHidden:
                 std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
                 exit(3);
                 break;
@@ -153,8 +154,8 @@ int wmain(int argc, LPWSTR* argv) {
             std::wcerr << L"--only-create-shortcut does not accept images/text/actions/expiration" << std::endl;
             return 9;
         }
-        enum WinToast::ShortcutResult result = WinToast::instance()->createShortcut();
-        return result ? 16 + result : 0;
+        WinToast::ShortcutResult result = WinToast::instance()->createShortcut();
+        return result != WinToast::ShortcutResult::SHORTCUT_UNCHANGED ? 16 + static_cast<int32_t>(result) : 0;
     }
 
     if (text.empty()) {
@@ -166,8 +167,8 @@ int wmain(int argc, LPWSTR* argv) {
         return Results::InitializationFailure;
     }
 
-    WinToastTemplate templ(!imagePath.empty() ? WinToastTemplate::ImageAndText02 : WinToastTemplate::Text02);
-    templ.setTextField(text, WinToastTemplate::FirstLine);
+    WinToastTemplate templ(!imagePath.empty() ? WinToastTemplate::Type::ImageAndText02 : WinToastTemplate::Type::Text02);
+    templ.setTextField(text, WinToastTemplate::TextField::FirstLine);
     templ.setAudioOption(audioOption);
     templ.setAttributionText(attribute);
     templ.setImagePath(imagePath);
