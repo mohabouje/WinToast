@@ -265,15 +265,21 @@ namespace Util {
         return {path, lastSeparator};
     }
 
-    inline PCWSTR AsString(_In_ ComPtr<IXmlDocument>& xmlDocument) {
+    inline std::wstring AsString(_In_ ComPtr<IXmlDocument>& xmlDocument) {
         HSTRING xml;
         ComPtr<IXmlNodeSerializer> ser;
         HRESULT hr = xmlDocument.As<IXmlNodeSerializer>(&ser);
-        hr         = ser->GetXml(&xml);
-        if (SUCCEEDED(hr)) {
-            return DllImporter::WindowsGetStringRawBuffer(xml, nullptr);
+        if (FAILED(hr)) {
+            return std::wstring();
         }
-        return nullptr;
+        hr = ser->GetXml(&xml);
+        if (SUCCEEDED(hr)) {
+            PCWSTR rawBuffer = DllImporter::WindowsGetStringRawBuffer(xml, nullptr);
+            std::wstring result(rawBuffer ? rawBuffer : L"");
+            DllImporter::WindowsDeleteString(xml);
+            return result;
+        }
+        return std::wstring();
     }
 
     inline PCWSTR AsString(_In_ HSTRING hstring) {
@@ -310,7 +316,7 @@ namespace Util {
                         if (SUCCEEDED(hr)) {
                             PCWSTR arguments = Util::AsString(argumentsHandle);
 
-                            if (wcscmp(arguments, L"action=reply") == 0) {
+                            if (arguments && wcscmp(arguments, L"action=reply") == 0) {
                                 ComPtr<IToastActivatedEventArgs2> inputBoxActivatedEventArgs;
                                 HRESULT hr2 = inspectable->QueryInterface(inputBoxActivatedEventArgs.GetAddressOf());
 
@@ -337,6 +343,7 @@ namespace Util {
                                                     PCWSTR strValue = Util::AsString(userInput);
                                                     eventHandler->toastActivated(std::wstring(strValue));
                                                     DllImporter::WindowsDeleteString(userInput);
+                                                    markAsReadyForDeletionFunc();
                                                     return S_OK;
                                                 }
 
@@ -610,7 +617,7 @@ HRESULT WinToast::validateShellLinkHelper(_Out_ bool& wasChanged) {
     Util::defaultShellLinkPath(_appName, path);
     // Check if the file exist
     DWORD attr = GetFileAttributesW(path);
-    if (attr >= 0xFFFFFFF) {
+    if (attr == INVALID_FILE_ATTRIBUTES) {
         DEBUG_MSG("Error, shell link not found. Try to create a new one in: " << path);
         return E_FAIL;
     }
@@ -1163,6 +1170,7 @@ HRESULT WinToast::setAudioFieldHelper(_In_ IXmlDocument* xml, _In_ std::wstring 
                             if (SUCCEEDED(hr)) {
                                 hr = Util::setNodeStringValue(L"true", editedNode.Get(), xml);
                             }
+                            break;
                         default:
                             break;
                     }
