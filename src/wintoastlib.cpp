@@ -85,6 +85,9 @@ namespace DllImporter {
     static f_WindowsCreateStringReference WindowsCreateStringReference;
     static f_WindowsGetStringRawBuffer WindowsGetStringRawBuffer;
     static f_WindowsDeleteString WindowsDeleteString;
+    static HINSTANCE LibShell32  = nullptr;
+    static HINSTANCE LibPropSys  = nullptr;
+    static HINSTANCE LibComBase  = nullptr;
 
     template <class T>
     __inline _Check_return_ HRESULT _1_GetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ T** factory) {
@@ -96,15 +99,23 @@ namespace DllImporter {
         return _1_GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
     }
 
+    inline bool initialized() {
+        return LibShell32 != nullptr && LibPropSys != nullptr && LibComBase != nullptr;
+    }
+
     inline HRESULT initialize() {
-        HINSTANCE LibShell32 = LoadLibraryW(L"SHELL32.DLL");
+        if (initialized()) {
+            return S_OK;
+        }
+        
+        LibShell32 = LoadLibraryW(L"SHELL32.DLL");
         HRESULT hr =
             loadFunctionFromLibrary(LibShell32, "SetCurrentProcessExplicitAppUserModelID", SetCurrentProcessExplicitAppUserModelID);
         if (SUCCEEDED(hr)) {
-            HINSTANCE LibPropSys = LoadLibraryW(L"PROPSYS.DLL");
+            LibPropSys = LoadLibraryW(L"PROPSYS.DLL");
             hr                   = loadFunctionFromLibrary(LibPropSys, "PropVariantToString", PropVariantToString);
             if (SUCCEEDED(hr)) {
-                HINSTANCE LibComBase = LoadLibraryW(L"COMBASE.DLL");
+                LibComBase = LoadLibraryW(L"COMBASE.DLL");
                 bool const succeded =
                     SUCCEEDED(loadFunctionFromLibrary(LibComBase, "RoGetActivationFactory", RoGetActivationFactory)) &&
                     SUCCEEDED(loadFunctionFromLibrary(LibComBase, "WindowsCreateStringReference", WindowsCreateStringReference)) &&
@@ -114,6 +125,27 @@ namespace DllImporter {
             }
         }
         return hr;
+    }
+
+    inline void uninitialize() {
+        if (LibComBase) {
+            FreeLibrary(LibComBase);
+            LibComBase = nullptr;
+        }
+        if (LibPropSys) {
+            FreeLibrary(LibPropSys);
+            LibPropSys = nullptr;
+        }
+        if (LibShell32) {
+            FreeLibrary(LibShell32);
+            LibShell32 = nullptr;
+        }
+        SetCurrentProcessExplicitAppUserModelID = nullptr;
+        PropVariantToString = nullptr;
+        RoGetActivationFactory = nullptr;
+        WindowsCreateStringReference = nullptr;
+        WindowsGetStringRawBuffer = nullptr;
+        WindowsDeleteString = nullptr;
     }
 } // namespace DllImporter
 
@@ -468,6 +500,8 @@ WinToast::~WinToast() {
     if (_hasCoInitialized) {
         CoUninitialize();
     }
+
+    DllImporter::uninitialize();
 }
 
 void WinToast::setAppName(_In_ std::wstring const& appName) {
