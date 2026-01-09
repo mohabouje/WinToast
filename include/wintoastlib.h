@@ -216,6 +216,12 @@ namespace WinToastLib {
 
         WinToast(void);
         virtual ~WinToast();
+
+        WinToast(const WinToast&) = delete;
+        WinToast& operator=(const WinToast&) = delete;
+        WinToast(WinToast&&) = delete;
+        WinToast& operator=(WinToast&&) = delete;
+
         static WinToast* instance();
         static bool isCompatible();
         static bool isSupportingModernFeatures();
