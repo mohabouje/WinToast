@@ -563,7 +563,9 @@ std::wstring const& WinToast::strerror(WinToastError error) {
     };
 
     auto const iter = Labels.find(error);
-    assert(iter != Labels.end());
+    if (iter == Labels.end()) {
+        return Labels.at(WinToastError::UnknownError);
+    }
     return iter->second;
 }
 
