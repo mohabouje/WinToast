@@ -107,7 +107,7 @@ namespace DllImporter {
         if (initialized()) {
             return S_OK;
         }
-        
+
         LibShell32 = LoadLibraryW(L"SHELL32.DLL");
         HRESULT hr =
             loadFunctionFromLibrary(LibShell32, "SetCurrentProcessExplicitAppUserModelID", SetCurrentProcessExplicitAppUserModelID);
@@ -861,13 +861,11 @@ INT64 WinToast::showToast(_In_ WinToastTemplate const& toast, _In_ IWinToastHand
                                 }
 
                                 if (SUCCEEDED(hr)) {
-                                    if (SUCCEEDED(hr)) {
-                                        _buffer.emplace(id, NotifyData(notification, activatedToken, dismissedToken, failedToken));
-                                        DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
-                                        hr = notifier->Show(notification.Get());
-                                        if (FAILED(hr)) {
-                                            setError(error, WinToastError::NotDisplayed);
-                                        }
+                                    _buffer.emplace(id, NotifyData(notification, activatedToken, dismissedToken, failedToken));
+                                    DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
+                                    hr = notifier->Show(notification.Get());
+                                    if (FAILED(hr)) {
+                                        setError(error, WinToastError::NotDisplayed);
                                     }
                                 }
                             }
