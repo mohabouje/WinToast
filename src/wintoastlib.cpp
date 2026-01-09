@@ -450,8 +450,9 @@ namespace Util {
         return hr;
     }
 
+    template <typename RangeT>
     inline HRESULT createElement(_In_ IXmlDocument* xml, _In_ std::wstring const& root_node, _In_ std::wstring const& element_name,
-                                 _In_ std::vector<std::wstring> const& attribute_names) {
+                                 _In_ RangeT&& attribute_names) {
         ComPtr<IXmlNodeList> rootList;
         HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(root_node).Get(), &rootList);
         if (SUCCEEDED(hr)) {
@@ -963,7 +964,7 @@ void WinToast::clear() {
 //       the toast's text fields or getting a count of them.
 //
 HRESULT WinToast::setAttributionTextFieldHelper(_In_ IXmlDocument* xml, _In_ std::wstring const& text) {
-    Util::createElement(xml, L"binding", L"text", {L"placement"});
+    Util::createElement(xml, L"binding", L"text", std::array<std::wstring, 1>{L"placement"});
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"text").Get(), &nodeList);
     if (SUCCEEDED(hr)) {
@@ -1039,19 +1040,9 @@ HRESULT WinToast::addScenarioHelper(_In_ IXmlDocument* xml, _In_ std::wstring co
 }
 
 HRESULT WinToast::addInputHelper(_In_ IXmlDocument* xml) {
-    std::vector<std::wstring> attrbs;
-    attrbs.push_back(L"id");
-    attrbs.push_back(L"type");
-    attrbs.push_back(L"placeHolderContent");
-
-    std::vector<std::wstring> attrbs2;
-    attrbs2.push_back(L"content");
-    attrbs2.push_back(L"arguments");
-
-    Util::createElement(xml, L"toast", L"actions", {});
-
-    Util::createElement(xml, L"actions", L"input", attrbs);
-    Util::createElement(xml, L"actions", L"action", attrbs2);
+    Util::createElement(xml, L"toast", L"actions", std::initializer_list<std::wstring>{});
+    Util::createElement(xml, L"actions", L"input", std::array<std::wstring, 3>{L"id", L"type", L"placeHolderContent"});
+    Util::createElement(xml, L"actions", L"action", std::array<std::wstring, 2>{L"content", L"arguments"});
 
     ComPtr<IXmlNodeList> nodeList;
     HRESULT hr = xml->GetElementsByTagName(WinToastStringWrapper(L"input").Get(), &nodeList);
