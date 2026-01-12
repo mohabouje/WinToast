@@ -360,8 +360,8 @@ namespace Util {
                                     hr = replyHandle.As(&replyMap);
 
                                     if (SUCCEEDED(hr)) {
-                                        IInspectable* propertySet;
-                                        hr = replyMap.Get()->Lookup(WinToastStringWrapper(L"textBox").Get(), &propertySet);
+                                        ComPtr<IInspectable> propertySet;
+                                        hr = replyMap.Get()->Lookup(WinToastStringWrapper(L"textBox").Get(), propertySet.GetAddressOf());
                                         if (SUCCEEDED(hr)) {
                                             ComPtr<IPropertyValue> propertyValue;
                                             hr = propertySet->QueryInterface(IID_PPV_ARGS(&propertyValue));
