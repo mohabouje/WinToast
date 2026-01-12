@@ -367,14 +367,13 @@ namespace Util {
                                             hr = propertySet->QueryInterface(IID_PPV_ARGS(&propertyValue));
 
                                             if (SUCCEEDED(hr)) {
-                                                // Successfully queried IPropertyValue, now extract the value
                                                 HSTRING userInput;
                                                 hr = propertyValue->GetString(&userInput);
                                                 if (SUCCEEDED(hr)) {
-                                                    // Convert the HSTRING to a wide string
                                                     PCWSTR strValue = Util::AsString(userInput);
                                                     eventHandler->toastActivated(std::wstring(strValue));
                                                     DllImporter::WindowsDeleteString(userInput);
+                                                    DllImporter::WindowsDeleteString(argumentsHandle);
                                                     markAsReadyForDeletionFunc();
                                                     return S_OK;
                                                 }
