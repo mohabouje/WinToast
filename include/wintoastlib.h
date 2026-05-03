@@ -43,6 +43,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <mutex>
 
 namespace WinToastLib {
 
@@ -300,6 +301,7 @@ namespace WinToastLib {
         ShortcutPolicy _shortcutPolicy{SHORTCUT_POLICY_REQUIRE_CREATE};
         std::wstring _appName{};
         std::wstring _aumi{};
+        mutable std::mutex _bufferMutex{};
         std::map<INT64, NotifyData> _buffer{};
 
         void markAsReadyForDeletion(_In_ INT64 id);
