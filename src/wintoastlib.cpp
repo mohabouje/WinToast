@@ -863,6 +863,7 @@ INT64 WinToast::showToast(_In_ WinToastTemplate const& toast, _In_ IWinToastHand
                                 }
 
                                 if (SUCCEEDED(hr)) {
+                                    std::lock_guard<std::mutex> lock(_bufferMutex);
                                     _buffer.emplace(id, NotifyData(notification, activatedToken, dismissedToken, failedToken));
                                     DEBUG_MSG("xml: " << Util::AsString(xmlDocument));
                                     hr = notifier->Show(notification.Get());
@@ -893,6 +894,8 @@ ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const {
 }
 
 void WinToast::markAsReadyForDeletion(_In_ INT64 id) {
+    std::lock_guard<std::mutex> lock(_bufferMutex);
+
     // Flush the buffer by removing all the toasts that are ready for deletion
     for (auto it = _buffer.begin(); it != _buffer.end();) {
         if (it->second.isReadyForDeletion()) {
@@ -916,9 +919,12 @@ bool WinToast::hideToast(_In_ INT64 id) {
         return false;
     }
 
-    auto iter = _buffer.find(id);
-    if (iter == _buffer.end()) {
-        return false;
+    {
+        std::lock_guard<std::mutex> lock(_bufferMutex);
+        auto iter = _buffer.find(id);
+        if (iter == _buffer.end()) {
+            return false;
+        }
     }
 
     auto succeded = false;
@@ -927,7 +933,14 @@ bool WinToast::hideToast(_In_ INT64 id) {
         return false;
     }
 
-    ComPtr<IToastNotification> notificationObj = iter->second.notification();
+    ComPtr<IToastNotification> notificationObj;
+    {
+        std::lock_guard<std::mutex> lock(_bufferMutex);
+        auto iter = _buffer.find(id);
+        if (iter != _buffer.end()) {
+            notificationObj = iter->second.notification();
+        }
+    }
 
     auto result = notify->Hide(notificationObj.Get());
     if (FAILED(result)) {
@@ -935,11 +948,14 @@ bool WinToast::hideToast(_In_ INT64 id) {
         return false;
     }
 
-    iter = _buffer.find(id);
-    if (iter != _buffer.end()) {
-        iter->second.markAsReadyForDeletion();
-        iter->second.RemoveTokens();
-        _buffer.erase(iter);
+    {
+        std::lock_guard<std::mutex> lock(_bufferMutex);
+        auto iter = _buffer.find(id);
+        if (iter != _buffer.end()) {
+            iter->second.markAsReadyForDeletion();
+            iter->second.RemoveTokens();
+            _buffer.erase(iter);
+        }
     }
 
     return SUCCEEDED(result);
@@ -952,16 +968,24 @@ void WinToast::clear() {
         return;
     }
 
-    auto safeCopy = _buffer;
+    std::map<INT64, NotifyData> safeCopy;
+    {
+        std::lock_guard<std::mutex> lock(_bufferMutex);
+        safeCopy = _buffer;
+    }
+
     for (auto& data : safeCopy) {
         notify->Hide(data.second.notification());
     }
 
-    for (auto& data : _buffer) {
-        data.second.markAsReadyForDeletion();
-        data.second.RemoveTokens();
+    {
+        std::lock_guard<std::mutex> lock(_bufferMutex);
+        for (auto& data : _buffer) {
+            data.second.markAsReadyForDeletion();
+            data.second.RemoveTokens();
+        }
+        _buffer.clear();
     }
-    _buffer.clear();
 }
 
 //
