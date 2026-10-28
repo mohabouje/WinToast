@@ -289,7 +289,7 @@ Shao Voon Wong wrote an excellent article about the usage of WinToast. You can f
 
 ## Installation
 
-If you are using a package manager, there is a port for [vcpkg](https://github.com/microsoft/vcpkg/). Otherwise, the easiest way is to copy the source files as external dependencies.
+If you are using a package manager, there are ports for [Conan](https://github.com/conan-io/conan) and [vcpkg](https://github.com/microsoft/vcpkg/). Otherwise, the easiest way is to copy the source files as external dependencies.
 
 ## Toast configuration on Windows 10
 
